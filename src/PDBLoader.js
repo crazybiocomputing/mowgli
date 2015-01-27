@@ -4,6 +4,25 @@ var PDBLoader = function () {
 
 }
 
+PDBLoader.prototype.getFromDOM = function(document_id,format) {
+  var text = document.getElementById(document_id).value;
+  if (extension === 'pdb') {
+    parser = new PDBParser();
+  }
+  else if (extension === 'cif') {
+    parser = new MMCIFParser();
+  }
+  else if (extension === 'xml') {
+    parser = new PDBMLParser();
+  }
+  else {
+  // Unknown format
+  }
+  
+  // Parse the file
+  parser.parse(text);  
+}
+
 PDBLoader.prototype.getFromURL = function(url) {
   var extension = url.substr(url.length-4,url.length-1);
   
@@ -24,21 +43,20 @@ PDBLoader.prototype.getFromURL = function(url) {
   var parser = null;
   
   if (extension === 'pdb') {
-    parser = new PDBParsert(text);
+    parser = new PDBParser();
   }
   else if (extension === 'cif') {
-    parser = new MMCIFParser(text);
+    parser = new MMCIFParser();
   }
   else if (extension === 'xml') {
-    parser = new PDBMLParser(text);
-
+    parser = new PDBMLParser();
   }
   else {
   // Unknown format
   }
   
   // Parse the PDB file
-    parser.parse(request.responseText);
+  parser.parse(request.responseText);
 }
 
 PDBLoader.prototype.getFromID = function(pdb_id) {
