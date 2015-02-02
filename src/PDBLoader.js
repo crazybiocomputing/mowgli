@@ -5,26 +5,14 @@ var PDBLoader = function () {
 }
 
 PDBLoader.prototype.getFromDOM = function(document_id,format) {
-  var text = document.getElementById(document_id).value;
-  if (extension === 'pdb') {
-    parser = new PDBParser();
-  }
-  else if (extension === 'cif') {
-    parser = new MMCIFParser();
-  }
-  else if (extension === 'xml') {
-    parser = new PDBMLParser();
-  }
-  else {
-  // Unknown format
-  }
-  
-  // Parse the file
-  parser.parse(text);  
+  var text = document.getElementById(document_id).innerHTML;  
+  var mol = this.createStructure(text,format);
+  return mol;
 }
 
 PDBLoader.prototype.getFromURL = function(url) {
-  var extension = url.substr(url.length-4,url.length-1);
+  var extension = url.substr(url.length-3,url.length-1);
+  console.log(extension);
   
   if (window.XMLHttpRequest)
   {
@@ -40,27 +28,44 @@ PDBLoader.prototype.getFromURL = function(url) {
     alert(e.description);
   }
   
+  var mol = this.createStructure(request.responseText,extension);
+  return mol;
+}
+
+PDBLoader.prototype.getFromID = function(pdb_id) {
+  return this.getFromURL("http://www.rcsb.org/pdb/files/"+pdb_id+".pdb");
+
+}
+
+PDBLoader.prototype.createStructure = function(text,format) {
+
+  // 1- Choose the good parser
   var parser = null;
-  
-  if (extension === 'pdb') {
+
+  if (format === 'pdb') {
     parser = new PDBParser();
   }
-  else if (extension === 'cif') {
+  else if (format === 'cif') {
     parser = new MMCIFParser();
   }
-  else if (extension === 'xml') {
+  else if (format === 'xml') {
     parser = new PDBMLParser();
   }
   else {
   // Unknown format
   }
   
-  // Parse the PDB file
-  parser.parse(request.responseText);
+  // 2- Parse the file
+  parser.parse(text); 
+  var mol = parser.getStructure(); 
+
+  // 3- Compute Bonds
+  this.computeBonds(mol); 
+
+  return mol;
 }
 
-PDBLoader.prototype.getFromID = function(pdb_id) {
-  this.getFromURL("http://www.rcsb.org/pdb/files/"+pdb_id+".pdb");
-
+PDBLoader.prototype.computeBonds = function(a_mol) {
+  // TODO
 }
 

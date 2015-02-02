@@ -8,7 +8,7 @@ var PDBParser = function() {
 }
 
 
-var PDBParser.TAG = {
+PDBParser.TAGS = {
   'ANISOU': 0,
   'ATOM'  : 1,
   'AUTHOR': 2,
@@ -72,22 +72,29 @@ PDBParser.prototype.parse = function (text) {
 
   // 2- Main loop
   for (var i=0;i<rows.length;i++) {
-    var tag = tags[rows[i].substring(0,6).trim];
-    switch (tag) {
-    case Parser.TAG.ATOM: 
-    case Parser.TAG.HETERATOM:
-      this.parseAtom(rows[i]);
-      break;
-    case Parser.TAG.HEADER:
-      this.parseHeader(rows[i]);
-      break;
-    case Parser.TAG.HELIX:
-      this.parseHelix(rows[i]);
-      break;
-    case Parser.TAG.SHEET:
-      this.parseSheet(rows[i]);
-      break;
-
+    if (rows[i].length > 5) {
+      var tag = PDBParser.TAGS[rows[i].substring(0,6).trim()];
+      console.log(rows[i].substring(0,6).trim()+' '+tag);
+      switch (tag) {
+      case PDBParser.TAGS.ATOM: 
+      case PDBParser.TAGS.HETATM:
+        this.parseAtom(rows[i]);
+        break;
+      case PDBParser.TAGS.HEADER:
+        this.parseHeader(rows[i]);
+        break;
+      case PDBParser.TAGS.HELIX:
+        // this.parseHelix(rows[i]);
+        break;
+      case PDBParser.TAGS.SHEET:
+        // this.parseSheet(rows[i]);
+        break;
+      case PDBParser.TAGS.TITLE:
+        this.parseTitle(rows[i]);
+        break;
+      default:
+        // Do nothing
+      }
     }
   }
 
@@ -106,7 +113,7 @@ PDBParser.prototype.parse = function (text) {
   this.mol.bbox.radius   = Math.sqrt(this.mol.bbox.radius)/2.0;
 
   console.log('cg '+this.mol.cg.x+' '+this.mol.cg.y+' '+this.mol.cg.z);
-  console.log(this.mol.bbox.radius+' '+this.mol.bbox.center.x+' '+this.mol.bbox.center.y+' '+this.mol.bbox.center.z);
+  console.log(this.mol.atoms.length+' '+this.mol.bbox.radius+' '+this.mol.bbox.center.x+' '+this.mol.bbox.center.y+' '+this.mol.bbox.center.z);
 }
 
 
@@ -155,6 +162,7 @@ PDBParser.prototype.parseAtom = function (line) {
   atom.type = line.substring(0,6).trim();
   atom.serial = parseInt(line.substring(6,11));
   atom.name = line.substring(12,16).trim();
+  atom.altLoc = line[16];
   atom.group = line.substring(17,20).trim();
   atom.chain = line[21];
   atom.groupID = parseInt(line.substring(22,26));
@@ -171,7 +179,7 @@ PDBParser.prototype.parseAtom = function (line) {
 }
 
 
-PDBParser.prototype.parseHelix = function(str) {
+PDBParser.prototype.parseHelix = function(row) {
 
   // HELIX
   /******
@@ -208,6 +216,7 @@ PDBParser.prototype.parseHelix = function(str) {
       };
     console.log('name:'+ 'H{' + items[1] +'}'+ 'first:' + parseInt(items[5]) + 'last:'+ parseInt(items[8]));
   }
+}
 
   // SHEET: TODO
   /********************
@@ -236,37 +245,23 @@ PDBParser.prototype.parseHelix = function(str) {
   70             AChar         prevICode      Registration.  Insertion code in previous strand.
   ****************/
 
-  parseSheet(str);
+PDBParser.prototype.parseSheet = function (row) {
+  console.log('value:'+row.substring(7,10) );
+  var strand={};
+  strand.type='E';
+  strand.index=parseInt(row.substring(7,10));
+  strand.ID=row.substring(11,14);
+  strand.num = row.substring(14,16);
+  strand.strand=parseInt(row.substring(7,10));
+  strand.first = parseInt(row.substring(22,26)); 
+  strand.last = parseInt(row.substring(33,37));
+  strand.chainFirst = row.substring(21,22);
+  strand.chainLast = row.substring(21,22);
+  strand.sense = row.substring(38,40); 
 
-}
+  structs[structs.length]= strand;
 
-PDBParser.prototype.parseSheet = function (str) 
-{
-  var rows=str.split("\n");
-  for (var k=0; k<rows.length; k++)
-  {
-    var pattern = /^SHEET\s/g;
-    if (rows[k].match(pattern) )
-    {
-      console.log('value:'+rows[k].substring(7,10) );
-      var strand={};
-      strand.type='E';
-      strand.index=parseInt(rows[k].substring(7,10));
-      strand.ID=rows[k].substring(11,14);
-      strand.num = rows[k].substring(14,16);
-      strand.strand=parseInt(rows[k].substring(7,10));
-      strand.first = parseInt(rows[k].substring(22,26)); 
-      strand.last = parseInt(rows[k].substring(33,37));
-      strand.chainFirst = rows[k].substring(21,22);
-      strand.chainLast = rows[k].substring(21,22);
-      strand.sense = rows[k].substring(38,40); 
-
-      structs[structs.length]= strand;
-
-      console.log(' type: E name:'+ strand.ID + ' num:'+ strand.num + ' first:' + strand.first + ' last:'+ strand.last + '<br/\>');
-    }
-
-  }
+  console.log(' type: E name:'+ strand.ID + ' num:'+ strand.num + ' first:' + strand.first + ' last:'+ strand.last + '<br/\>');
 
 }
 
@@ -279,13 +274,15 @@ COLUMNS       DATA  TYPE     FIELD         DEFINITION
 11 - 80       String         title         Title of the  experiment.
 ----------------------------------------------------------------------------------
 */
-PDBParser.prototype.parseTitle = function (str) 
+
+PDBParser.prototype.parseTitle = function (row) 
 {
   if (parseInt(row.substring(8,10).trim()) == 1) {
     this.mol.title = row.substring(10,80).trim();
-  else
+  }
+  else {
     this.mol.title = ' ' + row.substring(10,80).trim();
-
+  }
 }
 
 PDBParser.prototype.updateBBox = function (a) {
