@@ -26,6 +26,10 @@
  * Constructor
  */
  function Shape() {
- 
+  // TODO
  }
  
+ Shape.prototype.setColorMode(a_mode) {
+   // TODO
+ }
+
