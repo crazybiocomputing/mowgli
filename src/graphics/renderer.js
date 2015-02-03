@@ -27,8 +27,8 @@
 
 /*
  * Singleton ??
-/*
-function RendererGL(canvas_id) {
+ */
+function Renderer(canvas_id) {
   // Get A WebGL context
   function createWebGLContext(canvas, opt_attribs) {
     var names = ["webgl", "experimental-webgl"];
@@ -57,7 +57,7 @@ function RendererGL(canvas_id) {
   this._initGL();
 }
 
-RendererGL.prototype.drawScene = function () {
+Renderer.prototype.drawScene = function () {
   var gl = this.context;
   
   this.program.use();
@@ -69,7 +69,7 @@ RendererGL.prototype.drawScene = function () {
 /*
  * Private
  */
-RendererGL.prototype._initGL = function() {
+Renderer.prototype._initGL = function() {
   // Init GL stuff
   // TODO
 }
