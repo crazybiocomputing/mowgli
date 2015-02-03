@@ -21,3 +21,58 @@
  * Authors:
  * Jean-Christophe Taveau
  */
+
+
+"use strict"
+
+/*
+ * Singleton ??
+/*
+function RendererGL(canvas_id) {
+  // Get A WebGL context
+  function createWebGLContext(canvas, opt_attribs) {
+    var names = ["webgl", "experimental-webgl"];
+    var context = null;
+    for (var ii in names) {
+      try {
+        context = canvas.getContext(names[ii], opt_attribs);
+      } catch(e) {}
+      if (context) {
+        break;
+      }
+    }
+    return context;
+  }
+
+  var canvas = document.getElementById(canvas_id);
+  this.context = createWebGLContext(canvas);
+  if (!this.context) {
+    return;
+  }
+
+  // Properties
+  this.shaders={}; 
+  this.program=null; //Active program ID
+
+  this._initGL();
+}
+
+RendererGL.prototype.drawScene = function () {
+  var gl = this.context;
+  
+  this.program.use();
+  // Draw
+  // TODO
+}
+
+
+/*
+ * Private
+ */
+RendererGL.prototype._initGL = function() {
+  // Init GL stuff
+  // TODO
+}
+
+
+
