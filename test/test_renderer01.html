@@ -109,7 +109,7 @@ function main() {
   renderer.addScene(scene);
 
   // 2- Create a shape with geometry ...
-  var shape = new Shape(renderer.getContext());
+  var shape = new Shape();
   var vertices = [];
   for (var i in structure.atoms) {
     vertices.push(structure.atoms[i].x);
@@ -134,7 +134,7 @@ function main() {
   shaderProgram.setUniformLocation("uMMatrix");
 
   shape.setProgram(shaderProgram);
-  shape.update();
+  shape.updateGL(renderer.getContext() );
   console.log(shape.matrix );
   mat4.translate(shape.matrix,shape.matrix,[structure.cg.x,structure.cg.y,-60]);
   scene.add(shape);
