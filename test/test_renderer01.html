@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Load PDB File</title>
+
+<!-- ************** S H A D E R S ************** -->
+
+<script id="shader-vs" type="x-shader/x-vertex">
+  attribute vec3 aVertexPosition;
+
+  uniform mat4 uMMatrix;
+  uniform mat4 uVMatrix;
+  uniform mat4 uPMatrix;
+
+  void main(void) {
+    gl_PointSize = 16.0;
+    gl_Position = uPMatrix * uVMatrix * uMMatrix * vec4(aVertexPosition, 1.0);
+  }
+</script>
+
+<script id="shader-fs" type="x-shader/x-fragment">
+    precision mediump float;
+
+    void main(void) {
+        gl_FragColor = vec4(1.0,0.5,0.1,1.0);
+    }
+</script>
+
+<!-- ************** M O W G L I ************** -->
+
+<script  type="text/javascript" src="../dist/gl-matrix-min.js"></script> 
+<script  type="text/javascript" src="../src/parser/PDBParser.js"></script> 
+<script  type="text/javascript" src="../src/PDBLoader.js"></script> 
+<script  type="text/javascript" src="../src/structure.js"></script> 
+<script  type="text/javascript" src="../src/graphics/renderer.js"></script> 
+<script  type="text/javascript" src="../src/graphics/scene.js"></script> 
+<script  type="text/javascript" src="../src/graphics/shape.js"></script> 
+<script  type="text/javascript" src="../src/graphics/shapeFactory.js"></script> 
+<script  type="text/javascript" src="../src/graphics/program.js"></script> 
+<script  type="text/javascript" src="../src/graphics/camera.js"></script> 
+<script  type="text/javascript" src="../src/graphics/light.js"></script> 
+<script  type="text/javascript" src="../src/styles/pointStyle.js"></script> 
+
+<script type="text/javascript">
+
+var structure = {
+  title : 'NADPH DIHYDRO-NICOTINAMIDE-ADENINE-DINUCLEOTIDE PHOSPHATE',
+  cg    : {'x':-14.760457992553711,'y':-35.071083068847656,'z':-35.167667388916016},
+  atoms : [
+    {'label':'A.NDP[202].PA','x':14.747000,y:35.167000,z:35.370000},
+    {'label':'A.NDP[202].O1A','x':16.025000,y:35.449000,z:34.744000},
+    {'label':'A.NDP[202].O2A','x':14.661000,y:33.809000,z:35.976000},
+    {'label':'A.NDP[202].O5B','x':14.466000,y:36.161000,z:36.506000},
+    {'label':'A.NDP[202].C5B','x':14.728000,y:37.647000,z:36.294000},
+    {'label':'A.NDP[202].C4B','x':15.112000,y:38.180000,z:37.694000},
+    {'label':'A.NDP[202].O4B','x':16.314000,y:37.471000,z:38.373000},
+    {'label':'A.NDP[202].C3B','x':15.696000,y:39.662000,z:37.465000},
+    {'label':'A.NDP[202].O3B','x':14.542000,y:40.569000,z:37.523000},
+    {'label':'A.NDP[202].C2B','x':16.609000,y:39.766000,z:38.715000},
+    {'label':'A.NDP[202].O2B','x':15.818000,y:39.719000,z:39.968000},
+    {'label':'A.NDP[202].C1B','x':17.324000,y:38.435000,z:38.561000},
+    {'label':'A.NDP[202].N9A','x':18.251000,y:38.236000,z:37.467000},
+    {'label':'A.NDP[202].C8A','x':18.017000,y:37.499000,z:36.318000},
+    {'label':'A.NDP[202].N7A','x':19.131000,y:37.428000,z:35.648000},
+    {'label':'A.NDP[202].C5A','x':20.150000,y:37.999000,z:36.394000},
+    {'label':'A.NDP[202].C6A','x':21.536000,y:38.186000,z:36.215000},
+    {'label':'A.NDP[202].N6A','x':22.193000,y:37.792000,z:35.112000},
+    {'label':'A.NDP[202].N1A','x':22.236000,y:38.783000,z:37.215000},
+    {'label':'A.NDP[202].C2A','x':21.563000,y:39.202000,z:38.308000},
+    {'label':'A.NDP[202].N3A','x':20.259000,y:39.051000,z:38.597000},
+    {'label':'A.NDP[202].C4A','x':19.615000,y:38.467000,z:37.582000},
+    {'label':'A.NDP[202].O3','x':13.549000,y:35.485000,z:34.376000},
+    {'label':'A.NDP[202].PN','x':12.754000,y:35.421000,z:32.969000},
+    {'label':'A.NDP[202].O1N','x':13.843000,y:35.497000,z:31.894000},
+    {'label':'A.NDP[202].O2N','x':11.630000,y:36.083000,z:32.927000},
+    {'label':'A.NDP[202].O5D','x':12.436000,y:33.775000,z:33.018000},
+    {'label':'A.NDP[202].C5D','x':11.405000,y:33.195000,z:33.823000},
+    {'label':'A.NDP[202].C4D','x':10.433000,y:32.809000,z:32.667000},
+    {'label':'A.NDP[202].O4D','x':10.939000,y:31.809000,z:31.766000},
+    {'label':'A.NDP[202].C3D','x':9.209000,y:32.205000,z:33.392000},
+    {'label':'A.NDP[202].O3D','x':8.145000,y:32.445000,z:32.480000},
+    {'label':'A.NDP[202].C2D','x':9.613000,y:30.742000,z:33.508000},
+    {'label':'A.NDP[202].O2D','x':8.429000,y:29.975000,z:33.651000},
+    {'label':'A.NDP[202].C1D','x':10.287000,y:30.483000,z:32.126000},
+    {'label':'A.NDP[202].N1N','x':11.438000,y:29.596000,z:32.179000},
+    {'label':'A.NDP[202].C2N','x':11.528000,y:28.695000,z:31.097000},
+    {'label':'A.NDP[202].C3N','x':12.581000,y:27.910000,z:30.892000},
+    {'label':'A.NDP[202].C7N','x':12.702000,y:26.942000,z:29.737000},
+    {'label':'A.NDP[202].O7N','x':13.708000,y:26.308000,z:29.562000},
+    {'label':'A.NDP[202].N7N','x':11.616000,y:27.037000,z:28.868000},
+    {'label':'A.NDP[202].C4N','x':14.011000,y:28.123000,z:31.609000},
+    {'label':'A.NDP[202].C5N','x':13.678000,y:29.015000,z:32.841000},
+    {'label':'A.NDP[202].C6N','x':12.597000,y:29.774000,z:32.994000},
+    {'label':'A.NDP[202].P2B','x':15.737000,y:41.052000,z:40.772000},
+    {'label':'A.NDP[202].O1X','x':14.723000,y:42.004000,z:40.135000},
+    {'label':'A.NDP[202].O2X','x':15.412000,y:40.624000,z:42.110000},
+    {'label':'A.NDP[202].O3X','x':17.106000,y:41.730000,z:40.610000}
+  ]
+
+}
+
+function main() {
+  // 0- Create a renderer for this canvas
+  var renderer = new Renderer('canvas');
+
+  // 1- Create a scene with a default light and camera
+  var scene = new Scene();
+  renderer.addScene(scene);
+
+  // 2- Create a shape with geometry ...
+  var shape = new Shape(renderer.getContext());
+  var vertices = [];
+  for (var i in structure.atoms) {
+    vertices.push(structure.atoms[i].x);
+    vertices.push(structure.atoms[i].y);
+    vertices.push(structure.atoms[i].z);
+  }
+  shape.setGeometry('POINTS',vertices);
+
+  // 2bis- ... and colors
+  // TODO
+
+  // 2ter- Define shader program by hand 
+  var shaderProgram = new Program(renderer.getContext(),'monochrome');
+  shaderProgram.loadDOM("vertex","shader-vs");
+  shaderProgram.loadDOM("fragment","shader-fs");
+  shaderProgram.link();
+  // Get attribLocation
+  shaderProgram.setAttribLocation("aVertexPosition");
+  // Get uniformLocation
+  shaderProgram.setUniformLocation("uPMatrix");
+  shaderProgram.setUniformLocation("uVMatrix");
+  shaderProgram.setUniformLocation("uMMatrix");
+
+  shape.setProgram(shaderProgram);
+  shape.update();
+  console.log(shape.matrix );
+  mat4.translate(shape.matrix,shape.matrix,[structure.cg.x,structure.cg.y,-60]);
+  scene.add(shape);
+  
+  console.log(scene.toString());
+  // 3- Update renderer
+  renderer.update();
+
+  // 4- Draw Scene
+  renderer.drawScene();
+}
+
+</script>
+
+</head>
+<body onload="main()">
+<center>
+<canvas id="canvas" width="640" height="480"> </canvas>
+</center>
+
+</body>
+</html>
