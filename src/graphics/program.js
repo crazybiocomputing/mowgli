@@ -29,6 +29,8 @@ var Program = function(context,name) {
   this.fragment_shader = null;
   this.shaderProgram = 0;
   this.uniforms={};
+  this.attribLocation = {};
+  this.uniformLocation = {};
 }
 
 Program.prototype.getID=function() {
@@ -129,6 +131,27 @@ Program.prototype.setUniforms=function(uniform_list) {
     default:
     }
   }
+}
+
+Program.prototype.getAttributeLocation=function(name) {
+  return this.attribLocation[name];
+}
+
+Program.prototype.setAttribLocation=function(name) {
+  var gl = this.ctx;
+  gl.useProgram(this.getID());
+  this.attribLocation[name]=gl.getAttribLocation(this.getID(),name);
+}
+
+Program.prototype.setUniformLocation=function(name) {
+  var gl = this.ctx;
+  gl.useProgram(this.getID());
+  this.uniformLocation[name]=gl.getUniformLocation(this.getID(),name);
+}
+
+Program.prototype.getUniformLocation=function(name) {
+  var gl = this.ctx;
+  return this.uniformLocation[name];
 }
 
 Program.prototype.setUniform1f=function(name,value) {

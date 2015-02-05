@@ -28,5 +28,20 @@
  * Constructor
  */
 var Scene = function () {
+  this.ID = 'scene';
+  this.children = {};
+  this.children['camera']=new Camera();
+  this.children['light']= new Light();
+}
 
+Scene.prototype.add = function(an_object) {
+  this.children[an_object.ID+'_'+this.children.length]=an_object;
+}
+
+Scene.prototype.toString = function() {
+  var str = this.ID+'\n';
+  for (var i in this.children) {
+    str += '+-'+this.children[i].ID+'\n';
+  }
+  return str;
 }

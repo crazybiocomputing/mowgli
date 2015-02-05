@@ -24,10 +24,23 @@
  
  "use strict"
  
- function Camera() {
+function Camera() {
+    this.ID = 'camera';
+
     this.projMatrix = mat4.create();
     this.viewMatrix = mat4.create();
+    mat4.identity(this.viewMatrix);
     this.fovy = 45.0*Math.PI/180.0;
+    this.zoom = 1.0;
   }
   
-  
+Camera.prototype.setFovy = function (angle_in_degrees) {
+  this.fovy= angle_in_degrees * Math.PI/180.0;
+}
+
+Camera.prototype.setViewport = function (width, height) {
+  mat4.perspective(this.projMatrix,this.fovy * this.zoom,width / height,0.1,1000.0);
+}
+
+
+

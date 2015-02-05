@@ -29,6 +29,8 @@
  * Singleton ??
  */
 function Renderer(canvas_id) {
+  this.scene = null;
+
   // Get A WebGL context
   function createWebGLContext(canvas, opt_attribs) {
     var names = ["webgl", "experimental-webgl"];
@@ -46,22 +48,74 @@ function Renderer(canvas_id) {
 
   var canvas = document.getElementById(canvas_id);
   this.context = createWebGLContext(canvas);
+
   if (!this.context) {
     return;
   }
 
   // Properties
+  this.context.viewportWidth  = canvas.width;
+  this.context.viewportHeight = canvas.height;
   this.shaders={}; 
-  this.program=null; //Active program ID
+  this.shaderProgram=null; //Active program ID
 
+  // Init GL
   this._initGL();
+}
+
+Renderer.prototype.getContext = function () {
+  return this.context;
+}
+
+Renderer.prototype.addScene = function (a_scene) {
+  this.scene = a_scene;
 }
 
 Renderer.prototype.drawScene = function () {
   var gl = this.context;
+  var FLOAT_IN_BYTES = 4;
+  // Clear Screen And Depth Buffer
+  gl.viewport(0.0, 0.0, gl.viewportWidth, gl.viewportHeight);
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);	
   
-  this.program.use();
-  // Draw
+  // Update camera matrix
+  var cam = this.scene.children['camera'];
+  cam.setViewport(gl.viewportWidth,gl.viewportHeight);
+
+
+  for (var i in this.scene.children) {
+    var shape = this.scene.children[i];
+    if (shape instanceof Shape) {
+      var shaderProgram = shape.shaderProgram;
+      console.log(shape.shaderProgram);
+      shaderProgram.use();
+
+  console.log(cam.projMatrix);
+  console.log(cam.viewMatrix);
+  console.log(shape.matrix);
+
+      // Update uniforms
+      gl.uniformMatrix4fv(shaderProgram.getUniformLocation("uPMatrix"), false, cam.projMatrix);
+      gl.uniformMatrix4fv(shaderProgram.getUniformLocation("uVMatrix"), false, cam.viewMatrix);
+      gl.uniformMatrix4fv(shaderProgram.getUniformLocation("uMMatrix"), false, shape.matrix);
+
+      console.log('coordSize '+shape.VBO.numItems);
+
+      gl.bindBuffer(gl.ARRAY_BUFFER, shape.VBO);
+      gl.enableVertexAttribArray(shaderProgram.getAttributeLocation("aVertexPosition") );
+      gl.vertexAttribPointer(shaderProgram.getAttributeLocation("aVertexPosition"), shape.VBO.itemSize, gl.FLOAT, false, 0, 0);
+
+      // Draw ...
+      gl.drawArrays(gl.POINTS, 0, shape.VBO.numItems);
+    }
+  }
+
+
+}
+
+Renderer.prototype.update = function () {
+  var gl = this.context;
+  
   // TODO
 }
 
@@ -71,7 +125,13 @@ Renderer.prototype.drawScene = function () {
  */
 Renderer.prototype._initGL = function() {
   // Init GL stuff
+  var gl = this.context;
   // TODO
+  // Default clearColor
+  gl.clearColor(0.1,0.1,0.1,1.0);
+
+  // Default shader program
+  this.program = new Program();
 }
 
 

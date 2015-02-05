@@ -24,5 +24,6 @@
 
 
 function Light() {
+  this.ID = 'light';
 
 }
