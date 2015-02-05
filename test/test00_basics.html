@@ -3,8 +3,40 @@
 <head>
 <meta charset="UTF-8">
 <title>Skeleton of the test</title>
+
+<script type="text/javascript">
+var gl;
+
+function main() {
+  var canvas = document.getElementById('canvas');
+  gl = canvas.getContext("webgl") 
+        || canvas.getContext("experimental-webgl");
+  console.log(gl);
+  console.log(gl.getParameter(gl.MAX_TEXTURE_SIZE) );
+
+  //Render
+  display();
+}
+
+/* Render */
+function display() {
+  gl.clearColor(1.0,0.5,0.1,1.0);
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);	// Clear 
+}
+
+</script>
+
 </head>
-<body>
+<body onload="main()">
 <p>Hello World!!</p>
+<canvas id="canvas" width="320" height="240"> </canvas>
 </body>
 </html>
+
+
+
+
+
+
+
+
