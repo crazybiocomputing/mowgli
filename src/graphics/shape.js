@@ -22,6 +22,7 @@
  * Jean-Christophe Taveau
  */
 
+
 "use strict"
 
 /*
@@ -95,4 +96,5 @@ Shape.prototype._createVBO = function() {
 
   this.isDirty = false;
 }
+
 
