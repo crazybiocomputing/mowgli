@@ -28,14 +28,13 @@
 /*
  * Constructor
  */
-var Shape = function (context) {
+var Shape = function () {
   this.ID = 'shape';
   this.colorMode = 'monochrome';
   this.shaderProgram = null;
   this.VBO = null;
   this.geometry = null;
   this.colors = null;
-  this.context = context;
   this.type = 'POINTS';
   this.cg = {'x':0,'y':0,'z':0};
 
@@ -79,12 +78,12 @@ Shape.prototype.setColors = function(colors) {
   this.colors = colors;
 }
 
-Shape.prototype.update = function () {
-  this._createVBO();
+Shape.prototype.updateGL = function (context) {
+  this._createVBO(context);
 }
 
-Shape.prototype._createVBO = function() {
-  var gl = this.context;
+Shape.prototype._createVBO = function(context) {
+  var gl = context;
 
   // Create VBO
   this.VBO = gl.createBuffer();
