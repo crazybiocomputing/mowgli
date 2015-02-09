@@ -38,6 +38,11 @@ Scene.prototype.add = function(an_object) {
   this.children[an_object.ID+'_'+this.children.length]=an_object;
 }
 
+Scene.prototype.getCamera = function() {
+  return this.children['camera'];
+}
+
+
 Scene.prototype.toString = function() {
   var str = this.ID+'\n';
   for (var i in this.children) {

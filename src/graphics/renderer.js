@@ -71,6 +71,11 @@ Renderer.prototype.addScene = function (a_scene) {
   this.scene = a_scene;
 }
 
+Renderer.prototype.addSensor = function (a_sensor) {
+  this.sensor = a_sensor;
+  this.sensor.setRenderer(this);
+}
+
 Renderer.prototype.drawScene = function () {
   var gl = this.context;
   var FLOAT_IN_BYTES = 4;
@@ -99,14 +104,17 @@ Renderer.prototype.drawScene = function () {
       gl.uniformMatrix4fv(shaderProgram.getUniformLocation("uVMatrix"), false, cam.viewMatrix);
       gl.uniformMatrix4fv(shaderProgram.getUniformLocation("uMMatrix"), false, shape.matrix);
 
-      console.log('coordSize '+shape.VBO.numItems);
+      console.log('coordSize '+shape.VBO.numItems +' '+shape.VBO.itemSize);
 
-      gl.bindBuffer(gl.ARRAY_BUFFER, shape.VBO);
-      gl.enableVertexAttribArray(shaderProgram.getAttributeLocation("aVertexPosition") );
-      gl.vertexAttribPointer(shaderProgram.getAttributeLocation("aVertexPosition"), shape.VBO.itemSize, gl.FLOAT, false, 0, 0);
-
+      for (var j in shaderProgram.attributes) {
+        var attrib = shaderProgram.attributes[j];
+        gl.bindBuffer(gl.ARRAY_BUFFER, shape.VBO[attrib.name].ID);
+        gl.enableVertexAttribArray(shaderProgram.getAttributeLocation(attrib.name) );
+        gl.vertexAttribPointer(shaderProgram.getAttributeLocation(attrib.name), shape.VBO[attrib.name].itemSize, gl.FLOAT, false, 0, 0);
+      }
       // Draw ...
-      gl.drawArrays(gl.POINTS, 0, shape.VBO.numItems);
+      console.log(shape.type + ' '+ gl.POINTS);
+      gl.drawArrays(shape.type, 0, shape.numItems);
     }
   }
 
@@ -129,6 +137,15 @@ Renderer.prototype._initGL = function() {
   // TODO
   // Default clearColor
   gl.clearColor(0.1,0.1,0.1,1.0);
+
+  gl.enable(gl.DEPTH_TEST);
+
+  // Check extension...
+  gl.getExtension("EXT_frag_depth");
+  if (gl.getSupportedExtensions().indexOf("EXT_frag_depth") < 0 ) {
+    alert('Extension frag_depth not supported');
+  }
+
 
   // Default shader program
   this.program = new Program();

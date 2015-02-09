@@ -28,14 +28,16 @@
 /*
  * Constructor
  */
-var Shape = function () {
+function Shape() {
   this.ID = 'shape';
   this.colorMode = 'monochrome';
   this.shaderProgram = null;
-  this.VBO = null;
+  this.VBO = {};
   this.geometry = null;
   this.colors = null;
   this.type = 'POINTS';
+  this.glType = 0; // gl.POINTS
+  this.numItems = 0;
   this.cg = {'x':0,'y':0,'z':0};
 
   // Matrix for rotation(s) and translation(s)
@@ -53,47 +55,95 @@ Shape.prototype.setProgram = function(a_program) {
   this.shaderProgram = a_program;
 }
 
-Shape.prototype.setGeometry = function(type,vertices) {
-  this.type = type;
+Shape.prototype.setInterleavedGeometry = function(types,data) {
+ // TODO
+}
+
+Shape.prototype.setGeometry = function(a_geom) {
+  var type = a_geom.type;
+  var itemSize = 0;
   switch (type) {
   case 'POINTS':
-    this.itemSize = 3;
+    itemSize = 3;
+    this.type = 'POINTS';
+    break;
+  case 'POINTS_RADIUS':
+    itemSize = 4;
+    this.type = 'POINTS';
     break;
   case 'LINES':
-    this.itemSize = 6;
+    itemSize = 6;
+    this.type = 'LINES';
     break;
   case 'TRIANGLES':
-    this.itemSize = 9;
+    itemSize = 9;
+    this.type = 'TRIANGLES';
     break;
   }
 
-  this.geometry = new Float32Array(vertices);
+  this.VBO[a_geom.attribute] = {
+    'data'     : new Float32Array(a_geom.data),
+    'itemSize' :itemSize, 
+    'numItems' :a_geom.data.length / itemSize,
+    'attribute': a_geom.attribute
+  };
+  // Set the number of items in this shape
+  this.numItems = a_geom.data.length / itemSize;
 }
 
 Shape.prototype.setCG = function(cg) {
   this.cg = cg;
 }
 
-Shape.prototype.setColors = function(colors) {
-  this.colors = colors;
+Shape.prototype.setColors = function(color_array) {  
+  var itemSize = 0;
+  switch (color_array.type) {
+  case 'RGB':
+    itemSize = 3;
+    break;
+  case 'RGBA':
+    itemSize = 4;
+    break;
+  }
+  this.VBO[color_array.attribute] = {
+    'data'     : new Float32Array(color_array.data),
+    'itemSize' :itemSize, 
+    'numItems' : color_array.data.length / itemSize,
+    'attribute': color_array.attribute
+  };
+
+  // Check if numItems is coherent with `this.numItems'
+  // TODO
 }
 
 Shape.prototype.updateGL = function (context) {
-  this._createVBO(context);
+  for (var i in this.VBO) {
+    this.VBO[i].ID = this._createVBO(context,this.VBO[i].data);
+  }
+  this.isDirty = false;
 }
 
-Shape.prototype._createVBO = function(context) {
+Shape.prototype._createVBO = function(context,array) {
   var gl = context;
-
+  switch (this.type) {
+  case 'POINTS','POINTS_RADIUS': 
+    this.glType = gl.POINTS;
+    break;
+  case 'LINES':
+    this.glType = gl.LINES;
+    break;
+  case 'TRIANGLES':
+    this.glType = gl.TRIANGLES;
+    break;
+  }
   // Create VBO
-  this.VBO = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, this.VBO);
-  gl.bufferData(gl.ARRAY_BUFFER, this.geometry, gl.STATIC_DRAW);
+  var VBO_ID = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, VBO_ID);
+  gl.bufferData(gl.ARRAY_BUFFER, array, gl.STATIC_DRAW);
 
-  this.VBO.itemSize = this.itemSize;
-  this.VBO.numItems = this.geometry.length / this.itemSize;
+  console.log(VBO_ID);
+  return VBO_ID;
 
-  this.isDirty = false;
 }
 
 

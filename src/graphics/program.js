@@ -28,6 +28,7 @@ var Program = function(context,name) {
   this.vertex_shader   = null;
   this.fragment_shader = null;
   this.shaderProgram = 0;
+  this.attributes={};
   this.uniforms={};
   this.attribLocation = {};
   this.uniformLocation = {};
@@ -38,7 +39,7 @@ Program.prototype.getID=function() {
 }
 
 Program.prototype.load=function(type,name) {
-  // TODO
+
   if (type =='vertex')
     // this.vertex_shader = ShaderFactory.get(type,name);
     console.log('vertex');
@@ -52,7 +53,7 @@ Program.prototype.load=function(type,name) {
 Program.prototype.loadHTTP=function(type,name) {
   // From http://www.html5rocks.com/en/tutorials/file/xhr2/
   // XMLHttpRequest()
-  // TODO
+
   var url = 'shaders/'+name+'.'+type;
   var req = new XMLHttpRequest();
   req.open("GET", url, true);
@@ -111,6 +112,13 @@ Program.prototype.use=function() {
 }
 
 
+Program.prototype.setAttribute=function(attrib_name) {
+  var gl = this.ctx;
+  gl.useProgram(this.getID());
+  var location = gl.getAttribLocation(this.getID(),attrib_name);
+  this.attributes[attrib_name] = {'name': attrib_name,'location': location};
+}
+
 Program.prototype.setUniforms=function(uniform_list) {
   this.uniforms = uniform_list;
 
@@ -134,7 +142,7 @@ Program.prototype.setUniforms=function(uniform_list) {
 }
 
 Program.prototype.getAttributeLocation=function(name) {
-  return this.attribLocation[name];
+  return this.attributes[name].location;
 }
 
 Program.prototype.setAttribLocation=function(name) {
@@ -164,6 +172,13 @@ Program.prototype.setUniform2f=function(name,value1, value2) {
 
   this.uniforms[name]=gl.getUniformLocation(this.shaderProgram, name);
   gl.uniform2f(uniforms[name], value1, value2);
+}
+
+Program.prototype.setUniform4fv=function(name,array4x4) {
+  var gl = this.ctx;
+
+  this.uniforms[name]=gl.getUniformLocation(this.shaderProgram, name);
+  gl.uniform4fv(uniforms[name], array4x4);
 }
 
 // Private
