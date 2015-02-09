@@ -13,8 +13,12 @@
   uniform mat4 uVMatrix;
   uniform mat4 uPMatrix;
 
+  varying vec4 eye;
+
   void main(void) {
-    gl_PointSize = 16.0;
+    eye = uVMatrix *uMMatrix * vec4(aVertexPosition,1.0);
+
+    gl_PointSize = 64.0;
     gl_Position = uPMatrix * uVMatrix * uMMatrix * vec4(aVertexPosition, 1.0);
   }
 </script>
@@ -22,8 +26,32 @@
 <script id="shader-fs" type="x-shader/x-fragment">
     precision mediump float;
 
+    varying vec4 eye;
+
+    vec3 L= normalize( vec3(-1.0,-1.0,2.0) );
+
     void main(void) {
-        gl_FragColor = vec4(1.0,0.5,0.1,1.0);
+
+        vec2 v = gl_PointCoord.xy - vec2(0.5,0.5);
+        float d = dot(v,v);
+        if (d > 0.25) {
+          discard;
+        }
+
+        // If inside...
+        vec3 N;
+        N.xy = v.xy;
+        N.z = sqrt(0.25 - N.x*N.x - N.y*N.y);
+        N = normalize(N);
+
+        // diffuse
+        float diffuse = dot(N,L);
+
+        // specular
+
+
+        // ambient + diffuse
+        gl_FragColor = vec4(0.1,0.1,0.1,1.0) + vec4(1.0,0.5,0.1,1.0) * diffuse;
     }
 </script>
 
