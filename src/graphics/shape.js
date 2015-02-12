@@ -38,6 +38,7 @@ function Shape() {
   this.type = 'POINTS';
   this.glType = 0; // gl.POINTS
   this.numItems = 0;
+  this.numIndices = 0;
   this.cg = {'x':0,'y':0,'z':0};
 
   // Matrix for rotation(s) and translation(s)
@@ -55,6 +56,10 @@ Shape.prototype.setProgram = function(a_program) {
   this.shaderProgram = a_program;
 }
 
+Shape.prototype.isIndexedGeometry = function() {
+  return (this.VBO["aVertexPosition"].type === 'indexed');
+}
+
 Shape.prototype.setInterleavedGeometry = function(types,data) {
  // TODO
 }
@@ -69,24 +74,40 @@ Shape.prototype.setGeometry = function(a_geom) {
     break;
   case 'POINTS_RADIUS':
     itemSize = 4;
-    this.type = 'POINTS';
+    this.type = 'POINTS_RADIUS';
     break;
   case 'LINES':
-    itemSize = 6;
+    itemSize = 3;
     this.type = 'LINES';
     break;
   case 'TRIANGLES':
-    itemSize = 9;
+    itemSize = 3;
     this.type = 'TRIANGLES';
     break;
   }
 
-  this.VBO[a_geom.attribute] = {
-    'data'     : new Float32Array(a_geom.data),
-    'itemSize' :itemSize, 
-    'numItems' :a_geom.data.length / itemSize,
-    'attribute': a_geom.attribute
-  };
+  if (a_geom.indices != undefined) {
+    this.VBO[a_geom.attribute] = {
+      'type'       : 'indexed',
+      'data'       : new Float32Array(a_geom.data),
+      'indices'    : new Uint16Array(a_geom.indices),
+      'itemSize'   : itemSize, 
+      'numItems'   : a_geom.data.length / itemSize,
+      'numIndices' : a_geom.indices.length,
+      'attribute'  : a_geom.attribute
+    }
+    this.numIndices = a_geom.indices.length;
+  }
+  else {
+    this.VBO[a_geom.attribute] = {
+      'type'     : 'standard',
+      'data'     : new Float32Array(a_geom.data),
+      'itemSize' : itemSize, 
+      'numItems' : a_geom.data.length / itemSize,
+      'attribute': a_geom.attribute
+    };
+  }
+
   // Set the number of items in this shape
   this.numItems = a_geom.data.length / itemSize;
 }
@@ -107,7 +128,7 @@ Shape.prototype.setColors = function(color_array) {
   }
   this.VBO[color_array.attribute] = {
     'data'     : new Float32Array(color_array.data),
-    'itemSize' :itemSize, 
+    'itemSize' : itemSize, 
     'numItems' : color_array.data.length / itemSize,
     'attribute': color_array.attribute
   };
@@ -118,12 +139,12 @@ Shape.prototype.setColors = function(color_array) {
 
 Shape.prototype.updateGL = function (context) {
   for (var i in this.VBO) {
-    this.VBO[i].ID = this._createVBO(context,this.VBO[i].data);
+    this.VBO[i] = this._createVBO(context,this.VBO[i]);
   }
   this.isDirty = false;
 }
 
-Shape.prototype._createVBO = function(context,array) {
+Shape.prototype._createVBO = function(context,vbo) {
   var gl = context;
   switch (this.type) {
   case 'POINTS','POINTS_RADIUS': 
@@ -137,12 +158,17 @@ Shape.prototype._createVBO = function(context,array) {
     break;
   }
   // Create VBO
-  var VBO_ID = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, VBO_ID);
-  gl.bufferData(gl.ARRAY_BUFFER, array, gl.STATIC_DRAW);
+  vbo.ID = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, vbo.ID);
+  gl.bufferData(gl.ARRAY_BUFFER, vbo.data, gl.STATIC_DRAW);
 
-  console.log(VBO_ID);
-  return VBO_ID;
+  if (vbo.type === 'indexed') {
+    vbo.IndxID = gl.createBuffer();
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, vbo.IndxID);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, vbo.indices, gl.STATIC_DRAW);
+  }
+  console.log(vbo.ID);
+  return vbo;
 
 }
 

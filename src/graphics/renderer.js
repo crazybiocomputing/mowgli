@@ -95,11 +95,7 @@ Renderer.prototype.drawScene = function () {
       console.log(shape.shaderProgram);
       shaderProgram.use();
 
-  console.log(cam.projMatrix);
-  console.log(cam.viewMatrix);
-  console.log(shape.matrix);
-
-      // Update uniforms
+      // TODO Update uniforms
       gl.uniformMatrix4fv(shaderProgram.getUniformLocation("uPMatrix"), false, cam.projMatrix);
       gl.uniformMatrix4fv(shaderProgram.getUniformLocation("uVMatrix"), false, cam.viewMatrix);
       gl.uniformMatrix4fv(shaderProgram.getUniformLocation("uMMatrix"), false, shape.matrix);
@@ -108,16 +104,24 @@ Renderer.prototype.drawScene = function () {
 
       for (var j in shaderProgram.attributes) {
         var attrib = shaderProgram.attributes[j];
+        if (shape.VBO[attrib.name].type === 'indexed') {
+          gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, shape.VBO[attrib.name].IndxID);
+        }
         gl.bindBuffer(gl.ARRAY_BUFFER, shape.VBO[attrib.name].ID);
         gl.enableVertexAttribArray(shaderProgram.getAttributeLocation(attrib.name) );
         gl.vertexAttribPointer(shaderProgram.getAttributeLocation(attrib.name), shape.VBO[attrib.name].itemSize, gl.FLOAT, false, 0, 0);
       }
       // Draw ...
-      console.log(shape.type + ' '+ gl.POINTS);
-      gl.drawArrays(shape.type, 0, shape.numItems);
+      console.log(shape.type + ' '+ shape.glType +' '+ shape.numIndices+' '+ shape.numItems);
+      if (shape.isIndexedGeometry() ) {
+        gl.drawElements(shape.glType, shape.numIndices, gl.UNSIGNED_SHORT, 0);
+      }
+      else {
+        gl.drawArrays(shape.glType, 0, shape.numItems);
+      }
+
     }
   }
-
 
 }
 

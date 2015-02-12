@@ -98,13 +98,16 @@ PDBParser.prototype.parse = function (text) {
 
   // 2- Main loop
   for (var i=0;i<rows.length;i++) {
-    if (rows[i].length > 5) {
+    if (rows[i].length > 2) {
       var tag = PDBParser.TAGS[rows[i].substring(0,6).trim()];
       console.log(rows[i].substring(0,6).trim()+' '+tag);
       switch (tag) {
       case PDBParser.TAGS.ATOM: 
       case PDBParser.TAGS.HETATM:
         this.parseAtom(rows[i]);
+        break;
+      case PDBParser.TAGS.END:
+        this.postProcess();
         break;
       case PDBParser.TAGS.HEADER:
         this.parseHeader(rows[i]);
@@ -325,4 +328,10 @@ PDBParser.prototype.updateBBox = function (a) {
   if (this.mol.bbox.max.z < a.z)
     this.mol.bbox.max.z = a.z;
 }
+
+PDBParser.prototype.postProcess = function () {
+  console.log('PostProcess');
+  var bondCalc = new BondCalculator(this.mol);
+}
+
 
