@@ -61,6 +61,23 @@ var Structure = function () {
 
 }
 
+Structure.prototype.finder = function (src,callback) {
+  if (src === 'ATOM') {
+    return this.atoms.filter(callback);
+  }
+  else {
+    return this.bonds.filter(callback);     
+  }
+}
+
+Structure.prototype.atomFinder = function (callback) {
+  return this.atoms.filter(callback);
+}
+
+Structure.prototype.bondFinder = function (callback) {
+  return this.bonds.filter(callback);
+}
+
 Structure.prototype.toString = function () {
   var quote='';
   var out='{\n';
