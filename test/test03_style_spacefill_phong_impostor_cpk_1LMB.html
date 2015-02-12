@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Load PDB File</title>
+<title>Spacefill Impostor</title>
 
 <!-- ************** S H A D E R S ************** -->
 
@@ -111,40 +111,13 @@ var structure;
 var symbols = { 
   '_' : { 'symbol':''  ,'unknown': 180, 'vdwRadius': 360, 'value2':12, 'name': ""            ,'color':[255, 20,147]},  /*   0 */
   'H' : { 'symbol':'H' ,'unknown':  80, 'vdwRadius': 275, 'value2': 4, 'name': "HYDROGEN"    ,'color':[255, 20,147]},  /*   1 */
-  'HE': { 'symbol':'He','unknown': 400, 'vdwRadius': 550, 'value2': 5, 'name': "HELIUM"      ,'color':[255, 20,147]},  /*   2 */
-  'LI': { 'symbol':'Li','unknown': 170, 'vdwRadius': 305, 'value2':14, 'name': "LITHIUM"     ,'color':[255, 20,147]},  /*   3 */
-  'BE': { 'symbol':'Be','unknown':  88, 'vdwRadius': 157, 'value2':12, 'name': "BERYLLIUM"   ,'color':[255, 20,147]},  /*   4 */
-  'B' : { 'symbol':'B' ,'unknown': 208, 'vdwRadius': 387, 'value2':13, 'name': "BORON"       ,'color':[255, 20,147]},  /*   5 */
   'C' : { 'symbol':'C' ,'unknown': 180, 'vdwRadius': 387, 'value2': 0, 'name': "CARBON"      ,'color':[200,200,200]},  /*   6 */
   'N' : { 'symbol':'N' ,'unknown': 170, 'vdwRadius': 350, 'value2': 1, 'name': "NITROGEN"    ,'color':[143,143,255]},  /*   7 */
   'O' : { 'symbol':'O' ,'unknown': 170, 'vdwRadius': 337, 'value2': 2, 'name': "OXYGEN"      ,'color':[240,  0,  0]},  /*   8 */
-  'F' : { 'symbol':'F' ,'unknown': 160, 'vdwRadius': 325, 'value2': 6, 'name': "FLUORINE"    ,'color':[255, 20,147]},  /*   9 */
-  'Ne': { 'symbol':'Ne','unknown': 280, 'vdwRadius': 505, 'value2':12, 'name': "NEON"        ,'color':[255, 20,147]},  /*  10 */
-  'NA': { 'symbol':'Na','unknown': 243, 'vdwRadius': 550, 'value2': 7, 'name': "SODIUM"      ,'color':[255, 20,147]},  /*  11 */
-  'MG': { 'symbol':'Mg','unknown': 275, 'vdwRadius': 375, 'value2':15, 'name': "MAGNESIUM"   ,'color':[255, 20,147]},  /*  12 */
   'P' : { 'symbol':'P' ,'unknown': 259, 'vdwRadius': 470, 'value2': 8, 'name': "PHOSPHORUS"  ,'color':[255,165,  0]},  /*  15 */  /* 262? */
   'S' : { 'symbol':'S' ,'unknown': 255, 'vdwRadius': 452, 'value2': 3, 'name': "SULPHUR"     ,'color':[255,200, 50]}   /*  16 */
 }
 
-/*****
-Code 	colour Name 	Sample 	RGB Values 	Hexadecimal
-LG 	Light Grey 	[200,200,200] 	C8C8C8
-SB 	Sky Blue 	[143,143,255] 	8F8FFF
-R 	Red 	  	[240, 0, 0] 	F00000
-Y 	Yellow 	  	[255,200, 50] 	FFC832
-W 	White 	  	[255,255,255] 	FFFFFF
-Pk 	Pink 	  	[255,192,203] 	FFC0CB
-Go 	Golden Rod 	[218,165, 32] 	DAA520
-Bl 	Blue 	  	[ 0, 0,255] 	0000FF
-Or 	Orange 	  	[255,165, 0] 	FFA500
-DG 	Dark Grey 	[128,128,144] 	808090
-Br 	Brown 	  	[165, 42, 42] 	A52A2A
-P 	Purple 	  	[160, 32,240] 	A020F0
-DP 	Deep Pink 	[255, 20,147] 	FF1493
-G 	Green 	  	[ 0,255, 0] 	00FF00
-FB 	Fire Brick 	[178, 34, 34] 	B22222
-FG 	Forest Green 	[ 34,139, 34] 	228B22
-****/
 
 function main() {
 
