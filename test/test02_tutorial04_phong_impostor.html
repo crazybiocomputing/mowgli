@@ -15,10 +15,14 @@
 
   varying vec4 eyePos;
 
+  float vdwRadius = 1.87;
+  // pointScale = viewportHeight / tan(fovy);
+  float pointScale = 480.0/tan(radians(45.0/2.0) );
+
   void main(void) {
     eyePos = uVMatrix *uMMatrix * vec4(aVertexPosition,1.0);
-    
-    gl_PointSize = 50.0;
+    float dist = length(eyePos);      
+    gl_PointSize = vdwRadius * (pointScale / dist);
 
     gl_Position = uPMatrix * uVMatrix * uMMatrix * vec4(aVertexPosition, 1.0);
   }
@@ -60,8 +64,19 @@
     reflection = normalize(reflect(-light, normal));
     float specular = 0.7*pow(clamp(max(dot(reflection, eye), 0.0), 0.0, 1.0), 40.0 );
 
+    // calculate depth
+    vec4 eyeSpacePos = vec4(eyePos.xyz + normal.xyz, 1.0);   // position of this pixel on sphere in eye space
+    vec4 clipSpacePos = uPMatrix * eyeSpacePos;
+
+    // and because z is non-linear to favour the nearer triangles, 
+    // most of a scenes z will be in that very small range (0.9 to 1.0).
+    // You can linearise it by encoding (z-near)/(far-near) in the z column of projection matrix, 
+    // and pre-multiply z by w in the vertex shader : (z * w) / w = z
+    float depth = (clipSpacePos.z / clipSpacePos.w) * 0.5 + 0.5;
+
+    gl_FragDepthEXT = depth; // ((gl_DepthRange.diff * depth) + gl_DepthRange.near + gl_DepthRange.far) / 2.0;
     // ambient + diffuse + specular
-    gl_FragColor = vec4(0.2,0.2,0.2,1.0) + vec4( vec3(0.3,0.5,1.0) * diffuse ,1.0) + vec4(0.9, 0.9, 0.9, 1.0) * specular;
+    gl_FragColor = vec4(0.2,0.2,0.2,1.0) + vec4( vec3(0.3,0.5,1.0) * diffuse,1.0) + vec4(0.9, 0.9, 0.9, 1.0) * specular;
   }
 
 </script>
@@ -148,7 +163,7 @@ function main() {
   var scene = new Scene();
   renderer.addScene(scene);
 
-  // 2- Create a shape with geometry ...
+  // 2- Create a shape with geometry and colors
   var shape = new Shape();
   var vertices = [];
   for (var i in structure.atoms) {
@@ -156,10 +171,9 @@ function main() {
     vertices.push(structure.atoms[i].y);
     vertices.push(structure.atoms[i].z);
   }
+
   shape.setGeometry({'type':'POINTS','attribute':'aVertexPosition','data':vertices});
 
-  // 2bis- ... and colors
-  // TODO
 
   // 2ter- Define shader program by hand 
   var shaderProgram = new Program(renderer.getContext(),'monochrome');

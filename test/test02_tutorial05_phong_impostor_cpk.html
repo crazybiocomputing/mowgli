@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Load PDB File</title>
+
+<!-- ************** S H A D E R S ************** -->
+
+<script id="phong-impostor-vs" type="x-shader/x-vertex">
+  attribute vec3 aVertexPosition;
+  attribute vec3 aVertexColor;
+
+  uniform mat4 uMMatrix;
+  uniform mat4 uVMatrix;
+  uniform mat4 uPMatrix;
+
+  varying vec3 vColor;
+  varying vec4 eyePos;
+
+  float vdwRadius = 1.7;
+  // pointScale = viewportHeight / tan(fovy);
+  float pointScale = 480.0/tan(radians(45.0/2.0) );
+
+  void main(void) {
+    eyePos = uVMatrix *uMMatrix * vec4(aVertexPosition,1.0);
+    float dist = length(eyePos);      
+    gl_PointSize = vdwRadius * (pointScale / dist);
+
+    gl_Position = uPMatrix * uVMatrix * uMMatrix * vec4(aVertexPosition, 1.0);
+    vColor = aVertexColor;
+  }
+</script>
+
+<script id="phong-impostor-fs" type="x-shader/x-fragment">
+#extension GL_EXT_frag_depth : enable
+
+  precision highp float;
+
+  uniform mat4 uPMatrix;
+
+  varying vec3 vColor;
+  varying vec4 eyePos;
+
+  vec3 light = normalize( vec3(1.0,-1.0,2.0) );
+  vec3 reflection;
+  vec3 eye;
+
+  void main(void) {
+
+    vec2 v = gl_PointCoord.xy - vec2(0.5,0.5);
+    float d = dot(v,v);
+
+    // If outside, stop...
+    if (d > 0.25) {
+      discard;
+    }
+
+    // else if inside... compute the normal vector
+    vec3 normal;
+    normal.xy = v.xy;
+    normal.z = sqrt(0.25 - normal.x*normal.x - normal.y*normal.y);
+    normal = normalize(normal);
+
+    // diffuse
+    float diffuse = clamp(max(dot(normal,light),0.0),0.0,1.0);
+
+    // specular
+    eye = -normalize(eyePos.xyz);
+    reflection = normalize(reflect(-light, normal));
+    float specular = 0.7*pow(clamp(max(dot(reflection, eye), 0.0), 0.0, 1.0), 80.0 );
+
+    // calculate depth
+    vec4 eyeSpacePos = vec4(eyePos.xyz + normal.xyz, 1.0);   // position of this pixel on sphere in eye space
+    vec4 clipSpacePos = uPMatrix * eyeSpacePos;
+
+    // and because z is non-linear (1/z) to favour the nearer triangles, 
+    // most of a scenes z will be in that very small range (0.9 to 1.0).
+    // You can linearise it by encoding (z-near)/(far-near) in the z column of projection matrix, 
+    // and pre-multiply z by w in the vertex shader : (z * w) / w = z
+    float depth = (clipSpacePos.z / clipSpacePos.w) * 0.5 + 0.5;
+
+    gl_FragDepthEXT = depth; // to lineariz, just do ((gl_DepthRange.diff * depth) + gl_DepthRange.near + gl_DepthRange.far) / 2.0;
+    // ambient + diffuse + specular
+    gl_FragColor = vec4(0.2,0.2,0.2,1.0) + vec4( vColor * diffuse,1.0) + vec4(0.9, 0.9, 0.9, 1.0) * specular;
+  }
+
+</script>
+
+<!-- ************** M O W G L I ************** -->
+
+<script  type="text/javascript" src="../dist/gl-matrix-min.js"></script> 
+<script  type="text/javascript" src="../src/parser/PDBParser.js"></script> 
+<script  type="text/javascript" src="../src/PDBLoader.js"></script> 
+<script  type="text/javascript" src="../src/structure.js"></script> 
+<script  type="text/javascript" src="../src/graphics/renderer.js"></script> 
+<script  type="text/javascript" src="../src/graphics/scene.js"></script> 
+<script  type="text/javascript" src="../src/graphics/shape.js"></script> 
+<script  type="text/javascript" src="../src/graphics/shapeFactory.js"></script> 
+<script  type="text/javascript" src="../src/graphics/program.js"></script> 
+<script  type="text/javascript" src="../src/graphics/camera.js"></script> 
+<script  type="text/javascript" src="../src/graphics/light.js"></script> 
+<script  type="text/javascript" src="../src/styles/pointStyle.js"></script> 
+<script  type="text/javascript" src="../src/ui/mouseSensor.js"></script> 
+
+<script type="text/javascript">
+
+var structure = {
+  title : 'NADPH DIHYDRO-NICOTINAMIDE-ADENINE-DINUCLEOTIDE PHOSPHATE',
+  cg    : {'x':14.760457992553711,'y':35.071083068847656,'z':35.167667388916016},
+  atoms : [
+    {'label':'1KMV[0].A.X.NDP[202].PA[1560]' ,'x':14.747000,y:35.167000,z:35.370000, 'symbol':'P'},
+    {'label':'1KMV[0].A.X.NDP[202].O1A[1561]','x':16.025000,y:35.449000,z:34.744000, 'symbol':'O'},
+    {'label':'1KMV[0].A.X.NDP[202].O2A[1562]','x':14.661000,y:33.809000,z:35.976000, 'symbol':'O'},
+    {'label':'1KMV[0].A.X.NDP[202].O5B[1563]','x':14.466000,y:36.161000,z:36.506000, 'symbol':'O'},
+    {'label':'1KMV[0].A.X.NDP[202].C5B[1564]','x':14.728000,y:37.647000,z:36.294000, 'symbol':'C'},
+    {'label':'1KMV[0].A.X.NDP[202].C4B[1565]','x':15.112000,y:38.180000,z:37.694000, 'symbol':'C'},
+    {'label':'1KMV[0].A.X.NDP[202].O4B[1566]','x':16.314000,y:37.471000,z:38.373000, 'symbol':'O'},
+    {'label':'1KMV[0].A.X.NDP[202].C3B[1567]','x':15.696000,y:39.662000,z:37.465000, 'symbol':'C'},
+    {'label':'1KMV[0].A.X.NDP[202].O3B[1568]','x':14.542000,y:40.569000,z:37.523000, 'symbol':'O'},
+    {'label':'1KMV[0].A.X.NDP[202].C2B[1569]','x':16.609000,y:39.766000,z:38.715000, 'symbol':'C'},
+    {'label':'1KMV[0].A.X.NDP[202].O2B[1570]','x':15.818000,y:39.719000,z:39.968000, 'symbol':'O'},
+    {'label':'1KMV[0].A.X.NDP[202].C1B[1571]','x':17.324000,y:38.435000,z:38.561000, 'symbol':'C'},
+    {'label':'1KMV[0].A.X.NDP[202].N9A[1572]','x':18.251000,y:38.236000,z:37.467000, 'symbol':'N'},
+    {'label':'1KMV[0].A.X.NDP[202].C8A[1573]','x':18.017000,y:37.499000,z:36.318000, 'symbol':'C'},
+    {'label':'1KMV[0].A.X.NDP[202].N7A[1574]','x':19.131000,y:37.428000,z:35.648000, 'symbol':'N'},
+    {'label':'1KMV[0].A.X.NDP[202].C5A[1575]','x':20.150000,y:37.999000,z:36.394000, 'symbol':'C'},
+    {'label':'1KMV[0].A.X.NDP[202].C6A[1576]','x':21.536000,y:38.186000,z:36.215000, 'symbol':'C'},
+    {'label':'1KMV[0].A.X.NDP[202].N6A[1577]','x':22.193000,y:37.792000,z:35.112000, 'symbol':'N'},
+    {'label':'1KMV[0].A.X.NDP[202].N1A[1578]','x':22.236000,y:38.783000,z:37.215000, 'symbol':'N'},
+    {'label':'1KMV[0].A.X.NDP[202].C2A[1579]','x':21.563000,y:39.202000,z:38.308000, 'symbol':'C'},
+    {'label':'1KMV[0].A.X.NDP[202].N3A[1580]','x':20.259000,y:39.051000,z:38.597000, 'symbol':'N'},
+    {'label':'1KMV[0].A.X.NDP[202].C4A[1581]','x':19.615000,y:38.467000,z:37.582000, 'symbol':'C'},
+    {'label':'1KMV[0].A.X.NDP[202].O3[1582]' ,'x':13.549000,y:35.485000,z:34.376000, 'symbol':'O'},
+    {'label':'1KMV[0].A.X.NDP[202].PN[1583]' ,'x':12.754000,y:35.421000,z:32.969000, 'symbol':'P'},
+    {'label':'1KMV[0].A.X.NDP[202].O1N[1584]','x':13.843000,y:35.497000,z:31.894000, 'symbol':'O'},
+    {'label':'1KMV[0].A.X.NDP[202].O2N[1585]','x':11.630000,y:36.083000,z:32.927000, 'symbol':'O'},
+    {'label':'1KMV[0].A.X.NDP[202].O5D[1586]','x':12.436000,y:33.775000,z:33.018000, 'symbol':'O'},
+    {'label':'1KMV[0].A.X.NDP[202].C5D[1587]','x':11.405000,y:33.195000,z:33.823000, 'symbol':'C'},
+    {'label':'1KMV[0].A.X.NDP[202].C4D[1588]','x':10.433000,y:32.809000,z:32.667000, 'symbol':'C'},
+    {'label':'1KMV[0].A.X.NDP[202].O4D[1589]','x':10.939000,y:31.809000,z:31.766000, 'symbol':'O'},
+    {'label':'1KMV[0].A.X.NDP[202].C3D[1590]','x':9.2090000,y:32.205000,z:33.392000, 'symbol':'C'},
+    {'label':'1KMV[0].A.X.NDP[202].O3D[1591]','x':8.1450000,y:32.445000,z:32.480000, 'symbol':'O'},
+    {'label':'1KMV[0].A.X.NDP[202].C2D[1592]','x':9.6130000,y:30.742000,z:33.508000, 'symbol':'C'},
+    {'label':'1KMV[0].A.X.NDP[202].O2D[1593]','x':8.4290000,y:29.975000,z:33.651000, 'symbol':'O'},
+    {'label':'1KMV[0].A.X.NDP[202].C1D[1594]','x':10.287000,y:30.483000,z:32.126000, 'symbol':'C'},
+    {'label':'1KMV[0].A.X.NDP[202].N1N[1595]','x':11.438000,y:29.596000,z:32.179000, 'symbol':'N'},
+    {'label':'1KMV[0].A.X.NDP[202].C2N[1596]','x':11.528000,y:28.695000,z:31.097000, 'symbol':'C'},
+    {'label':'1KMV[0].A.X.NDP[202].C3N[1597]','x':12.581000,y:27.910000,z:30.892000, 'symbol':'C'},
+    {'label':'1KMV[0].A.X.NDP[202].C7N[1598]','x':12.702000,y:26.942000,z:29.737000, 'symbol':'C'},
+    {'label':'1KMV[0].A.X.NDP[202].O7N[1599]','x':13.708000,y:26.308000,z:29.562000, 'symbol':'O'},
+    {'label':'1KMV[0].A.X.NDP[202].N7N[1600]','x':11.616000,y:27.037000,z:28.868000, 'symbol':'N'},
+    {'label':'1KMV[0].A.X.NDP[202].C4N[1601]','x':14.011000,y:28.123000,z:31.609000, 'symbol':'C'},
+    {'label':'1KMV[0].A.X.NDP[202].C5N[1602]','x':13.678000,y:29.015000,z:32.841000, 'symbol':'C'},
+    {'label':'1KMV[0].A.X.NDP[202].C6N[1603]','x':12.597000,y:29.774000,z:32.994000, 'symbol':'C'},
+    {'label':'1KMV[0].A.X.NDP[202].P2B[1604]','x':15.737000,y:41.052000,z:40.772000, 'symbol':'P'},
+    {'label':'1KMV[0].A.X.NDP[202].O1X[1605]','x':14.723000,y:42.004000,z:40.135000, 'symbol':'O'},
+    {'label':'1KMV[0].A.X.NDP[202].O2X[1606]','x':15.412000,y:40.624000,z:42.110000, 'symbol':'O'},
+    {'label':'1KMV[0].A.X.NDP[202].O3X[1607]','x':17.106000,y:41.730000,z:40.610000, 'symbol':'O'}
+  ]
+
+}
+
+function main() {
+  // 0- Create a renderer for this canvas
+  var renderer = new Renderer('canvas');
+
+  // 1- Create a scene with a default light and camera
+  var scene = new Scene();
+  renderer.addScene(scene);
+
+  // 2- Create a shape with geometry and colors
+  var shape = new Shape();
+  var vertices = [];
+  var colors   = [];
+  for (var i in structure.atoms) {
+    vertices.push(structure.atoms[i].x);
+    vertices.push(structure.atoms[i].y);
+    vertices.push(structure.atoms[i].z);
+    // CPK
+    switch (structure.atoms[i].symbol) {
+      case 'C': 
+        colors.push(0.78); //red
+        colors.push(0.78); //green
+        colors.push(0.78); //blue
+        break;
+      case 'N': 
+        colors.push(0.56); //red
+        colors.push(0.56); //green
+        colors.push(1.00); //blue
+        break;
+      case 'O': 
+        colors.push(0.94); //red
+        colors.push(0.00); //green
+        colors.push(0.00); //blue
+        break;
+      case 'P': 
+        colors.push(1.00); //red
+        colors.push(0.65); //green
+        colors.push(0.00); //blue
+        break;
+    }
+  }
+
+  shape.setGeometry({'type':'POINTS','attribute':'aVertexPosition','data':vertices});
+  shape.setColors({'type': 'RGB', 'attribute':'aVertexColor','data':colors});
+
+
+  // 2ter- Define shader program by hand 
+  var shaderProgram = new Program(renderer.getContext(),'monochrome');
+  shaderProgram.loadDOM("vertex"  ,"phong-impostor-vs");
+  shaderProgram.loadDOM("fragment","phong-impostor-fs");
+  shaderProgram.link();
+  // Get attribLocation
+  shaderProgram.setAttribute("aVertexPosition");
+  shaderProgram.setAttribute("aVertexColor");
+  // Get uniformLocation
+  shaderProgram.setUniformLocation("uPMatrix");
+  shaderProgram.setUniformLocation("uVMatrix");
+  shaderProgram.setUniformLocation("uMMatrix");
+
+  shape.setProgram(shaderProgram);
+  shape.updateGL(renderer.getContext() );
+
+  mat4.translate(shape.matrix,shape.matrix,[-structure.cg.x,-structure.cg.y,-structure.cg.z]);
+  console.log(shape.matrix );
+  scene.add(shape);
+  mat4.translate(scene.getCamera().viewMatrix,scene.getCamera().viewMatrix,[0.0,0.0,-30.0]);
+  
+  console.log(scene.toString());
+  // 3- Update renderer
+  renderer.update();
+
+  // 4- Add a sensor
+  var mouse = new MouseSensor('canvas');
+  mouse.attach(shape);
+
+  renderer.addSensor(mouse);
+
+  // 4- Draw Scene
+  renderer.drawScene();
+}
+
+</script>
+
+</head>
+<body onload="main()">
+<center>
+<canvas id="canvas" width="640" height="480"> </canvas>
+</center>
+
+</body>
+</html>
