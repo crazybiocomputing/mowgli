@@ -61,6 +61,19 @@ var Structure = function () {
 
 }
 
+
+Structure.RIGHT_HANDED_ALPHA = 1;
+Structure.RIGHT_HANDED_OMEGA = 2;
+Structure.RIGHT_HANDED_PI    = 3;
+Structure.RIGHT_HANDED_GAMMA = 4;
+Structure.RIGHT_HANDED_3_10  = 5;
+Structure.LEFT_HANDED_ALPHA  = 6;
+Structure.LEFT_HANDED_OMEGA  = 7;
+Structure.LEFT_HANDED_GAMMA  = 8;
+Structure.RIBBON_HELIX_2_7   = 9;
+Structure.POLYPROLINE        = 10;
+
+
 Structure.prototype.finder = function (src,callback) {
   if (src === 'ATOM') {
     return this.atoms.filter(callback);

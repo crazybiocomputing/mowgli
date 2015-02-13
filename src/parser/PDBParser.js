@@ -31,6 +31,7 @@
  */
 var PDBParser = function() {
   this.mol = new Structure();
+  this.secondary = [];
 }
 
 
@@ -100,7 +101,7 @@ PDBParser.prototype.parse = function (text) {
   for (var i=0;i<rows.length;i++) {
     if (rows[i].length > 2) {
       var tag = PDBParser.TAGS[rows[i].substring(0,6).trim()];
-      console.log(rows[i].substring(0,6).trim()+' '+tag);
+      // console.log(rows[i].substring(0,6).trim()+' '+tag);
       switch (tag) {
       case PDBParser.TAGS.ATOM: 
       case PDBParser.TAGS.HETATM:
@@ -113,15 +114,18 @@ PDBParser.prototype.parse = function (text) {
         this.parseHeader(rows[i]);
         break;
       case PDBParser.TAGS.HELIX:
-        // this.parseHelix(rows[i]);
+        this.parseHelix(rows[i]);
         break;
       case PDBParser.TAGS.SHEET:
-        // this.parseSheet(rows[i]);
+console.log("parse sheet");
+
+        this.parseSheet(rows[i]);
         break;
       case PDBParser.TAGS.TITLE:
         this.parseTitle(rows[i]);
         break;
       default:
+        // console.log('unimplemented tag = [' + rows[i].substring(0,6).trim()+']');
         // Do nothing
       }
     }
@@ -199,7 +203,21 @@ PDBParser.prototype.parseAtom = function (line) {
   atom.y = parseFloat(line.substring(38,46));
   atom.z = parseFloat(line.substring(46,54));
   atom.symbol = line.substring(76,78).trim();
+  // If exists, set the secondary structure (previously parse in HELIX and SHEET)
+  atom.secondary = 'X';
+  var i = 0;
+  while (i < this.secondary.length) {
+    if (this.secondary[i].initChain === atom.chain && atom.groupID >= this.secondary[i].init && atom.groupID <= this.secondary[i].end ) {
+      atom.secondary = this.secondary[i].type+'_'+this.secondary[i].strand+'['+this.secondary[i].serial+';'+this.secondary[i].ID+']';
+      // Stop
+      i = this.secondary.length;
+    }
+    i++;
+  }
+
   this.mol.atoms.push(atom);
+
+  // Update centroid and bounding box of the structure
   this.mol.cg.x+=atom.x;
   this.mol.cg.y+=atom.y;
   this.mol.cg.z+=atom.z;
@@ -228,23 +246,21 @@ PDBParser.prototype.parseHelix = function(row) {
   72 - 76       Integer          length       Length of this helix.
   ******/
 
-  var pattern = /HELIX\s(.+)/g;
-  var array=str.match(pattern)
-  for (var i=0;i<array.length;i++) 
-  {
-    var pattern = /\s+/;
-    var items = array[i].split(pattern);
-    if (!isNaN(parseInt(items[1])) )
-      structs[structs.length]= {
-        'type':  'H', 
-        'ID':  items[2], 
-        'first' : parseInt(items[5]), 
-        'last':  parseInt(items[8]), 
-        'chainFirst' : items[4],
-        'chainLast' : items[7] 
-      };
-    console.log('name:'+ 'H{' + items[1] +'}'+ 'first:' + parseInt(items[5]) + 'last:'+ parseInt(items[8]));
-  }
+
+  this.secondary.push( {
+    'type'      : 'H',
+    'serial'    : parseInt(row.substring(7,10) ), 
+    'ID'        : row.substring(11,14),
+    'strand'    : '', 
+    'initChain' : row[19], 
+    'init'      : parseInt(row.substring(21,25) ), 
+    'endChain'  : row[31], 
+    'end'       : parseInt(row.substring(33,37) ), 
+    'class'     : Structure.RIGHT_HANDED_ALPHA || parseInt(row.substring(38,40))
+   });
+   console.log('HELIX:'+ 'H{' + this.secondary[this.secondary.length-1].ID +'}'+ 
+     ' first:' + this.secondary[this.secondary.length-1].init + this.secondary[this.secondary.length-1].initChain + 
+     ' last:'+ this.secondary[this.secondary.length-1].end + this.secondary[this.secondary.length-1].endChain);
 }
 
   // SHEET: TODO
@@ -275,22 +291,18 @@ PDBParser.prototype.parseHelix = function(row) {
   ****************/
 
 PDBParser.prototype.parseSheet = function (row) {
-  console.log('value:'+row.substring(7,10) );
-  var strand={};
-  strand.type='E';
-  strand.index=parseInt(row.substring(7,10));
-  strand.ID=row.substring(11,14);
-  strand.num = row.substring(14,16);
-  strand.strand=parseInt(row.substring(7,10));
-  strand.first = parseInt(row.substring(22,26)); 
-  strand.last = parseInt(row.substring(33,37));
-  strand.chainFirst = row.substring(21,22);
-  strand.chainLast = row.substring(21,22);
-  strand.sense = row.substring(38,40); 
 
-  structs[structs.length]= strand;
-
-  console.log(' type: E name:'+ strand.ID + ' num:'+ strand.num + ' first:' + strand.first + ' last:'+ strand.last + '<br/\>');
+  this.secondary.push( {
+    'type'      : 'E',
+    'serial'    : 'E',
+    'ID'        : row.substring(11,14),
+    'strand'    : parseInt(row.substring(7,10)),
+    'initChain' : row[21], 
+    'init'      : parseInt(row.substring(22,26) ), 
+    'endChain'  : row[32], 
+    'end'       : parseInt(row.substring(33,37) ),
+    'sense'     : parseInt(row.substring(38,40) ), 
+  });
 
 }
 
