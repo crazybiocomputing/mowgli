@@ -2,7 +2,39 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Load PDB File and secondary structures</title>
+<title>Wireframe and CPK</title>
+
+<!-- ************** S H A D E R S ************** -->
+
+<script id="wireframe-vs" type="x-shader/x-vertex">
+  attribute vec3 aVertexPosition;
+  attribute vec3 aVertexColor;
+
+  uniform mat4 uMMatrix;
+  uniform mat4 uVMatrix;
+  uniform mat4 uPMatrix;
+
+  varying vec3 vColor;
+
+  void main(void) {
+    gl_Position = uPMatrix * uVMatrix * uMMatrix * vec4(aVertexPosition, 1.0);
+    vColor = aVertexColor;
+  }
+</script>
+
+<script id="wireframe-fs" type="x-shader/x-fragment">
+
+  precision mediump float;
+
+  varying vec3 vColor;
+
+  void main(void) {
+    gl_FragColor = vec4( vColor,1.0);
+  }
+
+</script>
+
+<!-- ************** M O W G L I ************** -->
 
 <script  type="text/javascript" src="../dist/gl-matrix-min.js"></script> 
 <script  type="text/javascript" src="../src/parser/PDBParser.js"></script> 
@@ -10,49 +42,136 @@
 <script  type="text/javascript" src="../src/bond.js"></script> 
 <script  type="text/javascript" src="../src/bondCalculator.js"></script> 
 <script  type="text/javascript" src="../src/structure.js"></script> 
+<script  type="text/javascript" src="../src/graphics/renderer.js"></script> 
+<script  type="text/javascript" src="../src/graphics/scene.js"></script> 
+<script  type="text/javascript" src="../src/graphics/shape.js"></script> 
+<script  type="text/javascript" src="../src/graphics/shapeFactory.js"></script> 
+<script  type="text/javascript" src="../src/graphics/program.js"></script> 
+<script  type="text/javascript" src="../src/graphics/camera.js"></script> 
+<script  type="text/javascript" src="../src/graphics/light.js"></script> 
+<script  type="text/javascript" src="../src/styles/pointStyle.js"></script> 
+<script  type="text/javascript" src="../src/ui/mouseSensor.js"></script> 
 
 <script type="text/javascript">
 
-function loadFile(type,pdb_id) {
-  var mol = null;
+var structure;
+
+function main() {
+
   var loader = new PDBLoader();
-  if (type === 'local') {
-    mol = loader.getFromDOM(pdb_id,'pdb');
-  }
-  else {
-    mol = loader.getFromID(pdb_id);
+  structure = loader.getFromDOM('1LMB','pdb');
+
+  // 0- Create a renderer for this canvas
+  var renderer = new Renderer('canvas');
+
+  // 1- Create a scene with a default light and camera
+  var scene = new Scene();
+  renderer.addScene(scene);
+
+  // 2- Create a shape with geometry and colors
+  var shape = new Shape();
+  var vertices = [];
+  var colors   = [];
+  for (var i in structure.bonds) {
+    vertices.push(structure.bonds[i].atom1.x);
+    vertices.push(structure.bonds[i].atom1.y);
+    vertices.push(structure.bonds[i].atom1.z);
+    vertices.push(structure.bonds[i].middle.x);
+    vertices.push(structure.bonds[i].middle.y);
+    vertices.push(structure.bonds[i].middle.z);
+    vertices.push(structure.bonds[i].middle.x);
+    vertices.push(structure.bonds[i].middle.y);
+    vertices.push(structure.bonds[i].middle.z);
+    vertices.push(structure.bonds[i].atom2.x);
+    vertices.push(structure.bonds[i].atom2.y);
+    vertices.push(structure.bonds[i].atom2.z);
+    // CPK
+    getCPKColor(colors,structure.bonds[i].atom1.symbol);
+    getCPKColor(colors,structure.bonds[i].atom1.symbol);
+    getCPKColor(colors,structure.bonds[i].atom2.symbol);
+    getCPKColor(colors,structure.bonds[i].atom2.symbol);
   }
 
-  // Select Carbon Alpha
-  var selected = mol.finder(
-    'ATOM', 
-    function(atom) {
-      if (atom.name === "CA") {
-        return true;
-      }
-    }
-  );
+  shape.setGeometry({'type':'LINES','attribute':'aVertexPosition','data':vertices});
+  shape.setColors({'type': 'RGB', 'attribute':'aVertexColor','data':colors});
 
-  // Output
-  var str='Secondary structures in HELIX and SHEET';
-  for (var i=0; i < selected.length; i++) {
-    if (i%10 == 0) str+=" ";
-    if (i%50 == 0) str+="\n";
-    str+=(selected[i].secondary[0]=='X') ?'.' : selected[i].secondary[0] ;
+
+  // 2ter- Define shader program by hand 
+  var shaderProgram = new Program(renderer.getContext(),'wireframe-cpk');
+  shaderProgram.loadDOM("vertex"  ,"wireframe-vs");
+  shaderProgram.loadDOM("fragment","wireframe-fs");
+  shaderProgram.link();
+  // Get attribLocation
+  shaderProgram.setAttribute("aVertexPosition");
+  shaderProgram.setAttribute("aVertexColor");
+  // Get uniformLocation
+  shaderProgram.setUniformLocation("uPMatrix");
+  shaderProgram.setUniformLocation("uVMatrix");
+  shaderProgram.setUniformLocation("uMMatrix");
+
+  shape.setProgram(shaderProgram);
+  shape.updateGL(renderer.getContext() );
+
+  // Center structure
+  mat4.translate(shape.matrix,shape.matrix,[-structure.cg.x,-structure.cg.y,-structure.cg.z]);
+
+  scene.add(shape);
+
+  // Move camera to see the structure in its entirety
+  mat4.translate(scene.getCamera().viewMatrix,scene.getCamera().viewMatrix,[0.0,0.0,-60.0]);
+  
+  console.log(scene.toString());
+  // 3- Update renderer
+  renderer.update();
+
+  // 4- Add a sensor
+  var mouse = new MouseSensor('canvas');
+  mouse.attach(shape);
+
+  renderer.addSensor(mouse);
+
+  // 5- Draw Scene
+  renderer.drawScene();
+}
+
+function getCPKColor(colors,symbol) {
+  // CPK
+  switch (symbol) {
+    case 'C': 
+      colors.push(0.78); //red
+      colors.push(0.78); //green
+      colors.push(0.78); //blue
+      break;
+    case 'N': 
+      colors.push(0.56); //red
+      colors.push(0.56); //green
+      colors.push(1.00); //blue
+      break;
+    case 'O': 
+      colors.push(0.94); //red
+      colors.push(0.00); //green
+      colors.push(0.00); //blue
+      break;
+    case 'P': 
+      colors.push(1.00); //red
+      colors.push(0.65); //green
+      colors.push(0.00); //blue
+      break;
+    default: 
+      colors.push(0.00); //red
+      colors.push(0.65); //green
+      colors.push(0.00); //blue
+      break;
   }
-  document.getElementById('result').innerHTML='<pre>'+str+'</pre>';
 }
 
 </script>
 
 </head>
-<body>
-<p>Load Local PDB File<input type="radio" id="local" name="local" value="y" onchange="loadFile('local','1LMB')">Yes<input type="radio" name="local" value="n" checked>No</p>
-<p>Load From RCSB PDB ID: <input type="text" id="distant"></input>&nbsp;<input type="submit" id="ok" onclick="loadFile('distant',document.getElementById('distant').value)"></input></p>
-
-<div id="result">
-</div>
-
+<body onload="main()">
+<center>
+<canvas id="canvas" width="1280" height="720"> </canvas>
+</center>
 
 <div id="1LMB" style="display:none">
 HEADER    TRANSCRIPTION/DNA                       05-NOV-91   1LMB              
@@ -93,7 +212,58 @@ JRNL        TITL 2 REPRESSOR-OPERATOR COMPLEX.
 JRNL        REF    J.MOL.BIOL.                   V. 227   177 1992              
 JRNL        REFN                   ISSN 0022-2836                               
 JRNL        PMID   1387915                                                      
-JRNL        DOI    10.1016/0022-2836(92)90690-L                                                                                       
+JRNL        DOI    10.1016/0022-2836(92)90690-L                                 
+REMARK   1                                                                      
+REMARK   1 REFERENCE 1                                                          
+REMARK   1  AUTH   N.D.CLARKE,L.J.BEAMER,H.R.GOLDBERG,C.BERKOWER,               
+REMARK   1  AUTH 2 C.O.PABO                                                     
+REMARK   1  TITL   THE DNA BINDING ARM OF A LAMBDA REPRESSOR:                   
+REMARK   1  TITL 2 CRITICAL CONTACTS FROM A FLEXIBLE REGION                     
+REMARK   1  REF    SCIENCE                       V. 254   267 1991              
+REMARK   1  REFN                   ISSN 0036-8075                               
+REMARK   1 REFERENCE 2                                                          
+REMARK   1  AUTH   C.O.PABO,A.K.AGGARWAL,S.R.JORDAN,L.J.BEAMER,                 
+REMARK   1  AUTH 2 U.R.OBEYSEKARE,S.C.HARRISON                                  
+REMARK   1  TITL   CONSERVED RESIDUES MAKE SIMILAR CONTACTS IN TWO              
+REMARK   1  TITL 2 REPRESSOR-OPERATOR COMPLEXES                                 
+REMARK   1  REF    SCIENCE                       V. 247  1210 1990              
+REMARK   1  REFN                   ISSN 0036-8075                               
+REMARK   1 REFERENCE 3                                                          
+REMARK   1  AUTH   D.H.OHLENDORF,W.F.ANDERSON,M.LEWIS,C.O.PABO,                 
+REMARK   1  AUTH 2 B.W.MATTHEWS                                                 
+REMARK   1  TITL   COMPARISON OF THE STRUCTURES OF CRO AND LAMBDA               
+REMARK   1  TITL 2 REPRESSOR PROTEINS FROM BACTERIOPHAGE LAMBDA                 
+REMARK   1  REF    J.MOL.BIOL.                   V. 169   757 1983              
+REMARK   1  REFN                   ISSN 0022-2836                               
+REMARK   1 REFERENCE 4                                                          
+REMARK   1  AUTH   M.LEWIS,A.JEFFREY,J.WANG,R.LADNER,M.PTASHNE,                 
+REMARK   1  AUTH 2 C.O.PABO                                                     
+REMARK   1  TITL   STRUCTURE OF THE OPERATOR-BINDING DOMAIN OF                  
+REMARK   1  TITL 2 BACTERIOPHAGE LAMBDA REPRESSOR. IMPLICATIONS FOR             
+REMARK   1  TITL 3 DNA RECOGNITION AND GENE REGULATION                          
+REMARK   1  REF    COLD SPRING HARBOR            V.  47   435 1983              
+REMARK   1  REF  2 SYMP.QUANT.BIOL.                                             
+REMARK   1  REFN                   ISSN 0091-7451                               
+REMARK   1 REFERENCE 5                                                          
+REMARK   1  AUTH   R.T.SAUER,R.R.YOCUM,R.F.DOOLITTLE,M.LEWIS,C.O.PABO           
+REMARK   1  TITL   HOMOLOGY AMONG DNA-BINDING PROTEINS SUGGESTS USE             
+REMARK   1  TITL 2 OF A CONSERVED SUPER-SECONDARY STRUCTURE                     
+REMARK   1  REF    NATURE                        V. 298   447 1982              
+REMARK   1  REFN                   ISSN 0028-0836                               
+REMARK   1 REFERENCE 6                                                          
+REMARK   1  AUTH   C.O.PABO,M.LEWIS                                             
+REMARK   1  TITL   THE OPERATOR-BINDING DOMAIN OF LAMBDA REPRESSOR.             
+REMARK   1  TITL 2 STRUCTURE AND DNA RECOGNITION                                
+REMARK   1  REF    NATURE                        V. 298   443 1982              
+REMARK   1  REFN                   ISSN 0028-0836                               
+REMARK   1 REFERENCE 7                                                          
+REMARK   1  AUTH   C.O.PABO,W.KROVATIN,A.JEFFREY,R.T.SAUER                      
+REMARK   1  TITL   THE N-TERMINAL ARMS OF LAMBDA REPRESSOR WRAP                 
+REMARK   1  TITL 2 AROUND THE OPERATOR DNA                                      
+REMARK   1  REF    NATURE                        V. 298   441 1982              
+REMARK   1  REFN                   ISSN 0028-0836                               
+REMARK   2                                                                      
+REMARK   2 RESOLUTION.    1.80 ANGSTROMS.                                          
 DBREF  1LMB 3    1    92  UNP    P03034   RPC1_LAMBD       1     92             
 DBREF  1LMB 4    1    92  UNP    P03034   RPC1_LAMBD       1     92             
 DBREF  1LMB 1    1    20  PDB    1LMB     1LMB             1     20             
@@ -2333,9 +2503,151 @@ ATOM   2194  O   SER 4  92      28.514 -24.485   6.607  1.00 61.34           O
 ATOM   2195  CB  SER 4  92      27.649 -24.548   2.924  1.00 41.93           C  
 ATOM   2196  OG  SER 4  92      28.267 -23.331   2.542  1.00 37.12           O  
 ATOM   2197  OXT SER 4  92      29.701 -24.563   4.687  1.00 60.36           O  
-TER    2198      SER 4  92                                                        
+TER    2198      SER 4  92                                                      
+HETATM 2199  O   HOH 1  21       2.661  -0.137  -3.950  1.00 33.54           O  
+HETATM 2200  O   HOH 1  22       7.790   0.617  -0.133  1.00 24.66           O  
+HETATM 2201  O   HOH 1  23       9.801   2.053   1.386  1.00 21.79           O  
+HETATM 2202  O   HOH 1  24      13.058   0.176  -0.706  1.00 47.44           O  
+HETATM 2203  O   HOH 1  25       0.947  -4.977   5.184  1.00 34.72           O  
+HETATM 2204  O   HOH 1  26       3.655  -5.342   4.886  1.00 37.23           O  
+HETATM 2205  O   HOH 1  27       6.973  -7.022  -2.102  1.00 34.39           O  
+HETATM 2206  O   HOH 1  28      13.721  -4.794   0.428  1.00 31.37           O  
+HETATM 2207  O   HOH 1  29       9.519  -4.145  -0.456  1.00 36.77           O  
+HETATM 2208  O   HOH 1  30      14.703  -4.294  23.761  1.00 28.73           O  
+HETATM 2209  O   HOH 1  31      20.343  -7.416  26.211  1.00 20.02           O  
+HETATM 2210  O   HOH 1  32      10.944   6.235  23.653  1.00 37.32           O  
+HETATM 2211  O   HOH 1  33      -7.879   3.968  -7.223  1.00 34.75           O  
+HETATM 2212  O   HOH 1  34      -6.864   5.527  -9.622  1.00 39.73           O  
+HETATM 2213  O   HOH 1  35      -5.240   4.436 -11.206  1.00 23.76           O  
+HETATM 2214  O   HOH 1  36       8.423 -10.421   1.631  1.00 25.93           O  
+HETATM 2215  O   HOH 1  37      27.778  -4.942  25.658  1.00 19.82           O  
+HETATM 2216  O   HOH 1  38      20.460  -5.280  33.446  1.00 33.11           O  
+HETATM 2217  O   HOH 1  39      25.375  -7.001  33.602  1.00 32.90           O  
+HETATM 2218  O   HOH 1  40      -3.567   3.423 -14.881  1.00 35.32           O  
+HETATM 2219  O   HOH 1  41      -5.308  -7.286  -4.145  1.00 34.36           O  
+HETATM 2220  O   HOH 1  42      -2.468  -6.446  -4.077  1.00 19.13           O  
+HETATM 2221  O   HOH 1  43      -7.387  -5.030  -7.681  1.00 35.96           O  
+HETATM 2222  O   HOH 1  44      27.920  -7.932  33.477  1.00 45.24           O  
+HETATM 2223  O   HOH 1  45      22.085  -7.603  34.187  1.00 46.64           O  
+HETATM 2224  O   HOH 1  46     -11.248  -0.309 -13.970  1.00 39.91           O  
+HETATM 2225  O   HOH 1  47      -9.921  -8.476  -8.051  1.00 40.65           O  
+HETATM 2226  O   HOH 1  48     -10.464  -7.102  -5.276  1.00 29.19           O  
+HETATM 2227  O   HOH 1  49       5.152   6.087  11.514  1.00 46.22           O  
+HETATM 2228  O   HOH 1  50      32.515  -4.453  36.034  1.00 40.90           O  
+HETATM 2229  O   HOH 1  51     -13.284   0.939 -10.682  1.00 34.32           O  
+HETATM 2230  O   HOH 1  52     -16.061  -0.177  -4.631  1.00 48.21           O  
+HETATM 2231  O   HOH 1  53       5.356  -0.210  26.218  1.00 45.40           O  
+HETATM 2232  O   HOH 1  54      -4.034 -10.292  -1.477  1.00 47.14           O  
+HETATM 2233  O   HOH 1  55     -13.518   4.619  -3.913  1.00 42.42           O  
+HETATM 2234  O   HOH 1  56      -1.945   2.822 -17.176  1.00 41.91           O  
+HETATM 2235  O   HOH 2  41       0.989  -1.122  -6.070  1.00 36.74           O  
+HETATM 2236  O   HOH 2  42      -8.162  -4.792 -12.098  1.00 38.84           O  
+HETATM 2237  O   HOH 2  43      13.540  -3.735  21.169  1.00 34.94           O  
+HETATM 2238  O   HOH 2  44      17.201  -2.208  32.915  1.00 26.34           O  
+HETATM 2239  O   HOH 2  45      17.562  -4.674  34.229  1.00 30.57           O  
+HETATM 2240  O   HOH 2  46      15.262   1.416  31.720  1.00 29.45           O  
+HETATM 2241  O   HOH 2  47      13.729   2.062  14.593  1.00 43.25           O  
+HETATM 2242  O   HOH 2  48      -1.917  -1.942   5.604  1.00 35.71           O  
+HETATM 2243  O   HOH 2  49      18.663  -7.014   7.721  1.00 42.98           O  
+HETATM 2244  O   HOH 2  50      19.588  -0.493  18.624  1.00 31.67           O  
+HETATM 2245  O   HOH 2  51       1.234   5.295  -4.640  1.00 40.81           O  
+HETATM 2246  O   HOH 2  52      -4.791  -7.335 -22.721  1.00 34.47           O  
+HETATM 2247  O   HOH 2  53      21.315   0.813  24.450  1.00 28.11           O  
+HETATM 2248  O   HOH 2  54      19.979   1.427  19.723  1.00 32.09           O  
+HETATM 2249  O   HOH 2  55      -2.278  -0.416 -18.500  1.00 36.28           O  
+HETATM 2250  O   HOH 2  56       2.684   5.723   1.203  1.00 28.36           O  
+HETATM 2251  O   HOH 2  57       6.302  -9.137  17.796  1.00 25.08           O  
+HETATM 2252  O   HOH 2  58      12.374   0.880  41.020  1.00 33.49           O  
+HETATM 2253  O   HOH 2  59      -2.868  -9.885 -14.867  1.00 24.21           O  
+HETATM 2254  O   HOH 2  60       7.489 -10.894  13.511  1.00 42.65           O  
+HETATM 2255  O   HOH 2  61       4.497  -6.793  17.696  1.00 33.48           O  
+HETATM 2256  O   HOH 2  62       8.839  -7.880  18.031  1.00 29.81           O  
+HETATM 2257  O   HOH 2  63      13.511   3.827  31.303  1.00 43.16           O  
+HETATM 2258  O   HOH 2  64      23.140   4.297  31.913  1.00 39.65           O  
+HETATM 2259  O   HOH 2  65      22.780   1.908  14.986  1.00 40.29           O  
+HETATM 2260  O   HOH 2  66      13.905   4.835  15.462  1.00 49.31           O  
+HETATM 2261  O   HOH 2  67      15.696  -6.760   9.208  1.00 49.21           O  
+HETATM 2262  O   HOH 3  93       7.748 -20.287  14.112  1.00 31.92           O  
+HETATM 2263  O   HOH 3  94       6.532 -22.787  17.377  1.00 22.99           O  
+HETATM 2264  O   HOH 3  95      17.702  -6.915  25.773  1.00 20.59           O  
+HETATM 2265  O   HOH 3  96       8.041  -9.972  21.469  1.00 26.63           O  
+HETATM 2266  O   HOH 3  97      17.472  -4.515  24.247  1.00 18.59           O  
+HETATM 2267  O   HOH 3  98       8.455 -12.927  22.498  1.00 21.98           O  
+HETATM 2268  O   HOH 3  99      13.985 -15.661  16.965  1.00 23.68           O  
+HETATM 2269  O   HOH 3 100      15.089 -13.777  18.567  1.00 14.57           O  
+HETATM 2270  O   HOH 3 101      13.874 -17.351  14.737  1.00 18.96           O  
+HETATM 2271  O   HOH 3 102      12.628 -16.070  13.031  1.00 28.31           O  
+HETATM 2272  O   HOH 3 103      14.087 -16.674  23.918  1.00 21.09           O  
+HETATM 2273  O   HOH 3 104      16.692 -16.105  24.853  1.00 17.01           O  
+HETATM 2274  O   HOH 3 105      16.455  -6.157  16.935  1.00 18.64           O  
+HETATM 2275  O   HOH 3 106      31.747 -23.508  17.624  1.00 34.83           O  
+HETATM 2276  O   HOH 3 107      16.537 -11.613   5.481  1.00 34.45           O  
+HETATM 2277  O   HOH 3 108      11.864 -23.236   6.669  1.00 45.55           O  
+HETATM 2278  O   HOH 3 109      26.416   0.225  14.480  1.00 37.07           O  
+HETATM 2279  O   HOH 3 110      21.525   0.376  22.019  1.00 33.03           O  
+HETATM 2280  O   HOH 3 111      34.894 -10.416  25.777  1.00 38.05           O  
+HETATM 2281  O   HOH 3 112      26.493 -12.092   5.167  1.00 38.83           O  
+HETATM 2282  O   HOH 3 113      31.834  -9.152  27.216  1.00 33.01           O  
+HETATM 2283  O   HOH 3 114      29.794 -19.437   9.537  1.00 36.05           O  
+HETATM 2284  O   HOH 3 115      34.111 -12.681  15.285  1.00 42.31           O  
+HETATM 2285  O   HOH 3 116      12.001 -20.207  13.453  1.00 39.33           O  
+HETATM 2286  O   HOH 3 117      14.265 -13.944   6.170  1.00 34.80           O  
+HETATM 2287  O   HOH 3 118       6.485 -14.496  14.910  1.00 43.34           O  
+HETATM 2288  O   HOH 3 119      15.973  -9.331  12.829  1.00 29.45           O  
+HETATM 2289  O   HOH 3 120      24.458 -11.512  27.323  1.00 25.97           O  
+HETATM 2290  O   HOH 3 121      32.597 -17.554  27.293  1.00 33.90           O  
+HETATM 2291  O   HOH 3 122      16.050 -23.976  22.944  1.00 29.15           O  
+HETATM 2292  O   HOH 3 123      34.842 -18.373  25.366  1.00 25.45           O  
+HETATM 2293  O   HOH 3 124      30.581 -24.866  14.823  1.00 43.34           O  
+HETATM 2294  O   HOH 3 125      18.908 -23.410  24.299  1.00 30.20           O  
+HETATM 2295  O   HOH 3 126       7.105 -23.511  14.309  1.00 40.07           O  
+HETATM 2296  O   HOH 3 127       4.138 -21.045  19.001  1.00 49.88           O  
+HETATM 2297  O   HOH 3 128      20.021 -27.864  10.340  1.00 40.69           O  
+HETATM 2298  O   HOH 3 129      18.135 -27.414   8.620  1.00 43.21           O  
+HETATM 2299  O   HOH 3 130      14.379 -23.450  14.015  1.00 13.21           O  
+HETATM 2300  O   HOH 3 131       4.074 -17.363  22.477  1.00 47.40           O  
+HETATM 2301  O   HOH 3 132      33.776 -11.096  12.787  1.00 46.83           O  
+HETATM 2302  O   HOH 3 133      35.490 -21.188  17.072  1.00 44.21           O  
+HETATM 2303  O   HOH 3 134      12.960 -17.797  26.377  1.00 45.92           O  
+HETATM 2304  O   HOH 3 135      19.985 -19.469  26.543  1.00 23.58           O  
+HETATM 2305  O   HOH 3 136      23.216 -23.521  21.912  1.00 30.82           O  
+HETATM 2306  O   HOH 3 137      21.348 -24.899  23.734  1.00 40.27           O  
+HETATM 2307  O   HOH 3 138      19.161 -22.275 -10.582  1.00 36.81           O  
+HETATM 2308  O   HOH 3 139      22.007 -18.558  28.056  1.00 40.56           O  
+HETATM 2309  O   HOH 3 140      23.463 -25.126  19.754  1.00 43.13           O  
+HETATM 2310  O   HOH 4  93       9.331   1.527  -2.437  1.00 27.97           O  
+HETATM 2311  O   HOH 4  94      11.331  -4.328  -7.854  1.00 16.93           O  
+HETATM 2312  O   HOH 4  95      13.791  -4.147  -7.418  1.00 17.36           O  
+HETATM 2313  O   HOH 4  96      10.420  -0.982  -1.096  1.00 30.27           O  
+HETATM 2314  O   HOH 4  97      10.950   3.896  -7.002  1.00 33.17           O  
+HETATM 2315  O   HOH 4  98       5.020  -5.541  -3.800  1.00 17.88           O  
+HETATM 2316  O   HOH 4  99       9.475  -7.059  -1.601  1.00 28.61           O  
+HETATM 2317  O   HOH 4 100      -4.482  -6.022  -7.041  1.00 35.66           O  
+HETATM 2318  O   HOH 4 101       5.836 -21.460 -13.717  1.00 39.24           O  
+HETATM 2319  O   HOH 4 102       5.636 -13.878 -24.205  1.00 33.81           O  
+HETATM 2320  O   HOH 4 103      13.750 -11.731   2.314  1.00 33.38           O  
+HETATM 2321  O   HOH 4 104      21.676  -6.406  -9.184  1.00 19.48           O  
+HETATM 2322  O   HOH 4 105      16.907  -9.300   0.763  1.00 36.48           O  
+HETATM 2323  O   HOH 4 106      20.603   5.262  -7.145  1.00 28.32           O  
+HETATM 2324  O   HOH 4 107      10.185  -1.919 -14.382  1.00 28.03           O  
+HETATM 2325  O   HOH 4 108      16.277  -5.183  -6.185  1.00 21.50           O  
+HETATM 2326  O   HOH 4 109      25.981 -12.230  -8.575  1.00 36.13           O  
+HETATM 2327  O   HOH 4 110      -6.270  -6.183 -10.572  1.00 38.17           O  
+HETATM 2328  O   HOH 4 111      -5.541 -10.167 -15.557  1.00 39.78           O  
+HETATM 2329  O   HOH 4 112      15.110   0.891  -1.349  1.00 43.51           O  
+HETATM 2330  O   HOH 4 113      16.454  -5.028  -3.769  1.00 24.19           O  
+HETATM 2331  O   HOH 4 114      15.533 -21.448 -10.682  1.00 34.23           O  
+HETATM 2332  O   HOH 4 115      12.524  -0.583 -13.471  1.00 37.19           O  
+HETATM 2333  O   HOH 4 116       6.803 -16.915 -23.957  1.00 50.07           O  
+HETATM 2334  O   HOH 4 117      -3.687 -14.288  -4.506  1.00 41.63           O  
+HETATM 2335  O   HOH 4 118      16.965  -0.674 -23.448  1.00 40.63           O  
+HETATM 2336  O   HOH 4 119      25.906  -7.964  -3.093  1.00 43.45           O  
+HETATM 2337  O   HOH 4 120      12.158 -19.490  -1.828  1.00 44.98           O  
+HETATM 2338  O   HOH 4 121       4.224  -6.661 -16.861  1.00 49.49           O  
 MASTER      337    0    0   10    0    0    0    6 2334    4    0   20          
 END                                                                             
 </div>
+</div>
+
 </body>
 </html>

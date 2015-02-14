@@ -32,6 +32,8 @@
 var PDBParser = function() {
   this.mol = new Structure();
   this.secondary = [];
+  this.cubes = [];
+  this.cube_side = 5.0; // 5 angstroems
 }
 
 
@@ -217,10 +219,14 @@ PDBParser.prototype.parseAtom = function (line) {
 
   this.mol.atoms.push(atom);
 
+  // Update chain
+  if (this.mol.chains.indexOf(atom.chain) == -1) {
+    this.mol.chains.push(atom.chain);
+  }
   // Update centroid and bounding box of the structure
-  this.mol.cg.x+=atom.x;
-  this.mol.cg.y+=atom.y;
-  this.mol.cg.z+=atom.z;
+  this.mol.cg.x += atom.x;
+  this.mol.cg.y += atom.y;
+  this.mol.cg.z += atom.z;
   this.updateBBox(atom);
 
 }
@@ -258,9 +264,11 @@ PDBParser.prototype.parseHelix = function(row) {
     'end'       : parseInt(row.substring(33,37) ), 
     'class'     : Structure.RIGHT_HANDED_ALPHA || parseInt(row.substring(38,40))
    });
+/****
    console.log('HELIX:'+ 'H{' + this.secondary[this.secondary.length-1].ID +'}'+ 
      ' first:' + this.secondary[this.secondary.length-1].init + this.secondary[this.secondary.length-1].initChain + 
      ' last:'+ this.secondary[this.secondary.length-1].end + this.secondary[this.secondary.length-1].endChain);
+*****/
 }
 
   // SHEET: TODO

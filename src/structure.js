@@ -44,6 +44,9 @@ var Structure = function () {
   // Colors
   this.colors = [];
 
+  // Chains
+  this.chains = [];
+
   // Center of Gravity
   this.cg={'x': 0.0,'y': 0.0,'z': 0.0};
 
