@@ -66,7 +66,7 @@ Shape.prototype.setInterleavedGeometry = function(types,data) {
 
 Shape.prototype.setGeometry = function(a_geom) {
   var type = a_geom.type;
-  var itemSize = 0;
+  var itemSize = 3;
   switch (type) {
   case 'POINTS':
     itemSize = 3;
@@ -80,9 +80,21 @@ Shape.prototype.setGeometry = function(a_geom) {
     itemSize = 3;
     this.type = 'LINES';
     break;
+  case 'LINE_STRIP':
+    itemSize = 3;
+    this.type = 'LINE_STRIP';
+    break;
+  case 'LINE_LOOP':
+    itemSize = 3;
+    this.type = 'LINE_LOOP';
+    break;
   case 'TRIANGLES':
     itemSize = 3;
     this.type = 'TRIANGLES';
+    break;
+  case 'TRIANGLE_STRIP':
+    itemSize = 3;
+    this.type = 'TRIANGLE_STRIP';
     break;
   }
 
@@ -153,8 +165,17 @@ Shape.prototype._createVBO = function(context,vbo) {
   case 'LINES':
     this.glType = gl.LINES;
     break;
+  case 'LINE_STRIP':
+    this.glType = gl.LINE_STRIP;
+    break;
+  case 'LINE_LOOP':
+    this.glType = gl.LINE_LOOP;
+    break;
   case 'TRIANGLES':
     this.glType = gl.TRIANGLES;
+    break;
+  case 'TRIANGLE_STRIP':
+    this.glType = gl.TRIANGLE_STRIP;
     break;
   }
   // Create VBO

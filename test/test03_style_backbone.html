@@ -92,19 +92,11 @@ function main() {
   var colors   = [];
   for (var i in selected) {
     // First half bond
-    vertices.push(selected[i].atom1.x);
-    vertices.push(selected[i].atom1.y);
-    vertices.push(selected[i].atom1.z);
-    vertices.push(selected[i].middle.x);
-    vertices.push(selected[i].middle.y);
-    vertices.push(selected[i].middle.z);
+    vertices.push(selected[i].atom1.x , selected[i].atom1.y , selected[i].atom1.z );
+    vertices.push(selected[i].middle.x, selected[i].middle.y, selected[i].middle.z);
     // Second half bond
-    vertices.push(selected[i].middle.x);
-    vertices.push(selected[i].middle.y);
-    vertices.push(selected[i].middle.z);
-    vertices.push(selected[i].atom2.x);
-    vertices.push(selected[i].atom2.y);
-    vertices.push(selected[i].atom2.z);
+    vertices.push(selected[i].middle.x, selected[i].middle.y, selected[i].middle.z);
+    vertices.push(selected[i].atom2.x , selected[i].atom2.y , selected[i].atom2.z );
     // CPK
     getCPKColor(colors,selected[i].atom1.symbol);
     getCPKColor(colors,selected[i].atom1.symbol);
