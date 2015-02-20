@@ -8,13 +8,17 @@
 
 <script id="phong-impostor-vs" type="x-shader/x-vertex">
   attribute vec3 aVertexPosition;
+  attribute vec3 aVertexColor;
 
   uniform mat4 uMMatrix;
   uniform mat4 uVMatrix;
   uniform mat4 uPMatrix;
 
+  varying vec3 vColor;
+
   void main(void) {
     gl_Position = uPMatrix * uVMatrix * uMMatrix * vec4(aVertexPosition, 1.0);
+    vColor = aVertexColor;
   }
 </script>
 
@@ -22,8 +26,10 @@
 
   precision highp float;
 
+  varying vec3 vColor;
+
   void main(void) {
-    gl_FragColor = vec4(0.8,1,1,1.0);
+    gl_FragColor = vec4(vColor, 1.0);
   }
 
 </script>
@@ -67,12 +73,12 @@ function loadFile(type,pdb_id) {
   var selected = mol.finder(
     'BOND', 
     function (bond) {
-      return ( bond.atom1.chain == "A" 
+      return ( bond.atom1.chain == "3" 
         && (
            (bond.atom1.name === "CA" && bond.atom2.name === "C" )
         || (bond.atom1.name === "C"  && bond.atom2.name === "CA") ) )
     });
-  
+  selected = mol.bonds;
   console.log(selected.length + " bond(s) selected!");
   for (var i=0; i< selected.length; i++) {
     //console.log(selected[i].atom1.groupID+'['+selected[i].atom1.name+';'+selected[i].atom2.name+']');
@@ -89,48 +95,13 @@ function loadFile(type,pdb_id) {
   // 1- Create a scene with a default light and camera
   var scene = new Scene();
   renderer.addScene(scene);
-  /*
-  // 2- Create a shape with geometry and colors for points
-  var shape = new Shape();
-  var vertices = [];
-  var colors   = [];
-  for (var i of [test.atom1, test.atom2]) {
-    vertices.push(i.x);
-    vertices.push(i.y);
-    vertices.push(i.z);
-    // CPK
-    switch (i.symbol) {
-      case 'C': 
-        colors.push(0.78); //red
-        colors.push(0.78); //green
-        colors.push(0.78); //blue
-        break;
-      case 'N': 
-        colors.push(0.56); //red
-        colors.push(0.56); //green
-        colors.push(1.00); //blue
-        break;
-      case 'O': 
-        colors.push(0.94); //red
-        colors.push(0.00); //green
-        colors.push(0.00); //blue
-        break;
-      case 'P': 
-        colors.push(1.00); //red
-        colors.push(0.65); //green
-        colors.push(0.00); //blue
-        break;
-    }
-  }
-
-  shape.setGeometry({'type':'POINTS','attribute':'aVertexPosition','data':vertices});
-  shape.setColors({'type': 'RGB', 'attribute':'aVertexColor','data':colors});*/
+  
   function CylinderGenerator(n) {
     var step = 2 * Math.PI / n;//angle of each step, in radius
-    var radius = 1;
-    var nPoints = (n * 2 + 4) * 3;
-    var buffer = new ArrayBuffer(nPoints * 4);//points: float32 (4 bytes)
-    var i = nPoints - (2 * 3);
+    var radius = 0.1;
+    this.nCoords = (n * 2 + 4) * 3;
+    var buffer = new ArrayBuffer(this.nCoords * 4);//points: float32 (4 bytes)
+    var i = this.nCoords - (2 * 3);
     var view = new Float32Array(buffer, 3 * 4, i);
     var x, z, angle = -step;
     while(i) {
@@ -144,7 +115,7 @@ function loadFile(type,pdb_id) {
       view[--i] = x;// x
       // bottom point
       view[--i] = z;// z
-      view[--i] = -1;// y
+      view[--i] = 0;// y
       view[--i] = x;// x
     }
     
@@ -152,9 +123,9 @@ function loadFile(type,pdb_id) {
     template[0] = template[3];
     template[1] = template[4];
     template[2] = template[5];
-    template[nPoints - 1] = template[nPoints - 4];
-    template[nPoints - 2] = template[nPoints - 5];
-    template[nPoints - 3] = template[nPoints - 6];
+    template[this.nCoords - 1] = template[this.nCoords - 4];
+    template[this.nCoords - 2] = template[this.nCoords - 5];
+    template[this.nCoords - 3] = template[this.nCoords - 6];
     
     this.template = template;
     this.cylinderVector = new Float32Array([0, 1, 0]);
@@ -169,6 +140,7 @@ function loadFile(type,pdb_id) {
         coords.push(vec3.fromValues(p.x, p.y, p.z));
       }
     }
+    
     
     // construction of transform matrix
     // scale
@@ -185,7 +157,7 @@ function loadFile(type,pdb_id) {
     var matrix = mat4.create();
     mat4.identity(matrix);
     
-    //mat4.translate(matrix, matrix, coords[0]);
+    mat4.translate(matrix, matrix, coords[0]);
     mat4.rotate(matrix, matrix, angle, normal);
     mat4.scale(matrix, matrix, [1, scale, 1]);
     
@@ -193,8 +165,8 @@ function loadFile(type,pdb_id) {
     var outputBuffer = this.template.buffer.slice(0);
     var i = this.template.length / 3;
     var offset;
-    while (i) {
-      offset = --i * 3 * 4;
+    while (i) { // tant que je ne suis pas au 1er point (on boucle à l'envers a cause de --i)
+      offset = --i * 3 * 4; //offset = décalage dans la liste
       vec3.transformMat4(
         new Float32Array(outputBuffer, offset, 3),
         new Float32Array(this.template.buffer, offset, 3),
@@ -204,57 +176,47 @@ function loadFile(type,pdb_id) {
     return new Float32Array(outputBuffer);
   };
   
+  
+  CylinderGenerator.prototype.colorChoice = function(symbol) {
+    var outputArray = new Float32Array(this.nCoords);
+    var i = this.template.length;
+    var color = getCPKColor(symbol);
+    while (i) { 
+      outputArray[--i] = color[2];  
+      outputArray[--i] = color[1];
+      outputArray[--i] = color[0];
+    }
+    return outputArray;
+  };
+  
   // 2- Create a shape with geometry and colors for bonds
   var shape = new Shape();
-  
   var cylinder = new CylinderGenerator(16);
-  var vertices = cylinder.fitBetween(test.atom1, test.atom2);
+  //selected = [selected[1]];
+  var vertices = new Float32Array(cylinder.nCoords * selected.length * 2);
+  var colors = new Float32Array(cylinder.nCoords * selected.length * 2);
+  for (var i = 0; i < selected.length; i++) {
+    vertices.set(
+      cylinder.fitBetween(selected[i].atom1, selected[i].middle),
+      i * 2 * cylinder.nCoords);
+    colors.set(
+      cylinder.colorChoice(selected[i].atom1.symbol),
+      i * 2 * cylinder.nCoords
+    );
+    vertices.set(
+      cylinder.fitBetween(selected[i].middle, selected[i].atom2),
+      (i * 2 + 1) * cylinder.nCoords);
+    colors.set(
+      cylinder.colorChoice(selected[i].atom2.symbol),
+      (i * 2 + 1) * cylinder.nCoords
+    );
+  }
   
-  var colors   = [];
-  /*for (var i of [test.atom1]) {
-    vertices.push(0);
-    vertices.push(0);
-    vertices.push(0);
-    vertices.push(0.5);
-    vertices.push(0);
-    vertices.push(0);
-    vertices.push(0);
-    vertices.push(0.5);
-    vertices.push(0);
-    vertices.push(-0.5);
-    vertices.push(0.5);
-    vertices.push(0);
-    vertices.push(-0.5);
-    vertices.push(0.5);
-    vertices.push(-0.5);
-    // CPK
-    switch (i.symbol) {
-      case 'C': 
-        colors.push(0.78); //red
-        colors.push(0.78); //green
-        colors.push(0.78); //blue
-        break;
-      case 'N': 
-        colors.push(0.56); //red
-        colors.push(0.56); //green
-        colors.push(1.00); //blue
-        break;
-      case 'O': 
-        colors.push(0.94); //red
-        colors.push(0.00); //green
-        colors.push(0.00); //blue
-        break;
-      case 'P': 
-        colors.push(1.00); //red
-        colors.push(0.65); //green
-        colors.push(0.00); //blue
-        break;
-    }
-  }*/
+
   console.log(vertices);
 
   shape.setGeometry({'type':'TRIANGLE_STRIP','attribute':'aVertexPosition','data':vertices});
-  //shape.setColors({'type': 'RGB', 'attribute':'aVertexColor','data':colors});
+  shape.setColors({'type': 'RGB', 'attribute':'aVertexColor','data':colors});
 
   // 2ter- Define shader program by hand 
   var shaderProgram = new Program(renderer.getContext(),'monochrome');
@@ -263,7 +225,7 @@ function loadFile(type,pdb_id) {
   shaderProgram.link();
   // Get attribLocation
   shaderProgram.setAttribute("aVertexPosition");
-  //shaderProgram.setAttribute("aVertexColor");
+  shaderProgram.setAttribute("aVertexColor");
   // Get uniformLocation
   shaderProgram.setUniformLocation("uPMatrix");
   shaderProgram.setUniformLocation("uVMatrix");
@@ -272,10 +234,10 @@ function loadFile(type,pdb_id) {
   shape.setProgram(shaderProgram);
   shape.updateGL(renderer.getContext() );
 
-//  mat4.translate(shape.matrix,shape.matrix,[-test.middle.x,-test.middle.y,-test.middle.z]);
+  mat4.translate(shape.matrix,shape.matrix,[-mol.cg.x,-mol.cg.y,-mol.cg.z]);
   console.log(shape.matrix );
   scene.add(shape);
-  mat4.translate(scene.getCamera().viewMatrix,scene.getCamera().viewMatrix,[0.0,0.0,-10.0]);
+  mat4.translate(scene.getCamera().viewMatrix,scene.getCamera().viewMatrix,[0.0,0.0,-60.0]);
   
   console.log(scene.toString());
   // 3- Update renderer
@@ -289,6 +251,27 @@ function loadFile(type,pdb_id) {
 
   // 4- Draw Scene
   renderer.drawScene();
+}
+
+function getCPKColor(symbol) {
+  // CPK
+  switch (symbol) {
+    case 'C':
+      return [0.78, 0.78, 0.78];
+      break;
+    case 'N': 
+      return [0.56, 0.56, 1.00];
+      break;
+    case 'O': 
+      return [0.94, 0.00, 0.00];
+      break;
+    case 'P': 
+      return [1.00, 0.65, 0.00];
+      break;
+    default: 
+      return [0.00, 0.65, 0.00];
+      break;
+  }
 }
 
 </script>
