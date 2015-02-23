@@ -69,24 +69,15 @@ function loadFile(type,pdb_id) {
   // Alpha Carbon of the group #10 in the chain 'B'
   // var selected = mol.finder('ATOM', function (atom) { if (atom.name === "CA" && atom.chain === "B" && atom.groupID == 10) return true; });
   
-  // Alpha Carbon of the group #10 in the chain 'B'
+  // all
   var selected = mol.finder(
     'BOND', 
     function (bond) {
-      return ( bond.atom1.chain == "3" 
-        && (
-           (bond.atom1.name === "CA" && bond.atom2.name === "C" )
-        || (bond.atom1.name === "C"  && bond.atom2.name === "CA") ) )
-    });
-  selected = mol.bonds;
+      return true;
+    }
+  );
+  
   console.log(selected.length + " bond(s) selected!");
-  for (var i=0; i< selected.length; i++) {
-    //console.log(selected[i].atom1.groupID+'['+selected[i].atom1.name+';'+selected[i].atom2.name+']');
-  }
-
-  //console.log(selected);
-  var test = selected[25];
-  console.log(test);
 
  // 0- Create a renderer for this canvas
   var renderer = new Renderer('canvas');
@@ -96,14 +87,22 @@ function loadFile(type,pdb_id) {
   var scene = new Scene();
   renderer.addScene(scene);
   
+  // Class CylinderGenerator
+  // n: number of faces for the cylinders
   function CylinderGenerator(n) {
-    var step = 2 * Math.PI / n;//angle of each step, in radius
+    // angle of each step, in radius
+    var step = 2 * Math.PI / n;
     var radius = 0.1;
     this.nCoords = (n * 2 + 4) * 3;
-    var buffer = new ArrayBuffer(this.nCoords * 4);//points: float32 (4 bytes)
+    // allocate memory for the cylinder
+    // each coordinate is a float32 (4 bytes)
+    var buffer = new ArrayBuffer(this.nCoords * 4);
     var i = this.nCoords - (2 * 3);
+    // view on the buffer corresponding to the cylinder without the degenerate triangles
+    // new Float32Array(buffer, offset (in bytes), length (number of float32))
     var view = new Float32Array(buffer, 3 * 4, i);
     var x, z, angle = -step;
+    // loop, decrementing i
     while(i) {
       angle += step;
       z = -radius * Math.cos(angle);
@@ -119,7 +118,9 @@ function loadFile(type,pdb_id) {
       view[--i] = x;// x
     }
     
+    // view on the whole buffer, includes the cylinder + the degenerate triangles
     var template = new Float32Array(buffer);
+    // fills the coordinates for the degenerate triangles
     template[0] = template[3];
     template[1] = template[4];
     template[2] = template[5];
@@ -128,6 +129,7 @@ function loadFile(type,pdb_id) {
     template[this.nCoords - 3] = template[this.nCoords - 6];
     
     this.template = template;
+    // vector of the template cylinder
     this.cylinderVector = new Float32Array([0, 1, 0]);
   }
 
