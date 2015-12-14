@@ -4,14 +4,14 @@
  *
  *  This file is part of mowgli
  *
- * This program is free software: you can redistribute it and/or modify it 
- * under the terms of the GNU General Public License as published by 
- * the Free Software Foundation, either version 3 of the License, or 
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
@@ -26,7 +26,11 @@
 "use strict"
 
 /*
+ * Core class for rendering in the canvas
  * Singleton ??
+ *
+ * @class Renderer
+ * @constructor
  */
 function Renderer(canvas_id) {
   this.scene = null;
@@ -56,7 +60,7 @@ function Renderer(canvas_id) {
   // Properties
   this.context.viewportWidth  = canvas.width;
   this.context.viewportHeight = canvas.height;
-  this.shaders={}; 
+  this.shaders={};
   this.shaderProgram=null; //Active program ID
 
   // Init GL
@@ -81,8 +85,8 @@ Renderer.prototype.drawScene = function () {
   var FLOAT_IN_BYTES = 4;
   // Clear Screen And Depth Buffer
   gl.viewport(0.0, 0.0, gl.viewportWidth, gl.viewportHeight);
-  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);	
-  
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
   // Update camera matrix
   var cam = this.scene.children['camera'];
   cam.setViewport(gl.viewportWidth,gl.viewportHeight);
@@ -100,16 +104,32 @@ Renderer.prototype.drawScene = function () {
       gl.uniformMatrix4fv(shaderProgram.getUniformLocation("uVMatrix"), false, cam.viewMatrix);
       gl.uniformMatrix4fv(shaderProgram.getUniformLocation("uMMatrix"), false, shape.matrix);
 
-      console.log('coordSize '+shape.VBO.numItems +' '+shape.VBO.itemSize);
+      console.log('coordSize '+shape.numItems );
 
-      for (var j in shaderProgram.attributes) {
-        var attrib = shaderProgram.attributes[j];
-        if (shape.VBO[attrib.name].type === 'indexed') {
-          gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, shape.VBO[attrib.name].IndxID);
+      // For this geometry, activate VBO
+      for (var j in shape.geometries) {
+        var vbo = shape.geometries[j];
+        if (vbo.type === 'indexed') {
+          console.log('bind buffer '+ vbo.type + ' ' + vbo.ID+ ' ' + vbo.data);
+          gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, vbo.IndxID);
         }
-        gl.bindBuffer(gl.ARRAY_BUFFER, shape.VBO[attrib.name].ID);
-        gl.enableVertexAttribArray(shaderProgram.getAttributeLocation(attrib.name) );
-        gl.vertexAttribPointer(shaderProgram.getAttributeLocation(attrib.name), shape.VBO[attrib.name].itemSize, gl.FLOAT, false, 0, 0);
+        else {
+          console.log('bind buffer '+ vbo.type + ' ' + vbo.ID);
+          gl.bindBuffer(gl.ARRAY_BUFFER, vbo.ID);
+        }
+        for (var k in vbo.attributes) {
+          var attribute = vbo.attributes[k];
+          console.log('enable ' + attribute.name+' '+attribute.location+' '+attribute.size+' '+attribute.stride+' '+attribute.offset);
+          gl.enableVertexAttribArray(attribute.location );
+          gl.vertexAttribPointer(
+                      attribute.location,
+                      attribute.size,
+                      gl.FLOAT,
+                      false,
+                      attribute.stride * Renderer.FLOAT_IN_BYTES,
+                      attribute.offset * Renderer.FLOAT_IN_BYTES
+          );
+        }
       }
       // Draw ...
       console.log(shape.type + ' '+ shape.glType +' '+ shape.numIndices+' '+ shape.numItems);
@@ -117,6 +137,7 @@ Renderer.prototype.drawScene = function () {
         gl.drawElements(shape.glType, shape.numIndices, gl.UNSIGNED_SHORT, 0);
       }
       else {
+        console.log('drawArrays');
         gl.drawArrays(shape.glType, 0, shape.numItems);
       }
 
@@ -127,7 +148,7 @@ Renderer.prototype.drawScene = function () {
 
 Renderer.prototype.update = function () {
   var gl = this.context;
-  
+
   // TODO
 }
 
@@ -135,6 +156,9 @@ Renderer.prototype.update = function () {
 /*
  * Private
  */
+
+Renderer.FLOAT_IN_BYTES = 4;
+
 Renderer.prototype._initGL = function() {
   // Init GL stuff
   var gl = this.context;
@@ -154,6 +178,3 @@ Renderer.prototype._initGL = function() {
   // Default shader program
   this.program = new Program();
 }
-
-
-

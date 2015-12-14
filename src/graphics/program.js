@@ -28,8 +28,8 @@ var Program = function(context,name) {
   this.vertex_shader   = null;
   this.fragment_shader = null;
   this.shaderProgram = 0;
-  this.attributes={};
-  this.uniforms={};
+  this.attributes =[];
+  this.uniforms = [];
   this.attribLocation = {};
   this.uniformLocation = {};
 }
@@ -39,7 +39,7 @@ Program.prototype.getID=function() {
 }
 
 Program.prototype.load=function(type,name) {
-
+  // TODO
   if (type =='vertex')
     // this.vertex_shader = ShaderFactory.get(type,name);
     console.log('vertex');
@@ -58,8 +58,8 @@ Program.prototype.loadHTTP=function(type,name) {
   var req = new XMLHttpRequest();
   req.open("GET", url, true);
   req.responseType = 'text';
-  req.onload = function() {
-    if (this.status === 200) {
+  req.onreadystatechange = function() {
+    if (req.readyState==4 && req.status==200) {
       this.fragment_shader = this._compile(gl.FRAGMENT_SHADER,this.response);
     }
   }
@@ -84,6 +84,7 @@ Program.prototype.loadDOM=function(type,name) {
     k = k.nextSibling;
   }
 
+
   if (shaderScript.type == "x-shader/x-fragment") {
     this.fragment_shader = this._compile(gl.FRAGMENT_SHADER,str);
   } else if (shaderScript.type == "x-shader/x-vertex") {
@@ -91,6 +92,10 @@ Program.prototype.loadDOM=function(type,name) {
   } else {
     return null;
   }
+
+  // Extract attribute from shader text and create objects
+  this._createAttributesAndUniforms(str);
+
 }
 
 
@@ -112,44 +117,12 @@ Program.prototype.use=function() {
 }
 
 
-Program.prototype.setAttribute=function(attrib_name) {
+Program.prototype.getAttribLocation = function(attrib_name) {
   var gl = this.ctx;
   gl.useProgram(this.getID());
-  var location = gl.getAttribLocation(this.getID(),attrib_name);
-  this.attributes[attrib_name] = {'name': attrib_name,'location': location};
+  return gl.getAttribLocation(this.getID(),attrib_name);
 }
 
-Program.prototype.setUniforms=function(uniform_list) {
-  this.uniforms = uniform_list;
-
-  var gl = this.ctx;
-  for (var i in this.uniforms) {
-    console.log(i+' ' +this.uniforms[i]);
-    this.uniforms[i].location = gl.getUniformLocation(this.getID(), i);
-    switch (this.uniforms[i].type) {
-    case 'f':
-      gl.uniform1f(this.uniforms[i].location, this.uniforms[i].value);
-      break;
-    case 'm':
-      break;
-    case 't':
-      break;
-    case 'v':
-      break;
-    default:
-    }
-  }
-}
-
-Program.prototype.getAttributeLocation=function(name) {
-  return this.attributes[name].location;
-}
-
-Program.prototype.setAttribLocation=function(name) {
-  var gl = this.ctx;
-  gl.useProgram(this.getID());
-  this.attribLocation[name]=gl.getAttribLocation(this.getID(),name);
-}
 
 Program.prototype.setUniformLocation=function(name) {
   var gl = this.ctx;
@@ -162,26 +135,10 @@ Program.prototype.getUniformLocation=function(name) {
   return this.uniformLocation[name];
 }
 
-Program.prototype.setUniform1f=function(name,value) {
-  var gl = this.ctx;
-  // TODO
-}
-
-Program.prototype.setUniform2f=function(name,value1, value2) {
-  var gl = this.ctx;
-
-  this.uniforms[name]=gl.getUniformLocation(this.shaderProgram, name);
-  gl.uniform2f(uniforms[name], value1, value2);
-}
-
-Program.prototype.setUniform4fv=function(name,array4x4) {
-  var gl = this.ctx;
-
-  this.uniforms[name]=gl.getUniformLocation(this.shaderProgram, name);
-  gl.uniform4fv(uniforms[name], array4x4);
-}
-
-// Private
+/**
+ * Private method for compiling shader
+ *
+ **/
 Program.prototype._compile=function(type,text) {
   var gl = this.ctx;
   var shader = gl.createShader(type);        
@@ -195,4 +152,74 @@ Program.prototype._compile=function(type,text) {
 
   return shader;
 }
+
+// Private
+Program.prototype._createAttributesAndUniforms=function(text) {
+  var rows = text.split('\n');
+  var re = /[\s,;]+/;
+  var type;
+  var qualifier = 'x';
+
+  for (var i in rows) {
+    var a_row = rows[i];
+    if (a_row.indexOf('attribute') != -1 || a_row.indexOf('uniform') != -1) {
+      words = a_row.trim().split(re); //  match(/[\S,;]+/g);
+      console.log(words);
+      for (var j=0; j < words.length; j++) {
+        switch (words[j]) {
+        case '//':
+          // Commented line
+          j = words.length; 
+          break;
+        case 'attribute':
+          qualifier = 'a'; 
+          break;
+        case 'uniform':
+          qualifier = 'u'; 
+          break;
+        case 'bool':
+          itemSize = 1;
+          type = words[j]; 
+          break;
+        case 'int' :
+          itemSize = 1;
+          type = words[j]; 
+          break;
+        case 'float':
+          itemSize = 1;
+          type = words[j]; 
+          break;
+        case 'vec2':
+          itemSize = 2;
+          type = words[j]; 
+          break;
+        case 'vec3':
+          itemSize = 3;
+          type = words[j]; 
+          break;
+        case 'vec4':
+          itemSize = 4;
+          type = words[j]; 
+          break;
+        case 'mat4':
+          itemSize = 16;
+          type = words[j]; 
+          break;
+        default:
+          if (qualifier == 'a' && words[j] != '') {
+            console.log('attribute '+ words[j] + ' type '+ type);
+            this.attributes[words[j]] = {'name':words[j],'type':type,'size':itemSize}; 
+          }
+          else if (qualifier == 'u' && words[j] != '') {
+            console.log('uniform '+ words[j] + ' type '+ type);
+            this.uniforms[words[j]] = {'name':words[j],'type':type,'size':itemSize};
+          } 
+          break;
+        }
+      }
+    }
+  }
+}
+
+
 
