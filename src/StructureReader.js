@@ -25,17 +25,17 @@
 /*
  * Constructor
  */
-var PDBLoader = function () {
+var StructureReader = function () {
 
 }
 
-PDBLoader.prototype.getFromDOM = function(document_id,format) {
+StructureReader.prototype.getFromDOM = function(document_id,format) {
   var text = document.getElementById(document_id).innerHTML;  
   var mol = this.createStructure(text,format);
   return mol;
 }
 
-PDBLoader.prototype.getFromURL = function(url) {
+StructureReader.prototype.getFromURL = function(url) {
   var extension = url.substr(url.length-3,url.length-1);
   console.log(extension);
   
@@ -57,12 +57,12 @@ PDBLoader.prototype.getFromURL = function(url) {
   return mol;
 }
 
-PDBLoader.prototype.getFromID = function(pdb_id) {
+StructureReader.prototype.getFromID = function(pdb_id) {
   return this.getFromURL("http://www.rcsb.org/pdb/files/"+pdb_id+".pdb");
 
 }
 
-PDBLoader.prototype.createStructure = function(text,format) {
+StructureReader.prototype.createStructure = function(text,format) {
 
   // 1- Choose the good parser
   var parser = null;
@@ -75,6 +75,9 @@ PDBLoader.prototype.createStructure = function(text,format) {
   }
   else if (format === 'xml') {
     parser = new PDBMLParser();
+  }
+  else if (format === 'xyz') {
+    parser = new XYZParser();
   }
   else {
   // Unknown format
@@ -90,7 +93,7 @@ PDBLoader.prototype.createStructure = function(text,format) {
   return mol;
 }
 
-PDBLoader.prototype.computeBonds = function(a_mol) {
+StructureReader.prototype.computeBonds = function(a_mol) {
   // TODO
 }
 

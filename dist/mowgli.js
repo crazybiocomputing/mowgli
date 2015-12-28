@@ -25,17 +25,17 @@
 /*
  * Constructor
  */
-var PDBLoader = function () {
+var StructureReader = function () {
 
 }
 
-PDBLoader.prototype.getFromDOM = function(document_id,format) {
+StructureReader.prototype.getFromDOM = function(document_id,format) {
   var text = document.getElementById(document_id).innerHTML;  
   var mol = this.createStructure(text,format);
   return mol;
 }
 
-PDBLoader.prototype.getFromURL = function(url) {
+StructureReader.prototype.getFromURL = function(url) {
   var extension = url.substr(url.length-3,url.length-1);
   console.log(extension);
   
@@ -57,12 +57,12 @@ PDBLoader.prototype.getFromURL = function(url) {
   return mol;
 }
 
-PDBLoader.prototype.getFromID = function(pdb_id) {
+StructureReader.prototype.getFromID = function(pdb_id) {
   return this.getFromURL("http://www.rcsb.org/pdb/files/"+pdb_id+".pdb");
 
 }
 
-PDBLoader.prototype.createStructure = function(text,format) {
+StructureReader.prototype.createStructure = function(text,format) {
 
   // 1- Choose the good parser
   var parser = null;
@@ -75,6 +75,9 @@ PDBLoader.prototype.createStructure = function(text,format) {
   }
   else if (format === 'xml') {
     parser = new PDBMLParser();
+  }
+  else if (format === 'xyz') {
+    parser = new XYZParser();
   }
   else {
   // Unknown format
@@ -90,7 +93,7 @@ PDBLoader.prototype.createStructure = function(text,format) {
   return mol;
 }
 
-PDBLoader.prototype.computeBonds = function(a_mol) {
+StructureReader.prototype.computeBonds = function(a_mol) {
   // TODO
 }
 
@@ -1231,10 +1234,40 @@ function MMCIFParser() {
 }
 
 
+/*
+ *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
+ *  Copyright (C) 2015  Jean-Christophe Taveau.
+ *
+ *  This file is part of mowgli
+ *
+ * This program is free software: you can redistribute it and/or modify it 
+ * under the terms of the GNU General Public License as published by 
+ * the Free Software Foundation, either version 3 of the License, or 
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, 
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+ * GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * Authors:
+ * Jean-Christophe Taveau
+ */
 
+"use strict"
+
+/*
+ * Constructor
+ *
+ * @author: Jean-Christophe Taveau
+ */
 
 function PDBMLParser() {
-
+    // TODO
 }
 
 
@@ -1624,7 +1657,123 @@ PDBParser.prototype.postProcess = function () {
 
 /*
  * Constructor
+ *
+ * @author: Jean-Christophe Taveau
  */
+
+function XYZParser() {
+  this.mol = new Structure();
+}
+
+XYZParser.prototype.getStructure = function () {
+  return this.mol;
+}
+
+/**
+ * File format described in Wikipedia:
+ * https://en.wikipedia.org/wiki/XYZ_file_format
+ * Example from Wikipedia:
+ *
+ * 5
+ * methane molecule (in Angströms)
+ * C        0.000000        0.000000        0.000000
+ * H        0.000000        0.000000        1.089000
+ * H        1.026719        0.000000       -0.363000
+ * H       -0.513360       -0.889165       -0.363000
+ * H       -0.513360        0.889165       -0.363000
+ *
+ **/
+XYZParser.prototype.parse = function (text) {
+    // 1- Split the text in an array of rows
+    var rows = text.split('\n');
+    console.log(rows);
+    // 2- Search for row #0
+    var start = 0;
+    while (/^\d+$/.test(rows[start]) == false) {
+        start++;
+    }
+    // 3- Read title aka row #1
+    this.mol.title = rows[start + 1];
+    // 4- Main loop
+    for (var i = start + 2; i < rows.length; i++) {
+        if (rows[i] !== undefined && rows[i].length > 0) {
+            this.parseAtom(rows[i],i - 1 - start);
+        }
+    }
+}
+
+
+
+XYZParser.prototype.parseAtom = function (line, row_number) {
+  var words = line.match(/(\S+)/g);
+  console.log(words);
+  var atom = {};
+  atom.type = "ATOM";
+  atom.serial = row_number;
+  atom.name = words[0].trim();
+  atom.group = "XXX";
+  atom.chain = "A";
+  atom.groupID = 1;
+  atom.x = parseFloat(words[1].trim());
+  atom.y = parseFloat(words[2].trim());
+  atom.z = parseFloat(words[3].trim());
+  atom.symbol = atom.name;
+  // If exists, set the secondary structure (previously parse in HELIX and SHEET)
+  atom.secondary = 'X';
+  this.mol.atoms.push(atom);
+
+  // Update centroid and bounding box of the structure
+  this.mol.cg.x += atom.x;
+  this.mol.cg.y += atom.y;
+  this.mol.cg.z += atom.z;
+  this.updateBBox(atom);
+
+}
+XYZParser.prototype.updateBBox = function (a) {
+  if (this.mol.bbox.min.x > a.x)
+    this.mol.bbox.min.x = a.x;
+  if (this.mol.bbox.min.y > a.y)
+    this.mol.bbox.min.y = a.y;
+  if (this.mol.bbox.min.z > a.z)
+    this.mol.bbox.min.z = a.z;
+  if (this.mol.bbox.max.x < a.x)
+    this.mol.bbox.max.x = a.x;
+  if (this.mol.bbox.max.y < a.y)
+    this.mol.bbox.max.y = a.y;
+  if (this.mol.bbox.max.z < a.z)
+    this.mol.bbox.max.z = a.z;
+}
+
+/*
+ *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
+ *  Copyright (C) 2015  Jean-Christophe Taveau.
+ *
+ *  This file is part of mowgli
+ *
+ * This program is free software: you can redistribute it and/or modify it 
+ * under the terms of the GNU General Public License as published by 
+ * the Free Software Foundation, either version 3 of the License, or 
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, 
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+ * GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * Authors:
+ * Jean-Christophe Taveau
+ */
+
+"use strict"
+
+/**
+ * Constructor
+ * @constructor
+ **/
 var Structure = function () {
 
   // General Information
@@ -1674,7 +1823,53 @@ Structure.LEFT_HANDED_GAMMA  = 8;
 Structure.RIBBON_HELIX_2_7   = 9;
 Structure.POLYPROLINE        = 10;
 
+Structure.threeToOne = {
+    "ALA" : "A", // Alanine
+    "ARG" : "R", // Arginine
+    "ASN" : "N", // Asparagine
+    "ASP" : "D", // Aspartic_acid
+    "CYS" : "C", // Cysteine
+    "GLU" : "E", // Glutamic_acid
+    "GLN" : "Q", // Glutamine
+    "GLY" : "G", // Glycine
+    "HIS" : "H", // Histidine
+    "ILE" : "I", // Isoleucine
+    "LEU" : "L", // Leucine
+    "LYS" : "K", // Lysine
+    "MET" : "M", // Methionine
+    "PHE" : "F", // Phenylalanine
+    "PRO" : "P", // Proline
+    "SER" : "S", // Serine
+    "THR" : "T", // Threonine
+    "TRP" : "W", // Tryptophan
+    "TYR" : "Y", // Tyrosine
+    "VAL" : "V", // Valine
+    "SEC" : "U", // Selenocysteine
+    "PYL" : "O", // Pyrrolysine
+    "ASX" : "B", // Asparagine_or_aspartic_acid
+    "GLX" : "Z", // Glutamine_or_glutamic_acid
+    "XLE" : "J", // Leucine_or_Isoleucine
+    "XAA" : "X", // Unspecified_or_unknown_amino_acid
+    "XXX" : "X"  // Unspecified_or_unknown_amino_acid
+}
 
+/**
+ * Set Title
+ *
+ * @param{string} the new title
+ *
+ **/
+Structure.prototype.setTitle = function (str) {
+    this.title = str;
+}
+
+/**
+ * Filter the atoms or bonds in function of their attributes
+ *
+ * @param{string} The type of objects (ATOM or BOND )on which the filter is applied
+ * @param{function} A function for filtering
+ *
+ **/
 Structure.prototype.finder = function (src,callback) {
   if (src === 'ATOM') {
     return this.atoms.filter(callback);
@@ -1690,6 +1885,62 @@ Structure.prototype.atomFinder = function (callback) {
 
 Structure.prototype.bondFinder = function (callback) {
   return this.bonds.filter(callback);
+}
+
+/**
+ * Return the primary sequence in the FASTA format
+ *
+ * @return {string} The sequence in FASTA format
+ *
+ **/
+Structure.prototype.fasta = function () {
+    var fasta = '> ' + this.ID + ':' + this.atoms[0].chain + ' | ' + this.title + '\n';
+    var current_chain = this.atoms[0].chainID;
+    var count = 0;
+    for (var i= 0; i < this.atoms.length; i++) {
+        if (this.atoms[i].chainID != current_chain) {
+            fasta += '\n> ' + this.ID + ':' + this.atoms[i].chain + ' | ' + this.title + '\n';
+            current_chain = this.atoms[i].chainID;
+            count = 0;
+        }
+        if (this.atoms[i].name==="CA" && this.atoms[i].chainID == current_chain) {
+            fasta += Structure.threeToOne[this.atoms[i].group];
+            count++;
+            if ( (count % 80) == 0) {
+                fasta += '\n';
+                count = 0;
+            }
+        }
+    }
+    return fasta;
+}
+
+/**
+ * Return the secondary structures in FASTA format -- if available.
+ *
+ * @return {string} The secondary structures of sequence in FASTA format
+ *
+ **/
+Structure.prototype.secondary = function () {
+    var fasta = '> ' + this.ID + ':' + this.atoms[0].chain + ' | ' + this.title + '\n';
+    var current_chain = this.atoms[0].chainID;
+    var count = 0;
+    for (var i= 0; i < this.atoms.length; i++) {
+        if (this.atoms[i].chainID != current_chain) {
+            fasta += '\n> ' + this.ID + ':' + this.atoms[i].chain + ' | ' + this.title + '\n';
+            current_chain = this.atoms[i].chainID;
+            count = 0;
+        }
+        if (this.atoms[i].name==="CA" && this.atoms[i].chainID == current_chain) {
+            fasta += this.atoms[i].struct[0];
+            count++;
+            if ( (count % 80) == 0) {
+                fasta += '\n';
+                count = 0;
+            }
+        }
+    }
+    return fasta;
 }
 
 Structure.prototype.toString = function () {
