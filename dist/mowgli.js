@@ -428,9 +428,10 @@ Camera.prototype.setViewport = function (width, height) {
  * @constructor
  **/
 function Geometry (options) {
+  console.log(options);
   this.type    = options.type || 'none';
   this.data    = options.data;
-  this.attributes = options.attributes || [];
+  this.attributes = options.attributes; // || [];
 
   this.indices = options.indices;
   if (this.type === 'indexed') {
@@ -440,7 +441,8 @@ function Geometry (options) {
     this._isIndexed = false;
   }
 
-
+    console.log('end create GEOM');
+    console.log(this.attributes);
 }
 
 Geometry.prototype.getBuffer = function(name) {
@@ -944,6 +946,7 @@ Scene.prototype.getCamera = function() {
 
 
 Scene.prototype.toString = function() {
+    return JSON.stringify(this.children);
   var str = this.ID+'\n';
   for (var i in this.children) {
     str += '+-'+this.children[i].ID+'\n';
@@ -1019,27 +1022,30 @@ Shape.prototype.setInterleavedGeometry = function(types,data) {
 }
 
 Shape.prototype.setGeometry = function(a_geom) {
-  this.type = a_geom.type || 'POINTS';
+    this.type = a_geom.type || 'POINTS';
 
-  if (a_geom.indices != undefined) {
-    this._isIndexed = true;
-    this.geometries.push( new Geometry({
-      'type'       : 'indexed',
-      'data'       : new Float32Array(a_geom.data),
-      'indices'    : new Uint16Array(a_geom.indices),
-    }) );
-    this.numIndices = a_geom.indices.length;
-  }
-  else {
-    this.geometries.push( new Geometry( {
-      'type'     : 'vertex',
-      'data'     : new Float32Array(a_geom.data),
-      'attributes' : a_geom.attributes
-    }) );    
-  }
+    if (a_geom.indices != undefined) {
+        this._isIndexed = true;
+        this.geometries.push( 
+            new Geometry({
+                'type'       : 'indexed',
+                'data'       : new Float32Array(a_geom.data),
+                'indices'    : new Uint16Array(a_geom.indices),
+                'attributes' : a_geom.attributes
+            }) 
+        );
+        this.numIndices = a_geom.indices.length;
+    }
+    else {
+        this.geometries.push( new Geometry( {
+            'type'     : 'vertex',
+            'data'     : new Float32Array(a_geom.data),
+            'attributes' : a_geom.attributes
+        }) );    
+    }
 
-  // Set the number of items in this shape
-  // this.numItems = a_geom.data.length / itemSize;
+    // Set the number of items in this shape
+    // this.numItems = a_geom.data.length / itemSize;
 }
 
 Shape.prototype.setCG = function(cg) {
@@ -1082,6 +1088,7 @@ Shape.prototype.updateUniforms = function (context) {
 // Private
 Shape.prototype._createVBO = function(context,vbo) {
   var gl = context;
+  console.log('SHAPE TYPE ' + this.type);
   switch (this.type) {
   case 'POINTS','POINTS_RADIUS': 
     this.glType = gl.POINTS;
@@ -1108,6 +1115,8 @@ Shape.prototype._createVBO = function(context,vbo) {
   gl.bufferData(gl.ARRAY_BUFFER, vbo.data, gl.STATIC_DRAW);
 
   // Update attribute(s) associated to this VBO
+  console.log('VBO attributes');
+  console.log(vbo.attributes);
   for (var j=0; j < vbo.attributes.length; j++) {
     vbo.attributes[j].location = this.shaderProgram.getAttribLocation(vbo.attributes[j].name);
     vbo.attributes[j].size = this.shaderProgram.attributes[vbo.attributes[j].name].size;
@@ -1119,7 +1128,7 @@ Shape.prototype._createVBO = function(context,vbo) {
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, vbo.IndxID);
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, vbo.indices, gl.STATIC_DRAW);
   }
-  console.log(vbo.ID);
+  console.log('VBO ID: ' + vbo.ID);
   return vbo;
 
 }
@@ -1226,6 +1235,163 @@ var ShapeFactory = (function () {
 })();
  
  
+
+/*
+ *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
+ *  Copyright (C) 2015  Jean-Christophe Taveau.
+ *
+ *  This file is part of mowgli
+ *
+ * This program is free software: you can redistribute it and/or modify it 
+ * under the terms of the GNU General Public License as published by 
+ * the Free Software Foundation, either version 3 of the License, or 
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, 
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+ * GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * Authors:
+ * Jean-Christophe Taveau
+ */
+
+"use strict"
+
+/*
+ * Constructor
+ */
+ 
+ var Cube = function() {
+    Shape.call(this);
+    this.ID = 'cube';
+ }
+ 
+ Cube.prototype = Object.create(Shape.prototype );
+
+/*
+ * Set style of this cube:
+ * @param{string} 'wireframe','solid','shaded','textured'
+ */
+Cube.prototype.setStyle = function(type) {
+    switch (type) {
+    case 'wireframe' :
+        this.ID = 'cubeWire';
+        // 1- Define geometry
+        var _indices = [0,1,2,3,0,4,5,6,7,4,5,1,2,6,7,3]; 
+        this.setGeometry( 
+            {
+                'type'      :'LINE_STRIP',
+                'data'      : Cube.vertices, 
+                'indices'   :_indices, 
+                'attributes': [new Attribute("aVertexPosition",0,0)] 
+            }
+        );
+        this.numItems = Cube.vertices.length / 3;
+        // 2- Define graphics style
+        //this.setProgram(shaderProgram);
+        break;
+    case 'solid' :
+            this.ID = 'cubeSolid'; 
+        var colors3ub = [
+            255,0,0, //face red
+            0,255,0, //face green
+            0,0,255, //face blue
+            255,255,0, //face yellow
+            0,255,255, //face cyan
+            255,0,255, //face magenta
+        ];
+        break;
+    case 'shaded':
+        this.ID = 'cubeShaded'; 
+        // TODO
+        break;
+    case 'textured' :
+        this.ID = 'cubeTextured'; 
+        // TODO
+        break;
+    default:
+    
+    }
+}
+ 
+
+    
+Cube.vertices = [
+     1, 1,-1,
+     1,-1,-1,
+    -1,-1,-1,
+    -1, 1,-1,
+     1, 1, 1,
+     1,-1, 1,
+    -1,-1, 1,
+    -1, 1, 1
+    ];
+ 
+
+/*
+ *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
+ *  Copyright (C) 2015  Jean-Christophe Taveau.
+ *
+ *  This file is part of mowgli
+ *
+ * This program is free software: you can redistribute it and/or modify it 
+ * under the terms of the GNU General Public License as published by 
+ * the Free Software Foundation, either version 3 of the License, or 
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, 
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+ * GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * Authors:
+ * Jean-Christophe Taveau
+ */
+
+"use strict"
+
+/*
+ * Constructor
+ */
+ var MowgliViewer = function (canvasID) {
+ 
+    // 0- Create a renderer for this canvas
+    this.renderer = new Renderer(canvasID);
+
+    // 1- Create a scene with a default light and camera
+    this.scene = new Scene();
+    this.renderer.addScene(scene);
+
+    // 2- Update renderer
+    this.renderer.update();
+
+    // 3- Add a sensor
+    var mouse = new MouseSensor(canvasID);
+    this.mouse.attach(this.scene);
+
+    this.renderer.addSensor(mouse);
+
+ }
+ 
+MowgliViewer.prototype.getScene = function () {
+    return this.scene;
+}
+
+
+MowgliViewer.prototype.render = function () {
+    this.renderer.drawScene();
+}
+
+
 
 
 

@@ -44,6 +44,7 @@ Scene.prototype.getCamera = function() {
 
 
 Scene.prototype.toString = function() {
+    return JSON.stringify(this.children);
   var str = this.ID+'\n';
   for (var i in this.children) {
     str += '+-'+this.children[i].ID+'\n';

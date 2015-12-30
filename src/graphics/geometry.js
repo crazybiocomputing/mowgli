@@ -32,9 +32,10 @@
  * @constructor
  **/
 function Geometry (options) {
+  console.log(options);
   this.type    = options.type || 'none';
   this.data    = options.data;
-  this.attributes = options.attributes || [];
+  this.attributes = options.attributes; // || [];
 
   this.indices = options.indices;
   if (this.type === 'indexed') {
@@ -44,7 +45,8 @@ function Geometry (options) {
     this._isIndexed = false;
   }
 
-
+    console.log('end create GEOM');
+    console.log(this.attributes);
 }
 
 Geometry.prototype.getBuffer = function(name) {

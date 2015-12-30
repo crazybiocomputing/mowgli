@@ -66,27 +66,30 @@ Shape.prototype.setInterleavedGeometry = function(types,data) {
 }
 
 Shape.prototype.setGeometry = function(a_geom) {
-  this.type = a_geom.type || 'POINTS';
+    this.type = a_geom.type || 'POINTS';
 
-  if (a_geom.indices != undefined) {
-    this._isIndexed = true;
-    this.geometries.push( new Geometry({
-      'type'       : 'indexed',
-      'data'       : new Float32Array(a_geom.data),
-      'indices'    : new Uint16Array(a_geom.indices),
-    }) );
-    this.numIndices = a_geom.indices.length;
-  }
-  else {
-    this.geometries.push( new Geometry( {
-      'type'     : 'vertex',
-      'data'     : new Float32Array(a_geom.data),
-      'attributes' : a_geom.attributes
-    }) );    
-  }
+    if (a_geom.indices != undefined) {
+        this._isIndexed = true;
+        this.geometries.push( 
+            new Geometry({
+                'type'       : 'indexed',
+                'data'       : new Float32Array(a_geom.data),
+                'indices'    : new Uint16Array(a_geom.indices),
+                'attributes' : a_geom.attributes
+            }) 
+        );
+        this.numIndices = a_geom.indices.length;
+    }
+    else {
+        this.geometries.push( new Geometry( {
+            'type'     : 'vertex',
+            'data'     : new Float32Array(a_geom.data),
+            'attributes' : a_geom.attributes
+        }) );    
+    }
 
-  // Set the number of items in this shape
-  // this.numItems = a_geom.data.length / itemSize;
+    // Set the number of items in this shape
+    // this.numItems = a_geom.data.length / itemSize;
 }
 
 Shape.prototype.setCG = function(cg) {
@@ -129,6 +132,7 @@ Shape.prototype.updateUniforms = function (context) {
 // Private
 Shape.prototype._createVBO = function(context,vbo) {
   var gl = context;
+  console.log('SHAPE TYPE ' + this.type);
   switch (this.type) {
   case 'POINTS','POINTS_RADIUS': 
     this.glType = gl.POINTS;
@@ -155,6 +159,8 @@ Shape.prototype._createVBO = function(context,vbo) {
   gl.bufferData(gl.ARRAY_BUFFER, vbo.data, gl.STATIC_DRAW);
 
   // Update attribute(s) associated to this VBO
+  console.log('VBO attributes');
+  console.log(vbo.attributes);
   for (var j=0; j < vbo.attributes.length; j++) {
     vbo.attributes[j].location = this.shaderProgram.getAttribLocation(vbo.attributes[j].name);
     vbo.attributes[j].size = this.shaderProgram.attributes[vbo.attributes[j].name].size;
@@ -166,7 +172,7 @@ Shape.prototype._createVBO = function(context,vbo) {
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, vbo.IndxID);
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, vbo.indices, gl.STATIC_DRAW);
   }
-  console.log(vbo.ID);
+  console.log('VBO ID: ' + vbo.ID);
   return vbo;
 
 }
