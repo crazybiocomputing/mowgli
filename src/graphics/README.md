@@ -13,3 +13,13 @@ Simple scene graph
 *    +-- Shape #2
 *    ...
 *    +-- Shape #n
+
+Code
+--------------------
+
+```javascript
+var renderer = new Renderer();
+var scene = new Scene();
+renderer.add(scene);
+
+```
