@@ -1,21 +1,11 @@
-Here is the repository of all the graphics styles.
-<ul>
-<li>Vectorial approaches (points, lines, triangles)</li>
-  <ul>
-    <li>Wireframe (lines)</li>
-    <li>Dots (points)</li>
-    <li>Strands (lines)</li>
-    <li>Ribbon (triangles)</li>
-    <li>Cartoon (triangles)</li>
-</ul>
-<li>Impostor approaches (spheres, cylinders)</li>
-  <ul>
-    <li>SpaceFill (spheres)</li>
-    <li>Sticks (cylinders)</li>
-    <li>Backbone (cylinders)</li>
-    <li>Trace (cylinders)</li>
-    <li>Ball & Sticks (spheres + cylinders)</li>
-    <li>Wireframe</li>
-</ul>
-
-</ul>
+Here is the repository of the various objects composing the scene graph.
+Renderer
++-- Camera
++-- Light
++-- ShapeGroup
+   +-- Shape #1
+      +-- Geometry (vertex data)
+      +-- Shader
+   +-- Shape #2
+   ...
+   +-- Shape #n
