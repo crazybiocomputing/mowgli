@@ -25,6 +25,8 @@
  "use strict"
  
 function Camera() {
+    Leaf.call(this);
+    
     this.ID = 'camera';
 
     this.projMatrix = mat4.create();
@@ -32,14 +34,15 @@ function Camera() {
     mat4.identity(this.viewMatrix);
     this.fovy = 45.0*Math.PI/180.0;
     this.zoom = 1.0;
-  }
-  
-Camera.prototype.setFovy = function (angle_in_degrees) {
-  this.fovy= angle_in_degrees * Math.PI/180.0;
+
+      // NodeGL
+    this.nodeGL = new CameraGL(this);
 }
 
-Camera.prototype.setViewport = function (width, height) {
-  mat4.perspective(this.projMatrix,this.fovy * this.zoom,width / height,0.1,1000.0);
+Camera.prototype = new Leaf;
+
+Camera.prototype.setFovy = function (angle_in_degrees) {
+  this.fovy= angle_in_degrees * Math.PI/180.0;
 }
 
 

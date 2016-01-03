@@ -24,6 +24,13 @@
 
 
 function Light() {
-  this.ID = 'light';
+    Leaf.call(this);
+    this.ID = 'light';
 
+      // NodeGL
+    this.nodeGL = new NodeGL(this);
 }
+
+Light.prototype = new Leaf;
+
+

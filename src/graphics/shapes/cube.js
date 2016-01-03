@@ -33,7 +33,7 @@
     this.ID = 'cube';
  }
  
- Cube.prototype = Object.create(Shape.prototype );
+Cube.prototype = Object.create(Shape.prototype );
 
 /*
  * Set style of this cube:
@@ -45,23 +45,51 @@ Cube.prototype.setStyle = function(type) {
         this.ID = 'cubeWire';
         // 1- Define geometry
         var _indices = [0,1,2,3,0,4,5,6,7,4,5,1,2,6,7,3]; 
-        this.setGeometry( 
+        this.type = 'LINE_STRIP';
+        this.addVertexData( 
             {
-                'type'      :'LINE_STRIP',
+                'content'   : Shape.XYZ,
                 'data'      : Cube.verticesWire, 
                 'indices'   :_indices, 
                 'attributes': [new Attribute("aVertexPosition",0,0)] 
             }
         );
-        this.numItems = Cube.vertices.length / 3;
+/**
+        this.addUniformData(
+            {
+                'content': ['RGB'],
+                'data'   : [1.0,0.6,0.2],
+                'uniform': [new Uniform("uColor")]
+            }
+        )
+**/
+        this.numItems = Cube.verticesWire.length / 3;
         // 2- Define graphics style
         //this.setProgram(shaderProgram);
+
         break;
     case 'solid' :
-        this.ID = 'cubeSolid'; 
-        this.setGeometry( 
+        this.ID = 'cubeSolid';
+        this.type = 'TRIANGLES';
+        this.addVertexData(
             {
-                'type'      :'Triangles',
+                'content': Shape.XYZ,
+                'data': Cube.vertices,
+                'indices': Cube.indices, 
+                'attributes': [new Attribute("aVertexPosition",0,0)] 
+            }
+        );
+        this.addVertexData(
+            {
+                'content': Shape.RGB,
+                'data': Cube.colors,
+                'attributes': [new Attribute("aVertexColor",0,0)] 
+            }
+        );
+
+        this.addVertexData( 
+            {
+                'content'   : Shape.XYZ | Shape.RGBA,
                 'data'      : Cube.vertices, 
                 'indices'   : Cube.indices, 
                 'attributes': [new Attribute("aVertexPosition",0,7), new Attribute("aVertexColor",3,7)] 

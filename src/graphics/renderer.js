@@ -60,7 +60,7 @@ function Renderer(canvas_id) {
   // Properties
   this.context.viewportWidth  = canvas.width;
   this.context.viewportHeight = canvas.height;
-  this.shaders={};
+  this.shaders=[];
   this.shaderProgram=null; //Active program ID
 
   // Init GL
@@ -73,6 +73,11 @@ Renderer.prototype.getContext = function () {
 
 Renderer.prototype.addScene = function (a_scene) {
   this.scene = a_scene;
+  a_scene.parent = this;
+}
+
+Renderer.prototype.addShader = function (a_shaderprogram) {
+    this.shaders.push(a_shaderprogram);
 }
 
 Renderer.prototype.addSensor = function (a_sensor) {
@@ -80,75 +85,28 @@ Renderer.prototype.addSensor = function (a_sensor) {
   this.sensor.setRenderer(this);
 }
 
-Renderer.prototype.drawScene = function () {
-  var gl = this.context;
-  var FLOAT_IN_BYTES = 4;
-  // Clear Screen And Depth Buffer
-  gl.viewport(0.0, 0.0, gl.viewportWidth, gl.viewportHeight);
-  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-  // Update camera matrix
-  var cam = this.scene.children['camera'];
-  cam.setViewport(gl.viewportWidth,gl.viewportHeight);
-
-
-  for (var i in this.scene.children) {
-    var shape = this.scene.children[i];
-    if (shape instanceof Shape) {
-      var shaderProgram = shape.shaderProgram;
-      console.log(shape.shaderProgram);
-      shaderProgram.use();
-
-      // TODO Update uniforms
-      gl.uniformMatrix4fv(shaderProgram.getUniformLocation("uPMatrix"), false, cam.projMatrix);
-      gl.uniformMatrix4fv(shaderProgram.getUniformLocation("uVMatrix"), false, cam.viewMatrix);
-      gl.uniformMatrix4fv(shaderProgram.getUniformLocation("uMMatrix"), false, shape.matrix);
-
-      console.log('coordSize '+shape.numItems );
-
-      // For this geometry, activate VBO
-      for (var j in shape.geometries) {
-        var vbo = shape.geometries[j];
-        if (vbo.type === 'indexed') {
-          console.log('bind buffer '+ vbo.type + ' ' + vbo.ID+ ' ' + vbo.data);
-          gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, vbo.IndxID);
-        }
-        else {
-          console.log('bind buffer '+ vbo.type + ' ' + vbo.ID);
-          gl.bindBuffer(gl.ARRAY_BUFFER, vbo.ID);
-        }
-        for (var k in vbo.attributes) {
-          var attribute = vbo.attributes[k];
-          console.log('enable ' + attribute.name+' '+attribute.location+' '+attribute.size+' '+attribute.stride+' '+attribute.offset);
-          gl.enableVertexAttribArray(attribute.location );
-          gl.vertexAttribPointer(
-                      attribute.location,
-                      attribute.size,
-                      gl.FLOAT,
-                      false,
-                      attribute.stride * Renderer.FLOAT_IN_BYTES,
-                      attribute.offset * Renderer.FLOAT_IN_BYTES
-          );
-        }
-      }
-      // Draw ...
-      console.log(shape.type + ' '+ shape.glType +' '+ shape.numIndices+' '+ shape.numItems);
-      if (shape.isIndexedGeometry() ) {
-        gl.drawElements(shape.glType, shape.numIndices, gl.UNSIGNED_SHORT, 0);
-      }
-      else {
-        console.log('drawArrays');
-        gl.drawArrays(shape.glType, 0, shape.numItems);
-      }
-
+Renderer.prototype.setUniform = function (name,value) {
+    for (var i in this.shaders) {
+        var shader = this.shaders[i];
+        shader.uniforms[name].value = value;
     }
-  }
-
 }
 
-Renderer.prototype.update = function () {
-  var gl = this.context;
+Renderer.prototype.drawScene = function () {
+    var gl = this.context;
+    
+    // Clear Screen And Depth Buffer
+    gl.viewport(0.0, 0.0, gl.viewportWidth, gl.viewportHeight);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
+    // Traverse scene graph
+    console.log('*************** RENDER ***************');
+    this.scene.render(gl);
+}
+
+Renderer.prototype.init = function () {
+    var gl = this.context;
+    this.scene.init(gl);
   // TODO
 }
 

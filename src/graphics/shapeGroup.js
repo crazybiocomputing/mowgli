@@ -27,29 +27,15 @@
 /*
  * Constructor
  */
-var Scene = function () {
+var ShapeGroup = function () {
     Composite.call(this);
     
-    this.ID = 'scene';
-    this.add(new Camera() );
-    this.add(new Light()  );
+    this.ID = 'group';
     
-    this.nodeGL = new NodeGL();
+    this.nodeGL = new NodeGL(this);
 
 }
 
-Scene.prototype = Object.create(Composite.prototype);
-
-Scene.prototype.getCamera = function() {
-    return this.children['camera_0'];
-}
-
-Scene.prototype.toString = function() {
-    var str = this.ID+'\n';
-    for (var i in this.children) {
-        str += '+-'+this.children[i].ID+'\n';
-    }
-    return str;
-}
+ShapeGroup.prototype = Object.create(Composite.prototype);
 
 
