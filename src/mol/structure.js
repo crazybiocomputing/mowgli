@@ -194,7 +194,99 @@ Structure.prototype.secondary = function () {
             }
         }
     }
-    return fasta;
+}
+
+
+/**
+ * Compute the phi and psi dihedral angles of this structure.
+ * The angles are stored in the CA atom of each group.
+ *
+ *
+ **/
+Structure.prototype.calcPhiPsi = function () {
+      var ca      = 0;
+      var ca_next = 0;
+      var points  = [];
+      var names   = { 'N': 0, 'CA': 1, 'C': 2};
+      var count   = 0;
+      var gp      = 0; // current group index
+      var ch      = ' '; // Current chain ID
+      var oldPhi  = undefined;
+
+    // Assume that the atoms are sorted by ascending index
+    for (var i in this.atoms) {
+    
+        // New chain
+        if (this.atoms[i].chain != ch) {
+            if (ch != ' ') {
+                // Last point of the current chain
+                this.atoms[ca].phi = oldPhi;
+                this.atoms[ca].psi = undefined;
+            }
+            // Reset variables
+            oldPhi  = undefined;
+            gp = this.atoms[i].groupID;
+            ch = this.atoms[i].chain;
+            count = 0;
+        }
+        
+        // sort N, CA, C, N', CA', C' of the same chain
+        if (this.atoms[i].chain == ch 
+        &&  this.atoms[i].groupID >= gp 
+        &&  this.atoms[i].groupID <= gp+1 
+        && (this.atoms[i].name === 'N' || this.atoms[i].name === 'CA' || this.atoms[i].name === 'C' ) ) {
+            var ii = (this.atoms[i].groupID - gp ) * 3 + names[this.atoms[i].name];
+            if (ii == 1) {
+                ca = i;
+            }
+            else if (ii == 4) {
+                ca_next = i;
+            }
+            points[ii] = this.atoms[i];
+            count++;
+        }
+        else if (count == 6){
+            var angles=calcPhiPsi(points);
+            this.atoms[ca].phi = oldPhi;
+            this.atoms[ca].psi = angles[1];
+
+            // Update variables for next group
+            oldPhi=angles[0];
+            gp=points[count-1].groupID;
+            ca = ca_next;
+            points[0]=points[3];
+            points[1]=points[4];
+            points[2]=points[5];
+            count=3;
+        }
+    }
+    // Last point of this chain
+    this.atoms[ca].phi = oldPhi;
+    this.atoms[ca].psi = undefined;
+
+    
+    function calcPhiPsi(points)
+    {
+      var psi=calcDihedralAngle(points[0],points[1],points[2],points[3]); // [0,1,2,3]);
+      var phi=calcDihedralAngle(points[2],points[3],points[4],points[5]); // [2,3,4,5]);
+      return [phi, psi];
+    }
+
+
+    function calcDihedralAngle(point0,point1,point2,point3) {
+      // UA = (A2−A1) × (A3−A1) is orthogonal to plane A and UB = (B2−B1) × (B3−B1)  
+
+      var v1 = vec3.fromValues(point1.x-point0.x,point1.y-point0.y, point1.z-point0.z); 
+      var v2 = vec3.fromValues(point2.x-point1.x,point2.y-point1.y, point2.z-point1.z); 
+      var v3 = vec3.fromValues(point3.x-point2.x,point3.y-point2.y, point3.z-point2.z); 
+      var na=vec3.create();
+      var nb=vec3.create();
+      vec3.cross(na,v1,v2);
+      vec3.cross(nb,v2,v3);
+      var sinAngle=vec3.dot(v1,nb) * vec3.length(v2);
+      var cosAngle=vec3.dot(na,nb);
+      return Math.atan2(sinAngle,cosAngle)/Math.PI*180.0;
+    }
 }
 
 Structure.prototype.toString = function () {
