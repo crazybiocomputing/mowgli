@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Cubes...</title>
+
+<!-- ************** S H A D E R S ************** -->
+
+<script id="wireframe-vs" type="x-shader/x-vertex">
+  attribute vec3 aVertexPosition;
+
+  uniform mat4 uMMatrix;
+  uniform mat4 uVMatrix;
+  uniform mat4 uPMatrix;
+
+  void main(void) {
+    gl_Position = uPMatrix * uVMatrix * uMMatrix * vec4(aVertexPosition, 1.0);
+  }
+</script>
+
+<script id="wireframe-fs" type="x-shader/x-fragment">
+
+  precision mediump float;
+
+  void main(void) {
+    gl_FragColor = vec4( 1.0,0.5,0.1,1.0);
+  }
+
+</script>
+
+<!-- ************** M O W G L I ************** -->
+
+<script  type="text/javascript" src="../dist/gl-matrix-min.js"></script> 
+<script  type="text/javascript" src="../dist/mowgli.js"></script> 
+
+
+<script type="text/javascript">
+
+var structure;
+
+function main() {
+
+  // 0- Create a renderer for this canvas
+  var renderer = new Renderer('canvas');
+
+  // 1- Create a scene with a default light and camera
+  var scene = new Scene();
+  console.log(scene);
+  renderer.addScene(scene);
+  var group = new ShapeGroup();
+  scene.add(group);
+
+  // 2- Create a shape with geometry and colors
+    var shape = new Cube();
+    shape.setStyle('wireframe');
+    console.log(shape);
+
+  // 2ter- Define shader program by hand 
+  var shaderProgram = new Program(renderer.getContext(),'wireframe-cpk');
+  shaderProgram.loadDOM("vertex"  ,"wireframe-vs");
+  shaderProgram.loadDOM("fragment","wireframe-fs");
+  shaderProgram.link();
+  // Get uniformLocation
+  shaderProgram.setUniformLocation("uPMatrix");
+  shaderProgram.setUniformLocation("uVMatrix");
+  shaderProgram.setUniformLocation("uMMatrix");
+
+  shape.setProgram(shaderProgram);
+  
+  group.add(shape);
+
+  // Center shape
+  // mat4.translate(shape.matrix,shape.matrix,[-shape.cg.x,-shape.cg.y,-shape.cg.z]);
+
+  // Move camera to see the structure in its entirety
+  mat4.translate(scene.getCamera().viewMatrix,scene.getCamera().viewMatrix,[0.0,0.0,-5.0]);
+  
+  console.log(scene.toString());
+  // 3- Update renderer
+  
+  console.log('RENDERER ' );
+  console.log(shape.getRenderer() );
+  console.log('END OF RENDERER ' );
+
+  renderer.init();
+
+  // 4- Add a sensor
+  var mouse = new MouseSensor('canvas');
+  mouse.attach(group);
+
+  renderer.addSensor(mouse);
+
+  // 5- Draw Scene
+  renderer.drawScene();
+}
+
+
+</script>
+
+</head>
+<body onload="main()">
+<center>
+<canvas id="canvas" width="1280" height="720"> </canvas>
+</center>
+
+
+</body>
+</html>
