@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="Mowgli : Molecule WebGL & Image Viewer">
+
+
+    <link href='https://fonts.googleapis.com/css?family=Oswald' rel='stylesheet' type='text/css'>
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/mowgli.css">
+
+    <title>Mowgli</title>
+
+    <script src="gl-matrix.min.js"</script>
+    <script src="mowgli.min.js"</script>
+    <script type="text/javascript">
+        function main() {
+            
+        }
+    </script>
+</head>
+
+<body onload="main()">
+    <!-- HEADER -->
+    <header>
+          <nav>
+          <ul>
+          <li><a href="#file">File</a>
+            <ul>
+            <li class="sub"><a href="#open">Open...</a>
+              <ul>
+                <li><a href="#pdb">PDB</a></li>
+                <li><a href="#emdb">EMDB</a></li>
+                <li class="sub"><a href="#samples">Samples</a>
+                  <ul>
+                    <li><a href="#">Insulin (1ZNI)</a></li>
+                    <li><a href="#">Hemoglobin (1HHO)</a></li>
+                  </ul>
+                </li>
+              </ul>
+            </li>
+            <li><a href="#close">Export</a></li>
+            <li><a href="#close">Close</a></li>
+            <li><a href="#reset">Reset</a></li>
+            </ul>
+          </li>
+          <li><a href="#display">Display</a>
+            <ul>
+            <li><a href="#">Wireframe</a></li>
+            <li><a href="#">Sticks</a></li>
+            <li><a href="#">Ball & Sticks</a></li>
+            <li><a href="#">Spacefill</a></li>
+            <li><a href="#">Dots</a></li>
+            <li><a href="#">Backbone</a></li>
+            <li><a href="#">Trace</a></li>
+            <li><a href="#">Strands</a></li>
+            <li><a href="#">Ribbons</a></li>
+            <li><a href="#">Cartoon</a></li>
+            </ul>
+          </li>
+          <li><a href="#colors">Colors</a>
+            <ul>
+            <li><a href="#">CPK</a></li>
+            <li><a href="#">Chain</a></li>
+            <li><a href="#">Structure</a></li>
+            <li><a href="#">Group</a></li>
+            <li><a href="#">Rainbow</a></li>
+            </ul>
+          </li>
+          <li><a href="#settings">Settings</a>
+            <ul>
+            <li class="sub"><a href="#">FullScreen</a>
+              <ul>
+              <li class="checkbox"><a href="#">On</a></li>
+              <li class="checked"><a href="#">Off</a></li>
+              </ul>
+            </li>
+            <li class="sub"><a href="#camera">Camera</a>
+              <ul>
+              <li class="checked"><a href="#">Mono</a></li>
+              <li class="checkbox"><a href="#">Anaglyph</a></li>
+              <li class="checkbox"><a href="#">Parallel Stereo</a></li>
+              <li class="checkbox"><a href="#">Cross Stereo</a></li>
+              </ul>
+            <li class="sub"><a href="#picking">Picking</a>
+              <ul>
+              <li class="checked"><a href="#">No Picking</a></li>
+              <li class="checkbox"><a href="#">Pick ID</a></li>
+              <li class="checkbox"><a href="#">Pick Center</a></li>
+              <li class="checkbox"><a href="#">Pick Distance</a></li>
+              </ul>
+            </li>
+            </ul>
+          </li>
+          <li><a href="#view">Tools</a>
+            <ul>
+            <li><a href="#">Atom Selection</a></li>
+            <li><a href="#">Console</a></li>
+            </ul>
+          </li>
+          <ul style="float:right;list-style-type:none;">
+            <li><a href="#help">Help</a>
+            <ul>
+            <li><a href="#">Documentation</a></li>
+            <li><a href="#">About</a></li>
+            </ul>
+            </li>
+        </ul>
+        </ul>
+        </nav>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <section id="main_content" class="inner">
+        <h3>Molecule WebGL & Image viewer</h3>
+        <canvas id="mowli"></canvas>
+    </section>
+
+    <!-- GUI Console -->
+    <section id="console">
+    </section>
+
+    <!-- GUI Dialog -->
+    <section id="dialog">
+    </section>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Mowgli maintained by <a href="https://github.com/crazybiocomputing">Jean-Christophe Taveau</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+
+
+    </body>
+</html>
