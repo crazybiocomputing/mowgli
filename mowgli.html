@@ -1,140 +1,219 @@
 <!DOCTYPE html>
 <html>
-
-<head>
-    <meta charset='utf-8'>
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <meta name="description" content="Mowgli : Molecule WebGL & Image Viewer">
-
-
-    <link href='https://fonts.googleapis.com/css?family=Oswald' rel='stylesheet' type='text/css'>
-
+  <head>
+    <meta charset="utf8">
+    <link href="https://fonts.googleapis.com/css?family=Oswald" rel="stylesheet" type="text/css">
+    <link href="http://fonts.googleapis.com/css?family=Lato:300,400,700,300italic,400italic" rel="stylesheet" type="text/css">
     <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/mowgli.css">
-
     <title>Mowgli</title>
-
-    <script src="gl-matrix.min.js"</script>
-    <script src="mowgli.min.js"</script>
-    <script type="text/javascript">
-        function main() {
-            
-        }
-    </script>
-</head>
-
-<body onload="main()">
-    <!-- HEADER -->
+    <script src="javascripts/gl-matrix.min.js"></script>
+    <script src="javascripts/mowgli-core.min.js"></script>
+    <title>Mowgli</title>
+  </head>
+  <body>
     <header>
-          <nav>
-          <ul>
-          <li><a href="#file">File</a>
+      <nav>
+        <ul>
+          <li id="file" class="topmenu"><a href="#">File</a>
             <ul>
-            <li class="sub"><a href="#open">Open...</a>
-              <ul>
-                <li><a href="#pdb">PDB</a></li>
-                <li><a href="#emdb">EMDB</a></li>
-                <li class="sub"><a href="#samples">Samples</a>
-                  <ul>
-                    <li><a href="#">Insulin (1ZNI)</a></li>
-                    <li><a href="#">Hemoglobin (1HHO)</a></li>
-                  </ul>
-                </li>
-              </ul>
-            </li>
-            <li><a href="#close">Export</a></li>
-            <li><a href="#close">Close</a></li>
-            <li><a href="#reset">Reset</a></li>
+              <li id="open" class="submenu"><a href="#">Open...</a>
+                <ul>
+                  <li id="pdb" class="item"><a href="#">PDB</a>
+                  </li>
+                  <li id="emdb" class="item"><a href="#">EMDB</a>
+                  </li>
+                  <li id="samples" class="submenu"><a href="#">Samples</a>
+                    <ul>
+                      <li id="1zni" class="item"><a href="#">Insulin (1ZNI)</a>
+                      </li>
+                      <li id="1hho" class="item"><a href="#">Hemoglobin (1HHO)</a>
+                      </li>
+                      <li id="" class="separator"><a href="#"></a>
+                      </li>
+                      <li id="lena-std.tif" class="item"><a href="#">Lena (TIFF)</a>
+                      </li>
+                      <li id="t1-head.tif" class="item"><a href="#">T1-Head (TIFF)</a>
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
+              </li>
+              <li id="export" class="item"><a href="#">Export</a>
+              </li>
+              <li id="close" class="item"><a href="#">Close</a>
+              </li>
+              <li id="reset" class="item"><a href="#">Reset</a>
+              </li>
             </ul>
           </li>
-          <li><a href="#display">Display</a>
+          <li id="structure" class="topmenu"><a href="#">Structure</a>
             <ul>
-            <li><a href="#">Wireframe</a></li>
-            <li><a href="#">Sticks</a></li>
-            <li><a href="#">Ball & Sticks</a></li>
-            <li><a href="#">Spacefill</a></li>
-            <li><a href="#">Dots</a></li>
-            <li><a href="#">Backbone</a></li>
-            <li><a href="#">Trace</a></li>
-            <li><a href="#">Strands</a></li>
-            <li><a href="#">Ribbons</a></li>
-            <li><a href="#">Cartoon</a></li>
+              <li id="info" class="item"><a href="#">Information</a>
+              </li>
+              <li id="props" class="item"><a href="#">Properties</a>
+              </li>
+              <li id="sequence" class="submenu"><a href="#">Sequence</a>
+                <ul>
+                  <li id="fasta" class="item"><a href="#">FASTA</a>
+                  </li>
+                  <li id="secstruct" class="item"><a href="#">Sec. Structures</a>
+                  </li>
+                  <li id="ramachandran" class="item"><a href="#">Ramachandran</a>
+                  </li>
+                </ul>
+              </li>
             </ul>
           </li>
-          <li><a href="#colors">Colors</a>
+          <li id="display" class="topmenu"><a href="#">Display</a>
             <ul>
-            <li><a href="#">CPK</a></li>
-            <li><a href="#">Chain</a></li>
-            <li><a href="#">Structure</a></li>
-            <li><a href="#">Group</a></li>
-            <li><a href="#">Rainbow</a></li>
+              <li id="atoms" class="submenu"><a href="#">Atoms</a>
+                <ul>
+                  <li id="wire" class="item"><a href="#">Wireframe</a>
+                  </li>
+                  <li id="sticks" class="item"><a href="#">Sticks</a>
+                  </li>
+                  <li id="ballsticks" class="item"><a href="#">Balls &amp; Sticks</a>
+                  </li>
+                  <li id="spacefill" class="item"><a href="#">Spacefill</a>
+                  </li>
+                  <li id="dots" class="item"><a href="#">Dots</a>
+                  </li>
+                  <li id="backbone" class="item"><a href="#">Backbone</a>
+                  </li>
+                  <li id="trace" class="item"><a href="#">Trace</a>
+                  </li>
+                  <li id="strands" class="item"><a href="#">Strands</a>
+                  </li>
+                  <li id="ribbons" class="item"><a href="#">Ribbons</a>
+                  </li>
+                  <li id="cartoon" class="item"><a href="#">Cartoon</a>
+                  </li>
+                </ul>
+              </li>
+              <li id="maps" class="submenu"><a href="#">Maps</a>
+                <ul>
+                  <li id="isosurface"><a href="#">IsoSurface</a>
+                  </li>
+                </ul>
+              </li>
             </ul>
           </li>
-          <li><a href="#settings">Settings</a>
+          <li id="colors" class="topmenu"><a href="#">Colors</a>
             <ul>
-            <li class="sub"><a href="#">FullScreen</a>
-              <ul>
-              <li class="checkbox"><a href="#">On</a></li>
-              <li class="checked"><a href="#">Off</a></li>
-              </ul>
-            </li>
-            <li class="sub"><a href="#camera">Camera</a>
-              <ul>
-              <li class="checked"><a href="#">Mono</a></li>
-              <li class="checkbox"><a href="#">Anaglyph</a></li>
-              <li class="checkbox"><a href="#">Parallel Stereo</a></li>
-              <li class="checkbox"><a href="#">Cross Stereo</a></li>
-              </ul>
-            <li class="sub"><a href="#picking">Picking</a>
-              <ul>
-              <li class="checked"><a href="#">No Picking</a></li>
-              <li class="checkbox"><a href="#">Pick ID</a></li>
-              <li class="checkbox"><a href="#">Pick Center</a></li>
-              <li class="checkbox"><a href="#">Pick Distance</a></li>
-              </ul>
-            </li>
+              <li id="color_mono" class="item"><a href="#">Monochrome</a>
+              </li>
+              <li id="color_cpk" class="item"><a href="#">CPK</a>
+              </li>
+              <li id="color_chain" class="item"><a href="#">Chain</a>
+              </li>
+              <li id="color_struct" class="item"><a href="#">Structure</a>
+              </li>
+              <li id="color_group" class="item"><a href="#">Group</a>
+              </li>
+              <li id="color_rainbow" class="item"><a href="#">Rainbow</a>
+              </li>
             </ul>
           </li>
-          <li><a href="#view">Tools</a>
+          <li id="settings" class="topmenu"><a href="#">Settings</a>
             <ul>
-            <li><a href="#">Atom Selection</a></li>
-            <li><a href="#">Console</a></li>
+              <li id="fullscreen" class="checkbox"><a href="#">FullScreen</a>
+                <ul>
+                  <li id="screen_on" class="checkbox_item"><a href="#">On</a>
+                  </li>
+                  <li id="screen_off" class="checked"><a href="#">Off</a>
+                  </li>
+                </ul>
+              </li>
+              <li id="camera" class="checkbox"><a href="#">Camera</a>
+                <ul>
+                  <li id="cam_mono" class="checked"><a href="#">Mono</a>
+                  </li>
+                  <li id="cam_anaglyph" class="checkbox_item"><a href="#">Anaglyph</a>
+                  </li>
+                  <li id="cam_stereo" class="checkbox_item"><a href="#">Parallel-Eye</a>
+                  </li>
+                  <li id="cam_cross" class="checkbox_item"><a href="#">Cross-Eye</a>
+                  </li>
+                </ul>
+              </li>
+              <li id="picking" class="checkbox"><a href="#">Picking</a>
+                <ul>
+                  <li id="picking_no" class="checked"><a href="#">Off</a>
+                  </li>
+                  <li id="picking_id" class="checkbox_item"><a href="#">ID</a>
+                  </li>
+                  <li id="picking_center" class="checkbox_item"><a href="#">Center</a>
+                  </li>
+                  <li id="picking_distance" class="checkbox_item"><a href="#">Distance</a>
+                  </li>
+                </ul>
+              </li>
+              <li id="advanced" class="submenu"><a href="#">Advanced</a>
+                <ul>
+                  <li id="cam_settings" class="item"><a href="#">Camera(s)</a>
+                  </li>
+                  <li id="lights_settings" class="item"><a href="#">Light(s)</a>
+                  </li>
+                </ul>
+              </li>
             </ul>
           </li>
-          <ul style="float:right;list-style-type:none;">
-            <li><a href="#help">Help</a>
+          <li id="tools" class="topmenu"><a href="#">Tools</a>
             <ul>
-            <li><a href="#">Documentation</a></li>
-            <li><a href="#">About</a></li>
+              <li id="selection" class="item"><a href="#">Atom Selection</a>
+              </li>
+              <li id="console" class="checkbox"><a href="#">Console</a>
+                <ul>
+                  <li id="console_on" class="checkbox_item"><a href="#">On</a>
+                  </li>
+                  <li id="console_off" class="checked"><a href="#">Off</a>
+                  </li>
+                </ul>
+              </li>
+              <li id="tools_advanced" class="submenu"><a href="#">Advanced</a>
+                <ul>
+                  <li id="scenegraph" class="item"><a href="#">Scene Graph</a>
+                  </li>
+                </ul>
+              </li>
             </ul>
-            </li>
+          </li>
+          <li id="help" class="helpmenu"><a href="#">Help</a>
+            <ul>
+              <li id="manual" class="link"><a href="#">Manual</a>
+              </li>
+              <li id="api" class="link"><a href="#">API</a>
+              </li>
+              <li id="tutorials" class="link"><a href="#">Tutorials</a>
+              </li>
+              <li id="about" class="modal"><a href="#">About</a>
+              </li>
+            </ul>
+          </li>
         </ul>
-        </ul>
-        </nav>
+      </nav>
     </header>
-
     <!-- MAIN CONTENT -->
     <section id="main_content" class="inner">
-        <h3>Molecule WebGL & Image viewer</h3>
-        <canvas id="mowli"></canvas>
+      <!-- http://www.html5rocks.com/en/tutorials/casestudies/gopherwoord-studios-resizing-html5-games/ -->
+      <canvas id="mowgli"></canvas>
+      <!-- GUI Console -->
+      <div id="console" style="padding: 10px; height: 60%" class="slideout">
+        <header><a href="#close" title="Close modal window" class="droite">&#10060;</a>
+          <p>Console version 0.1</p>
+        </header>
+        <div id="display"></div>
+        <div id="enter" style="position: absolute; bottom: 10px;width: inherit">
+          <label style="font-family: monospace;color: #fff;">Mowgli</label>
+          <form>
+            <input type="text">
+            <input type="submit" name="go" value="Submit" style="display:none;">
+          </form>
+        </div>
+      </div>
     </section>
-
-    <!-- GUI Console -->
-    <section id="console">
-    </section>
-
-    <!-- GUI Dialog -->
-    <section id="dialog">
-    </section>
-
-    <!-- FOOTER  -->
-    <div id="footer_wrap" class="outer">
-      <footer class="inner">
-        <p class="copyright">Mowgli maintained by <a href="https://github.com/crazybiocomputing">Jean-Christophe Taveau</a></p>
-        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
-      </footer>
-    </div>
-
-
-
-    </body>
+    <!-- Modal window-->
+    <section id="modal" class="oModal"></section>
+    <script src="javascripts/mowgli.js"></script>
+  </body>
 </html>

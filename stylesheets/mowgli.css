@@ -9,9 +9,24 @@
 body {
   margin: 0;
   padding: 0;
-  background: #ccc;
+  background: #000; /* #ccc; */
 }
 
+footer {
+  background-color: #444;
+  font-family: 'Oswald', sans-serif;
+  font-size: 1.2em;
+  line-height: 40px;
+  text-align: left;
+  color: #fff;
+}
+
+nav {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 99;
+}
 nav ul {
   list-style: none;
   background-color: #444;
@@ -48,14 +63,13 @@ nav a.active {
 
 /* Sub Menus */
 nav li li {
-  font-size: .8em;
+  font-size: 0.8em;
 }
 
 /* Sub sub Menus */
 nav li li li {
-  font-size: .8em;
+  font-size: 0.9em;
 }
-
 
 /*******************************************
    Style menu for larger screens
@@ -77,6 +91,11 @@ nav li li li {
 
   nav a {
     border-bottom: none;
+  }
+
+  .helpmenu {
+    float:right;
+    list-style-type:none;
   }
 
   nav > ul > li {
@@ -106,7 +125,7 @@ nav li li li {
   
   /* Sub Sub Menus */
 
-  .sub > a::after {
+  .submenu > a::after, .checkbox > a::after {
     content: '\0025B8';
     text-align: right;
     float: right;
@@ -128,7 +147,7 @@ nav li li li {
 
   /* Checkbox */
   
-  .checkbox > a::before {
+  .checkbox_item > a::before {
     content: '\02610';
     margin-right: 10px;
   }
@@ -142,7 +161,158 @@ nav li li li {
     margin-right: 10px;
 
   }
+  
+  /* Separator */
+  nav .separator {
+    height: 0px;
+    border-bottom: solid 1px #ccc;
+  }
 }
 
+/************* Trucsweb.com ******************
+ *
+ * Window « Modal responsive » in pure CSS
+ * http://www.trucsweb.com/tutoriels/css/css-modal/
+ *
+ *********************************************/
 
+.cf:before,
+.cf:after {
+  content:"";
+  display:table;
+}
+.cf:after {
+  clear:both;
+}
+.droite {
+  float:right;
+}
+ 
+.oModal {
+  position: fixed;
+  z-index: 99999;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: rgba(0, 0, 0, 0.6);
+  opacity: 0;
+  padding-top : 0px;
+  pointer-events: none;
+  transition-delay: 1s;
+      -webkit-transition: padding 400ms ease-in-out, opacity 200ms ease-in;
+  -moz-transition: padding 400ms ease-in-out, opacity 200ms ease-in;
+  transition: opacity 400ms ease-in, padding 400ms ease-in-out;
+}
+ 
+.oModal_target {
+  opacity: 1;
+  padding-top : 10%;
+  pointer-events: auto;
+}
+
+ 
+.oModal > .container {
+  max-width: 600px;
+  overflow-y: auto;
+  max-height: 500px;
+  position: relative;
+  padding: 8px 8px 8px 8px;
+  border-radius: 5px;
+  background: #eee;
+  margin: 1% auto;
+}
+
+.oModal > .container_target {
+
+}
+
+.oModal > div header,.oModal > div footer {
+  background-color: #444;
+  color: #fff;
+  font-family: 'Oswald', sans-serif;
+  font-size: 1.2em;
+
+  border-bottom: 1px solid #e7e7e7;
+  border-radius: 5px 5px 0 0;
+  
+}
+
+.oModal  > div header a { 
+  text-decoration: none;
+  color: #fff;
+  font-size: 1.2em;
+}
+
+.oModal  > div article {
+    font-size: 1.1em;
+    font-weight: 300; 
+    font-family:'Lato'; 
+}
+
+.oModal .footer {
+  border:none;
+  border-top: 1px solid #e7e7e7;
+  border-radius: 0 0 5px 5px;
+}
+ 
+.oModal > div h2 {
+  margin:0;
+}
+ 
+.oModal > div .btn {
+  float:right;
+}
+ 
+.oModal > div section,.oModal > div > header, .oModal > div > footer {
+  padding: 1px 15px 0px 15px;
+}
+
+#console {
+  z-index: 2;
+}
+
+#console  form {
+    display: inline-block;
+}
+
+.slideout {
+/**
+  opacity:0.5;
+  -webkit-transition: opacity 400ms ease-in;
+  -moz-transition: opacity 400ms ease-in;
+  transition: opacity 400ms ease-in;
+  **/
+  background-color: rgba(68,68,68,0.5);
+  box-shadow: 0 0 5px rgba(0,0,0,.3);
+  color: #333;
+  float: right;
+  position: fixed;
+  top: 150px;
+  right: -620px;
+  width: 600px;
+  -webkit-transition: right 0.5s ease-in-out;
+  -moz-transition: right 0.5s ease-in-out;
+  -o-transition: right 0.5s ease-in-out;
+  transition: right 0.5s ease-in-out;
+}
+
+.slideout.on {
+  right: 0px;
+}
+
+.slideout input[type="text"] {
+  background: transparent;
+  outline: none;
+  width: 500px; 
+  font-family: mono;
+  color: #fff;
+  border: none; 
+  border-bottom: solid 1px white
+}
+canvas {
+  width: 100%;
+  align: center;
+  z-index: 1;
+}
 
