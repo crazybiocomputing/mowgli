@@ -1,0 +1,396 @@
+{
+    "navbar": {
+        "id":"navbar",
+        "children": [
+            {
+                "id":"file",
+                "title":"File",
+                "type": "topmenu",
+                "children": [
+                    {
+                        "id":"open",
+                        "title":"Open...",
+                        "type": "submenu",
+                        "children" : [
+                            {
+                                "id": "pdb",
+                                "title" : "PDB",
+                                "type": "item"
+                            },
+                            {
+                                "id": "emdb",
+                                "title": "EMDB",
+                                "type": "item"
+                            },
+                            {
+                                "id": "samples",
+                                "title": "Samples",
+                                "type": "submenu",
+                                "children": [
+                                    {
+                                        "id": "1zni",
+                                        "title" : "Insulin (1ZNI)",
+                                        "type": "item"
+                                    },
+                                    {
+                                        "id": "1hho",
+                                        "title": "Hemoglobin (1HHO)",
+                                        "type": "item"
+                                    },
+                                    {
+                                        "id": "",
+                                        "title": "",
+                                        "type": "separator"
+                                    },
+                                    {
+                                        "id": "lena-std.tif",
+                                        "title": "Lena (TIFF)",
+                                        "type": "item"
+                                    },
+                                    {
+                                        "id": "t1-head.tif",
+                                        "title": "T1-Head (TIFF)",
+                                        "type": "item"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "id": "export",
+                        "title" : "Export",
+                        "type": "item"
+                    },
+                    {
+                        "id": "close",
+                        "title" : "Close",
+                        "type": "item"
+                    },
+                    {
+                        "id": "reset",
+                        "title" : "Reset",
+                        "type": "item"
+                    }
+                ]
+            },
+            {
+                "id":"structure",
+                "title":"Structure",
+                "type": "topmenu",
+                "children": [
+                    {
+                        "id": "info",
+                        "title" : "Information",
+                        "type": "item"
+                    },
+                    {
+                        "id": "props",
+                        "title" : "Properties",
+                        "type": "item"
+                    },
+                    {
+                        "id": "sequence",
+                        "title" : "Sequence",
+                        "type": "submenu",
+                        "children": [
+                            {
+                                "id": "fasta",
+                                "title" : "FASTA",
+                                "type": "item"
+                            },
+                            {
+                                "id": "secstruct",
+                                "title" : "Sec. Structures",
+                                "type": "item"
+                            },
+                            {
+                                "id": "ramachandran",
+                                "title" : "Ramachandran",
+                                "type": "item"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id":"display",
+                "title":"Display",
+                "type": "topmenu",
+                "children": [
+                    {
+                        "id": "atoms",
+                        "title" : "Atoms",
+                        "type": "submenu",
+                        "children": [
+                            {
+                                "id": "wire",
+                                "title" : "Wireframe",
+                                "type": "item"
+                            },
+                            {
+                                "id": "sticks",
+                                "title" : "Sticks",
+                                "type": "item"
+                            },
+                            {
+                                "id": "ballsticks",
+                                "title" : "Balls & Sticks",
+                                "type": "item"
+                            },
+                            {
+                                "id": "spacefill",
+                                "title" : "Spacefill",
+                                "type": "item"
+                            },
+                            {
+                                "id": "dots",
+                                "title" : "Dots",
+                                "type": "item"
+                            },
+                            {
+                                "id": "backbone",
+                                "title" : "Backbone",
+                                "type": "item"
+                            },
+                            {
+                                "id": "trace",
+                                "title" : "Trace",
+                                "type": "item"
+                            },
+                            {
+                                "id": "strands",
+                                "title" : "Strands",
+                                "type": "item"
+                            },
+                            {
+                                "id": "ribbons",
+                                "title" : "Ribbons",
+                                "type": "item"
+                            },
+                            {
+                                "id": "cartoon",
+                                "title" : "Cartoon",
+                                "type": "item"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "maps",
+                        "title" : "Maps",
+                        "type": "submenu",
+                        "children": [
+                            {
+                                "id": "isosurface",
+                                "title" : "IsoSurface"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id":"colors",
+                "title":"Colors",
+                "type": "topmenu",
+                "children": [
+                    {
+                        "id": "color_mono",
+                        "title" : "Monochrome",
+                        "type": "item"
+                    },
+                    {
+                        "id": "color_cpk",
+                        "title" : "CPK",
+                        "type": "item"
+                    },
+                    {
+                        "id": "color_chain",
+                        "title" : "Chain",
+                        "type": "item"
+                    },
+                    {
+                        "id": "color_struct",
+                        "title" : "Structure",
+                        "type": "item"
+                    },
+                    {
+                        "id": "color_group",
+                        "title" : "Group",
+                        "type": "item"
+                    },
+                    {
+                        "id": "color_rainbow",
+                        "title" : "Rainbow",
+                        "type": "item"
+                    }
+                ]
+            },
+            {
+                "id":"settings",
+                "title":"Settings",
+                "type": "topmenu",
+                "children": [
+                    {
+                        "id": "fullscreen",
+                        "title" : "FullScreen",
+                        "type": "checkbox",
+                        "children" : [
+                            {
+                                "id": "screen_on",
+                                "title" : "On",
+                                "type": "checkbox_item"
+                            },
+                            {
+                                "id": "screen_off",
+                                "title" : "Off",
+                                "type": "checked"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "camera",
+                        "title" : "Camera",
+                        "type": "checkbox",
+                        "children" : [
+                            {
+                                "id": "cam_mono",
+                                "title" : "Mono",
+                                "type": "checked"
+                            },
+                            {
+                                "id": "cam_anaglyph",
+                                "title" : "Anaglyph",
+                                "type": "checkbox_item"
+                            },
+                            {
+                                "id": "cam_stereo",
+                                "title" : "Parallel-Eye",
+                                "type": "checkbox_item"
+                            },
+                            {
+                                "id": "cam_cross",
+                                "title" : "Cross-Eye",
+                                "type": "checkbox_item"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "picking",
+                        "title" : "Picking",
+                        "type": "checkbox",
+                        "children" : [
+                            {
+                                "id": "picking_no",
+                                "title" : "Off",
+                                "type": "checked"
+                            },
+                            {
+                                "id": "picking_id",
+                                "title" : "ID",
+                                "type": "checkbox_item"
+                            },
+                            {
+                                "id": "picking_center",
+                                "title" : "Center",
+                                "type": "checkbox_item"
+                            },
+                            {
+                                "id": "picking_distance",
+                                "title" : "Distance",
+                                "type": "checkbox_item"
+                            }
+                        ]
+                    },
+                   {
+                        "id": "advanced",
+                        "title" : "Advanced",
+                        "type": "submenu",
+                        "children" : [
+                            {
+                                "id": "cam_settings",
+                                "title" : "Camera(s)",
+                                "type": "item"
+                            },
+                            {
+                                "id": "lights_settings",
+                                "title" : "Light(s)",
+                                "type": "item"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id":"tools",
+                "title":"Tools",
+                "type": "topmenu",
+                "children": [
+                    {
+                        "id": "selection",
+                        "title" : "Atom Selection",
+                        "type": "item"
+                    },
+                    {
+                        "id": "console",
+                        "title" : "Console",
+                        "type": "checkbox",
+                        "children" : [
+                            {
+                                "id": "console_on",
+                                "title" : "On",
+                                "type": "checkbox_item"
+                            },
+                            {
+                                "id": "console_off",
+                                "title" : "Off",
+                                "type": "checked"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "tools_advanced",
+                        "title" : "Advanced",
+                        "type": "submenu",
+                        "children": [
+                            {
+                                "id": "scenegraph",
+                                "title" : "Scene Graph",
+                                "type": "item"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id":"help",
+                "title":"Help",
+                "type": "helpmenu",
+                "children": [
+                    {
+                        "id": "manual",
+                        "title" : "Manual",
+                        "type": "link",
+                        "href": "docs.html"
+                    },
+                    {
+                        "id": "api",
+                        "title" : "API",
+                        "type": "link",
+                        "href": "api.html"
+                    },
+                    {
+                        "id": "tutorials",
+                        "title" : "Tutorials",
+                        "type": "link",
+                        "href": "tutorials.html"
+                    },
+                    {
+                        "id": "about",
+                        "title" : "About",
+                        "type": "modal",
+                        "href": "#modal"
+                    }
+                ]
+            }
+        ]
+    }
+}
