@@ -25,14 +25,39 @@
 
 "use strict"
 
-/*
- * Constructor
- */
+
+/**
+ * Attribute class used by the shader program
+ *
+ * @class Attribute
+ * @memberof module:graphics
+ * @constructor
+ **/
 function Attribute (name,offset,stride) {
+
+  /** 
+   * The name
+   * @type {string} 
+   *
+   **/
   this.name = name;
+
+  /** 
+   * The offset
+   * @type {number}
+   *
+   **/
   this.offset = offset;
+
+  /** 
+   * The stride
+   * @type {number}
+   *
+   **/
   this.stride = stride;
+
   this.size = -1;
+  
   this.location = -1;
 
 }
@@ -65,7 +90,16 @@ function Attribute (name,offset,stride) {
  */
  
  "use strict"
+
  
+/**
+ * Camera
+ *
+ * @class Camera
+ * @memberof module:graphics
+ * @constructor
+ * @augments Leaf
+ **/
 function Camera() {
     Leaf.call(this);
     
@@ -85,6 +119,12 @@ function Camera() {
 
 Camera.prototype = new Leaf;
 
+/**
+ * Set the Y-Field of View. 
+ *
+ * @param {number} angle_in_degrees - Angle of the Field of View expressed in degrees
+ * 
+ **/
 Camera.prototype.setFovy = function (angle_in_degrees) {
   this.fovy= angle_in_degrees * Math.PI/180.0;
 }
@@ -119,9 +159,18 @@ Camera.prototype.setFovy = function (angle_in_degrees) {
 
 "use strict"
 
-/*
- * Constructor
+/** 
+ * @module graphics/gl
  */
+ 
+ 
+/**
+ * CameraGL
+ *
+ * @class CameraGL
+ * @constructor
+ *
+ **/
 function CameraGL(node) {
     this.sgnode = node;
     this.glType = -1;
@@ -185,9 +234,14 @@ CameraGL.prototype.render = function(context) {
 
 "use strict"
 
-/*
- * Constructor
- */
+
+/**
+ * Node with children in the Scene Graph
+ *
+ * @class Composite
+ * @memberof module:graphics
+ * @constructor
+ **/
 function Composite(node) {
     this.children = {};
     this._isDirty = true;
@@ -347,20 +401,71 @@ Composite.prototype._updateAttributes = function(context) {
 
 "use strict"
 
+
+
 /**
  * Geometry contains geometrical data like coordinates, normals, texCoords, colors,etc.
  *
  * @class Geometry
+ * @memberof module:graphics
  * @constructor
  **/
 function Geometry (options) {
-  console.log(options);
+  
+  /** 
+   * The type
+   *
+   * @type {string} 
+   *
+   * @description
+   * - 'none' 
+   * - 'POINTS' 
+   * - 'LINES' 
+   * - 'TRIANGLES' 
+   **/
   this.type    = options.type || 'none';
+  
+  /** 
+   * The content - A description of all the vertex data in this geometry. For example,
+   *
+   *```javascript
+   * "content" : Shape.XYZ | Shape.RGB | Shape.ST
+   *```
+   * The various available values are:
+   *
+   * - Shape.XYZ
+   * - Shape.XYZW 
+   * - Shape.NXYZ 
+   * - Shape.RGB
+   * - Shape.RGBA
+   * - Shape.ST
+   **/
   this.content = options.content;
+  
+  /** 
+   * The data - A [Float32Array]{@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Float32Array} array containing the vertex data
+   *
+   * @example
+   * If the content is Shape.XYZ | Shape.RGB, it means that in the same array, one vertex is defined by three X,Y, and Z-coordinates plus 
+   * three Red, Green, and Blue color values like this...
+   * var data [X Y Z R G B X Y Z R G B ... Z R G B ]
+   **/
   this.data    = options.data;
+  
+  /** 
+   * The attributes - An array of {@link module:graphics.Attribute} used by the shader program
+   *
+   **/
   this.attributes = options.attributes; // || [];
 
+  /** 
+   * The indices - A [UInt32Array]{@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint32Array} array of indices pointing to the vertex array 
+   *
+   **/
   this.indices = options.indices;
+  
+  console.log(options);
+  
   if (this.type === 'indexed') {
     this._isIndexed = true;
   }
@@ -417,9 +522,14 @@ Geometry.prototype.isIndexed = function() {
 
 "use strict"
 
-/*
- * Constructor
- */
+
+/**
+ * Node in the Scene Graph
+ *
+ * @class Leaf
+ * @memberof module:graphics
+ * @constructor
+ **/
 function Leaf(node) {
     this._isDirty = true;
     this.parent = null;
@@ -517,7 +627,17 @@ Leaf.prototype.graph = function(level) {
  * Jean-Christophe Taveau
  */
 
+"use strict"
 
+ 
+/**
+ * Light
+ *
+ * @class Light
+ * @memberof module:graphics
+ * @constructor
+ * @augments Leaf
+ **/
 function Light() {
     Leaf.call(this);
     this.ID = 'light';
@@ -557,9 +677,16 @@ Light.prototype = new Leaf;
 
 "use strict"
 
-/*
- * Constructor
+/** 
+ * @module graphics/gl
  */
+
+/**
+ * OpenGL node of the scene graph
+ *
+ * @class NodeGL
+ * @constructor
+ **/
 function NodeGL(node) {
     this.sgnode = node;
     this.glType = -1;
@@ -611,6 +738,33 @@ NodeGL.prototype.render = function(context) {
  * Jean-Christophe Taveau
  */
  
+ "use strict"
+ 
+ 
+/**
+ * OpenGL shader program class
+ *
+ * @class Program
+ * @memberof module:graphics
+ * @constructor
+ *
+ * @example
+  * // 1- Create a new shader program termed 'cel-shading' from the current graphics context
+ *  var shaderProgram = new Program(renderer.getContext(),'cel-shading');
+ *  // 2- Load vertex source file from DOM and compile
+ *  shaderProgram.loadDOM("vertex"  ,"cel-shading-vs");
+ *  // 3- Load fragment source file from DOM and compile
+ *  shaderProgram.loadDOM("fragment","cel-shading-fs");
+ *  // 4- Link the program
+ *  shaderProgram.link();
+ *  // 5 Get uniformLocation
+ *  shaderProgram.setUniformLocation("uPMatrix");
+ *  shaderProgram.setUniformLocation("uVMatrix");
+ *  shaderProgram.setUniformLocation("uMMatrix");
+ *
+ * @author Jean-Christophe Taveau
+ *
+ **/
 var Program = function(context,name) {
   this.ctx = context;
   this.name = name;
@@ -623,10 +777,20 @@ var Program = function(context,name) {
   this.uniformLocation = {};
 }
 
+/**
+ * Get OpenGL ID of this shader program
+ *
+ **/
 Program.prototype.getID=function() {
   return this.shaderProgram;
 }
 
+/**
+ * Load vertex or fragment source files for compilation and link
+ *
+ * @param {string} type: Source file types - **'vertex'** or **'fragment'**
+ * @param {string} name: Source filename
+ **/
 Program.prototype.load=function(type,name) {
   // TODO
   if (type =='vertex')
@@ -639,6 +803,12 @@ Program.prototype.load=function(type,name) {
     alert('Unknown shader type');
 }
 
+/**
+ * Load vertex or fragment source files for compilation and link via http
+ *
+ * @param {string} type: Source file types - 'vertex' or 'fragment'
+ * @param {string} name: Source filename
+ **/
 Program.prototype.loadHTTP=function(type,name) {
   // From http://www.html5rocks.com/en/tutorials/file/xhr2/
   // XMLHttpRequest()
@@ -655,8 +825,14 @@ Program.prototype.loadHTTP=function(type,name) {
   req.send();
 }
 
-/* From Learning WEBGL */
-Program.prototype.loadDOM=function(type,name) {
+/**
+ * Load vertex or fragment source files for compilation and link from the DOM.
+ * From Learning WEBGL.
+ *
+ * @param {string} type: Source file types - 'vertex' or 'fragment'
+ * @param {string} name: ID of the html div
+ **/
+Program.prototype.loadDOM = function(type,name) {
   var gl = this.ctx;
 
   var shaderScript = document.getElementById(name);
@@ -700,6 +876,10 @@ Program.prototype.link=function() {
   }
 }
 
+/**
+ * Activate this shader program for rendering
+ *
+ **/
 Program.prototype.use=function() {
   var gl = this.ctx;
   gl.useProgram(this.shaderProgram);
@@ -712,7 +892,12 @@ Program.prototype.getAttribLocation = function(attrib_name) {
   return gl.getAttribLocation(this.getID(),attrib_name);
 }
 
-
+/**
+ *  Get uniform location and set up the correspondig array.
+ * The method's name is not really appropriate (set/getUniform[...])
+ *
+ * 
+ **/
 Program.prototype.setUniformLocation=function(name) {
   var gl = this.ctx;
   gl.useProgram(this.getID());
@@ -724,9 +909,13 @@ Program.prototype.getUniformLocation=function(name) {
   return this.uniformLocation[name];
 }
 
+/**
+ *  Update all the uniforms. This function is called by the ShapeGL.render().
+ *
+ * 
+ **/
 Program.prototype.updateUniforms = function () {
     var gl = this.ctx;
-    // Update all the uniforms. This function is called by the ShapeGL.render().
     for (var i in this.uniforms) {
         var uniform = this.uniforms[i];
         switch (uniform.type) {
@@ -745,10 +934,11 @@ Program.prototype.updateUniforms = function () {
         }
     }
 }
+
 /**
  * Private method for compiling shader
  *
- **/
+ */
 Program.prototype._compile=function(type,text) {
   var gl = this.ctx;
   var shader = gl.createShader(type);
@@ -763,7 +953,11 @@ Program.prototype._compile=function(type,text) {
   return shader;
 }
 
-// Private
+/**
+ * Private method to automatically detect in the shader source files the attribute(s) and uniform(s).
+ * TODO - Must be improved to remove commented lines containing attributes and/or uniforms
+ *
+ */
 Program.prototype._createAttributesAndUniforms=function(text) {
   var rows = text.split('\n');
   var re = /[\s,;]+/;
@@ -866,12 +1060,23 @@ Program.prototype._createAttributesAndUniforms=function(text) {
 
 "use strict"
 
-/*
+/**
  * Core class for rendering in the canvas
- * Singleton ??
+ * 
+ * @todo must be a singleton ??
  *
  * @class Renderer
+ * @memberof module:graphics
  * @constructor
+ *
+ * @example
+ * var id = document.getElementById('canvas');
+ * var renderer = new Renderer(id);
+ * renderer.addScene(myScene);
+ * // Inititalize the renderer just before executing the rendering loop
+ * renderer.init();
+ * // Run infinite loop
+ * renderer.drawScene();
  */
 function Renderer(canvas_id) {
   this.scene = null;
@@ -908,19 +1113,38 @@ function Renderer(canvas_id) {
   this._initGL();
 }
 
+/**
+ * Get graphics context
+ *
+ * @return {number} - Reference of the OpenGL graphics context
+ *
+ **/
 Renderer.prototype.getContext = function () {
   return this.context;
 }
 
+/**
+ * Add scene
+ *
+ * @param {Scene} - Add a scene which is the root of the scene graph.
+ *
+ **/
 Renderer.prototype.addScene = function (a_scene) {
   this.scene = a_scene;
   a_scene.parent = this;
 }
 
+
 Renderer.prototype.addShader = function (a_shaderprogram) {
     this.shaders.push(a_shaderprogram);
 }
 
+/**
+ * Add sensor 
+ *
+ * @param {Sensor} - Add a sensor or an object interacting with the scene graph
+ *
+ **/
 Renderer.prototype.addSensor = function (a_sensor) {
   this.sensor = a_sensor;
   this.sensor.setRenderer(this);
@@ -933,6 +1157,23 @@ Renderer.prototype.setUniform = function (name,value) {
     }
 }
 
+
+/**
+ * Initialize the renderer. 
+ *
+ *
+ **/
+Renderer.prototype.init = function () {
+    var gl = this.context;
+    this.scene.init(gl);
+  // TODO
+}
+
+/**
+ * Draw the scene. This function triggers the OpenGL rendering in an infinite loop. 
+ *
+ *
+ **/
 Renderer.prototype.drawScene = function () {
     var gl = this.context;
     
@@ -944,14 +1185,6 @@ Renderer.prototype.drawScene = function () {
     console.log('*************** RENDER ***************');
     this.scene.render(gl);
 }
-
-Renderer.prototype.init = function () {
-    var gl = this.context;
-    this.scene.init(gl);
-  // TODO
-}
-
-
 /*
  * Private
  */
@@ -1004,9 +1237,15 @@ Renderer.prototype._initGL = function() {
 
 "use strict"
 
-/*
- * Constructor
- */
+
+/**
+ * Scene: Root of the scene graph
+ *
+ * @class Scene
+ * @memberof module:graphics
+ * @constructor
+ * @augments Composite
+ **/
 var Scene = function () {
     Composite.call(this);
     
@@ -1020,6 +1259,11 @@ var Scene = function () {
 
 Scene.prototype = Object.create(Composite.prototype);
 
+/**
+ * Get Camera in the scene
+ *
+ * @return {Camera} Returns the current camera
+ **/
 Scene.prototype.getCamera = function() {
     return this.children['camera_0'];
 }
@@ -1062,9 +1306,29 @@ Scene.prototype.toString = function() {
 
 "use strict"
 
-/*
- * Constructor
- */
+
+/**
+ * Shape: Graphical object defined by geometries (Vertex Data) and a rendering style (Shader Program).
+ *
+ * The classical way to create a shape in Mowgli is:
+ *
+ * ```javascript
+ * var shape = new Shape();
+ * shape.type = 'POINTS';
+ * var vrtxData = {
+ *     'content': Shape.XYZ | Shape.RGB,
+ *     'data':vertices, 
+ *     'attributes': [new Attribute("aVertexPosition",0,6), new Attribute("aVertexColor",3,6)] 
+ * };
+ * shape.addVertexData(vrtxData);
+ * shape.setProgram(shaderProgram);
+ *
+ * ```
+ * @class Shape
+ * @memberof module:graphics
+ * @constructor
+ * @augments Leaf
+ **/
 function Shape() {
     Leaf.call(this);
     
@@ -1091,6 +1355,7 @@ function Shape() {
 
 Shape.prototype = Object.create(Leaf.prototype);
 
+
 Shape.XYZ    = 1;
 Shape.XYZW   = 2;
 Shape.NXYZ   = 4;
@@ -1098,6 +1363,7 @@ Shape.RGB    = 8;
 Shape.RGBA   = 16;
 Shape.ST     = 32;
 
+// Private
 Shape.itemLength = {
     1  : 3,
     2  : 4,
@@ -1107,15 +1373,54 @@ Shape.itemLength = {
     32 : 2
 }
 
+/**
+ * Set Program
+ *
+ * @param {Program} a_program - A shader program defining the rendering style
+ *
+ **/
 Shape.prototype.setProgram = function(a_program) {
   console.log(a_program);
   this.nodeGL.shaderProgram = a_program;
 }
 
+/**
+ * Flag indicating if this shape contains indexed geometries
+ *
+ * @return {boolean}
+ *
+ **/
 Shape.prototype.isIndexedGeometry = function() {
   return this._isIndexed;
 }
 
+/**
+ * Add Vertex Data.
+ *
+ * These data may contain:
+ * - Coordinates
+ * - Normals
+ * - Colors
+ * - Indices
+ * - And/or texture coordinates.
+ *
+ * @param {VertexData} a_geom - Contains all the data describing the vertices of this shape
+ *
+ *
+ * 
+ * @property {VertexData} a_geom 
+ * @property {number}  a_geom.type 
+ * @property {number}  a_geom.type.Shape.XYZ - X, Y, Z- Vertex Coordinates
+ * @property {number}  a_geom.type.Shape.XYZW - X, Y, Z, W- Vertex Coordinates
+ * @property {number}  a_geom.type.Shape.NXYZ - X, Y, Z- Normal Coordinates
+ * @property {number}  a_geom.type.Shape.RGB - Red, Green, and Blue Color 
+ * @property {number}  a_geom.type.Shape.RGBA - Red, Green, Blue, and Alpha Color 
+ * @property {number}  a_geom.type.Shape.ST - S,T Texture Coordinates
+ * @property {Array(number)}  a_geom.data
+ * @property {Array(number)}  a_geom.indices
+ * @property {Array(Attribute)}  a_geom.attributes
+ *
+ **/
 Shape.prototype.addVertexData = function(a_geom) {
     if (a_geom.indices != undefined) {
         this._isIndexed = true;
@@ -1157,7 +1462,12 @@ Shape.prototype.addUniformData = function(a_uniform) {
     this.uniforms.push(a_uniform);
 }
 
-
+/**
+ * Set centroid
+ *
+ * @param {Point3D} cg - Centroid
+ *
+ **/
 Shape.prototype.setCentroid = function(cg) {
     this.cg = cg;
 }
@@ -1278,9 +1588,16 @@ var ShapeFactory = (function () {
 
 "use strict"
 
-/*
- * Constructor
+/** 
+ * @module graphics/gl
  */
+ 
+/**
+ * OpenGL part of Shape
+ *
+ * @class ShapeGL
+ * @constructor
+ **/
 function ShapeGL(node) {
     NodeGL.call(this,node);
 
@@ -1291,10 +1608,19 @@ function ShapeGL(node) {
     this.shaderProgram = null;
 }
 
+/**
+ * Flag indicating if the OpenGL state of this shape is correct
+ *
+ **/
 ShapeGL.prototype.isDirty = function() {
     return _isDirty;
 }
 
+/**
+ * Init of the OpenGL part: VBO creation
+ *
+ * @param {number} context - Graphics context
+ **/
 ShapeGL.prototype.init = function(context) {
 
     // Get the corresponding node of the scene graph
@@ -1322,6 +1648,81 @@ ShapeGL.prototype.init = function(context) {
     this.isDirty = false;
 }
 
+/**
+ * Render this shape; Called by the renderer
+ *
+ **/
+ShapeGL.prototype.render = function(context) {
+    var gl = context;
+    // Update matrix
+    mat4.multiply(this.workmatrix,this.sgnode.parent.getNodeGL().workmatrix,this.sgnode.matrix);
+    this.sgnode.getRenderer().setUniform("uMMatrix", this.workmatrix);
+    
+    // Choose shader
+    console.log(this.shaderProgram);
+    this.shaderProgram.use();
+
+    console.log('coordSize '+ this.numItems );
+    
+    
+    // For this geometry, activate VBO
+    for (var j in this.VBOs) {
+        var vbo = this.VBOs[j];
+        if (vbo.type === 'indexed') {
+            console.log('bind buffer '+ vbo.type + ' ' + vbo.ID+ ' ' + vbo.data);
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, vbo.IndxID);
+        }
+        else {
+            console.log('bind buffer '+ vbo.type + ' ' + vbo.ID);
+            gl.bindBuffer(gl.ARRAY_BUFFER, vbo.ID);
+        }
+        for (var k in vbo.attributes) {
+            var attribute = vbo.attributes[k];
+            console.log('enable ' + attribute.name+' '+attribute.location+' '+attribute.size+' '+attribute.stride+' '+attribute.offset);
+            gl.enableVertexAttribArray(attribute.location );
+            gl.vertexAttribPointer(
+                attribute.location,
+                attribute.size,
+                gl.FLOAT,
+                false,
+                attribute.stride * Renderer.FLOAT_IN_BYTES,
+                attribute.offset * Renderer.FLOAT_IN_BYTES
+            );
+        }
+    }
+    
+    // For this geometry, activate Texture
+    for (var i=0; i < this.GLTextures.length; i++) {
+        // HACK: TODO
+        if (this.GLTextures[i] !== undefined) {
+            console.log('Activate tex ' + this.GLTextures[i]);
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, this.GLTextures[i]);
+            this.sgnode.getRenderer().setUniform("uTexture", 0);
+        }
+    }
+    if (this.GLTextures.length > 0) {
+        // gl.enable ( gl.TEXTURE_2D );
+    }
+
+
+    // TODO Update uniforms
+    this.shaderProgram.updateUniforms();
+    
+
+    // Draw ...
+    console.log(this.sgnode.type + ' '+ this.glType +' '+ this.numIndices+' '+ this.numItems);
+    if (this.numIndices != 0 ) {
+        gl.drawElements(this.glType, this.numIndices, gl.UNSIGNED_SHORT, 0);
+    }
+    else {
+        console.log('drawArrays');
+        gl.drawArrays(this.glType, 0, this.numItems);
+    }
+}
+
+
+// Private
 ShapeGL.prototype._createVBO = function(context,geom) {
     var gl = context;
     console.log('SHAPE TYPE ' + this.sgnode.type);
@@ -1391,6 +1792,7 @@ ShapeGL.prototype._createVBO = function(context,geom) {
 
 }
 
+// Private
 ShapeGL.prototype._createTexture = function(context, img) {
     var gl = context;
     var glTex = gl.createTexture();
@@ -1433,77 +1835,6 @@ ShapeGL.prototype._createTexture = function(context, img) {
     }
 
 }
-
-
-ShapeGL.prototype.render = function(context) {
-    var gl = context;
-    // Update matrix
-    mat4.multiply(this.workmatrix,this.sgnode.parent.getNodeGL().workmatrix,this.sgnode.matrix);
-    this.sgnode.getRenderer().setUniform("uMMatrix", this.workmatrix);
-    
-    // Choose shader
-    console.log(this.shaderProgram);
-    this.shaderProgram.use();
-
-    console.log('coordSize '+ this.numItems );
-    
-    
-    // For this geometry, activate VBO
-    for (var j in this.VBOs) {
-        var vbo = this.VBOs[j];
-        if (vbo.type === 'indexed') {
-            console.log('bind buffer '+ vbo.type + ' ' + vbo.ID+ ' ' + vbo.data);
-            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, vbo.IndxID);
-        }
-        else {
-            console.log('bind buffer '+ vbo.type + ' ' + vbo.ID);
-            gl.bindBuffer(gl.ARRAY_BUFFER, vbo.ID);
-        }
-        for (var k in vbo.attributes) {
-            var attribute = vbo.attributes[k];
-            console.log('enable ' + attribute.name+' '+attribute.location+' '+attribute.size+' '+attribute.stride+' '+attribute.offset);
-            gl.enableVertexAttribArray(attribute.location );
-            gl.vertexAttribPointer(
-                attribute.location,
-                attribute.size,
-                gl.FLOAT,
-                false,
-                attribute.stride * Renderer.FLOAT_IN_BYTES,
-                attribute.offset * Renderer.FLOAT_IN_BYTES
-            );
-        }
-    }
-    
-    // For this geometry, activate Texture
-    for (var i=0 in this.GLTextures) {
-        // HACK: TODO
-        if (this.GLTextures[i] !== undefined) {
-            console.log('Activate tex ' + this.GLTextures[i]);
-            gl.activeTexture(gl.TEXTURE0);
-            gl.bindTexture(gl.TEXTURE_2D, this.GLTextures[i]);
-            this.sgnode.getRenderer().setUniform("uTexture", 0);
-        }
-    }
-    if (this.GLTextures.length > 0) {
-        // gl.enable ( gl.TEXTURE_2D );
-    }
-
-
-    // TODO Update uniforms
-    this.shaderProgram.updateUniforms();
-    
-
-    // Draw ...
-    console.log(this.sgnode.type + ' '+ this.glType +' '+ this.numIndices+' '+ this.numItems);
-    if (this.numIndices != 0 ) {
-        gl.drawElements(this.glType, this.numIndices, gl.UNSIGNED_SHORT, 0);
-    }
-    else {
-        console.log('drawArrays');
-        gl.drawArrays(this.glType, 0, this.numItems);
-    }
-}
-
 
 
 ShapeGL.prototype._updateAttributes = function(context) {
@@ -1552,9 +1883,20 @@ ShapeGL.prototype._updateAttributes = function(context) {
 
 "use strict"
 
-/*
- * Constructor
+/** 
+ * All the classes related to the rendering, scene graph and OpenGL.
+ * @module graphics
  */
+ 
+  
+/**
+ * ShapeGroup: A collection of shapes
+ *
+ * @class ShapeGroup
+ * @constructor
+ * @memberof module:graphics
+ * @augments Composite
+ **/
 var ShapeGroup = function () {
     Composite.call(this);
     
@@ -1806,15 +2148,42 @@ function Uniform (options) {
 
 "use strict"
 
-/*
- * Constructor
+/**
+ * Bond
+ *
+ * @class Bond
+ * @constructor
+ * @memberof module:mol
+ *
+ * @param {Atom} atom1 - First atom
+ * @param {Atom} atom2 - Second atom
  *
  * @author: Jean-Christophe Taveau
  */
 function Bond(atom1, atom2)  {
+  /**
+   * Bond Type
+   *
+   * @property {number} Bond.NONE - Unknown type
+   * @property {number} Bond.COVALENT - Covalent bond
+   * @property {number} Bond.SSBOND - Disulfide bridge
+   * @property {number} Bond.HBOND - Hydrogen bond
+   **/
   this.type  = Bond.NONE;
+
+  /**
+   * First atom
+   **/
   this.atom1 = atom1;
+
+  /**
+   * Second atom
+   **/
   this.atom2 = atom2;
+
+  /**
+   * Mid-point
+   **/
   this.middle = {
     'x': (this.atom1.x + this.atom2.x)/2.0,  
     'y': (this.atom1.y + this.atom2.y)/2.0,  
@@ -2075,36 +2444,113 @@ MowgliViewer.prototype.render = function () {
 
 /**
  * Constructor
+ * @class Structure
+ * @memberof module:mol
  * @constructor
+ *
+ * @author Jean-Christophe Taveau
  **/
-var Structure = function () {
+function Structure() {
 
-  // General Information
+  /**
+   * Identifier
+   *
+   * @type {string}
+   **/
   this.ID             = '0UNK';
+
+  /**
+   * Molecule Classification
+   *
+   * @type {string}
+   **/
   this.classification = 'Unknown';
+  
+  /**
+   * Title
+   *
+   **/
   this.title          = 'No Title';
+  
+  /**
+   * Deposit Date DD-MMM-YY
+   *
+   * @type {string}
+   **/
   this.date           = '00-UNK-00';
 
-  // Atoms
+  /** 
+   * Atoms - Array of Atom
+   * 
+   * @type {Array(Atom)} 
+   *
+   * @property {Atom} atom
+   * @property {string} atom.type - ATOM or HETATM
+   * @property {number} atom.serial - ID of the atom in the file
+   * @property {string} atom.name - Atom name according to the chemical nomenclature
+   * @property {char} atom.altLoc - Alternate Location of the atom
+   * @property {string} atom.group - Group name the atom belongs (three-chars code)
+   * @property {string} atom.groupID  - Location of the group (residue or nucleotide) in the chain.
+   * @property {char} atom.chain -Chain ID 
+   * @property {number} atom.x - X-coordinate 
+   * @property {number} atom.y - Y-coordinate 
+   * @property {number} atom.z - Z-coordinate 
+   * @property {string} atom.symbol - Chemical symbol
+   *
+   **/
   this.atoms=[];
 
-  //Bonds
+  /**
+   * Bonds
+   *
+   * @type {Array(Bond)}
+   * @see {@link mol.Bond}
+   *
+   **/
   this.bonds=[];
 
-  // Colors
+  /**
+   * RGB Colors
+   *
+   * @type {Array(RGBColor)}
+   *
+   **/
   this.colors = [];
 
-  // Chains
+  /**
+   * Chains
+   **/
   this.chains = [];
 
-  // Center of Gravity
+  /**
+   * Center of Gravity - Centroid
+   *
+   * @type {vec3}
+   *
+   * @property {vec3} cg - Center of gravity or centroid of this structure
+   * @property {number} cg.x - X-coordinate
+   * @property {number} cg.y - Y-coordinate
+   * @property {number} cg.y - Z-coordinate
+
+   **/
   this.cg={'x': 0.0,'y': 0.0,'z': 0.0};
 
   // Matrix for rotation(s) and translation(s)
   this.matrix=mat4.create();
   mat4.identity(this.matrix);
 
-  // Bounding Box
+  /**
+   * Bounding Box
+   *
+   * @property {vec3} min - Top-left-front corner of the bounding box
+   * @property {number} min.x - X-coordinate of the 'min' corner
+   * @property {number} min.y - Y-coordinate of the 'min' corner
+   * @property {number} min.y - Z-coordinate of the 'min' corner
+   * @property {vec3} max - Bottom-right-back corner of the bounding box
+   * @property {number} max.x - X-coordinate of the 'max' corner
+   * @property {number} max.y - Y-coordinate of the 'max' corner
+   * @property {number} max.z - Z-coordinate of the 'max' corner
+   **/
   this.bbox={
     'min': {'x': Number.MAX_VALUE,'y': Number.MAX_VALUE,'z': Number.MAX_VALUE},
     'max': {'x': Number.MIN_VALUE,'y': Number.MIN_VALUE,'z': Number.MIN_VALUE},
@@ -2126,6 +2572,15 @@ Structure.LEFT_HANDED_GAMMA  = 8;
 Structure.RIBBON_HELIX_2_7   = 9;
 Structure.POLYPROLINE        = 10;
 
+  /**
+   * Three to One Letter Converter
+   *
+   * @type {string}
+   *
+   * @example
+   * var aa = Structure.threeToOne("GLN"); // returns 'Q'
+   *
+   **/
 Structure.threeToOne = {
     "ALA" : "A", // Alanine
     "ARG" : "R", // Arginine
@@ -2159,7 +2614,7 @@ Structure.threeToOne = {
 /**
  * Set Title
  *
- * @param{string} the new title
+ * @param {string} str - Set a new title
  *
  **/
 Structure.prototype.setTitle = function (str) {
@@ -2167,10 +2622,24 @@ Structure.prototype.setTitle = function (str) {
 }
 
 /**
- * Filter the atoms or bonds in function of their attributes
+ * Filter the atoms or bonds in function of their properties
  *
- * @param{string} The type of objects (ATOM or BOND )on which the filter is applied
- * @param{function} A function for filtering
+ * @param {string} src - The type of objects (ATOM or BOND ) on which the filter is applied
+ * @param {function} callback - A function for filtering
+ *
+ * @return {Array(Atom)}
+ *
+ * @example
+ * // Extract CA atoms from mystructure
+ * var selA = mystructure.finder(
+ *     'ATOM', 
+ *     function (atom) {
+ *         if ( atom.name === 'CA') {
+ *              return true;
+ *         } 
+ *     }
+ * );
+ *
  *
  **/
 Structure.prototype.finder = function (src,callback) {
@@ -2178,10 +2647,29 @@ Structure.prototype.finder = function (src,callback) {
     return this.atoms.filter(callback);
   }
   else {
-    return this.bonds.filter(callback);     
+    return this.bonds.filter(callback);
   }
 }
 
+/**
+ * Filter the atoms in function of their properties
+ *
+ * @param {function} callback - A function for filtering
+ *
+ * @return {Array(Atom)}
+ *
+ * @example
+ * // Extract CA atoms from mystructure
+ * var selA = mystructure.atomFinder(
+ *     function (atom) {
+ *         if ( atom.name === 'CA') {
+ *              return true;
+ *         } 
+ *     }
+ * );
+ *
+ *
+ **/
 Structure.prototype.atomFinder = function (callback) {
   return this.atoms.filter(callback);
 }
@@ -2191,7 +2679,7 @@ Structure.prototype.bondFinder = function (callback) {
 }
 
 /**
- * Return the primary sequence in the FASTA format
+ * Return the primary sequence in FASTA format
  *
  * @return {string} The sequence in FASTA format
  *
@@ -2249,7 +2737,6 @@ Structure.prototype.secondary = function () {
 /**
  * Compute the phi and psi dihedral angles of this structure.
  * The angles are stored in the CA atom of each group.
- *
  *
  **/
 Structure.prototype.calcPhiPsi = function () {
@@ -2384,8 +2871,18 @@ Structure.prototype.toString = function () {
  * Jean-Christophe Taveau
  */
 
-/*
- * Constructor
+"use strict"
+
+/**
+ * @module mol
+ **/
+ 
+ 
+/**
+ * Factory of various readers: pdb, cif, xyz
+ *
+ * @class StructureReader
+ * @constructor
  */
 var StructureReader = function () {
 
@@ -2404,19 +2901,25 @@ StructureReader.prototype.getFromURL = function(url) {
   if (window.XMLHttpRequest)
   {
     // code for IE7+, Firefox, Chrome, Opera, Safari
-    request=new XMLHttpRequest();
+    var req = new XMLHttpRequest();
+    req.open('GET', url, true);
+    req.onreadystatechange = function (aEvt) {
+        if (req.readyState == 4) {
+            if(req.status == 200) {
+                var mol = this.createStructure(req.responseText,extension);
+                return mol;
+            }
+            else {
+                console.log("ERROR:: Can't download PDB file."+aEvt.description+"\n");
+            }
+        }
+    };
+    req.send(null);
   }
-  else
+  else {
     alert('Please update your browser');
-  try {
-    request.open("GET",url,false);
-    request.send();
-  } catch (e) {
-    alert(e.description);
   }
-  
-  var mol = this.createStructure(request.responseText,extension);
-  return mol;
+
 }
 
 StructureReader.prototype.getFromID = function(pdb_id) {
@@ -2530,12 +3033,30 @@ function PDBMLParser() {
 
 "use strict"
 
-/*
- * Constructor
+/**
  *
- * @author: Jean-Christophe Taveau
- */
-var PDBParser = function() {
+ * @module parser
+ *
+ **/
+ 
+ 
+ 
+/**
+ * Constructor
+ * @class PDBParser
+ * @classdesc This class allows the parsing of the PDB file format version 3.30
+
+ *
+ * @constructor
+ *
+ * @example
+ * parser = new PDBParser();
+ * parser.parse(myText);
+ * var mol = parser.getStructure();
+ *
+ * @author Jean-Christophe Taveau
+ **/
+function PDBParser() {
   this.mol = new Structure();
   this.secondary = [];
   this.cubes = [];
@@ -2597,10 +3118,20 @@ PDBParser.TAGS = {
   'TITLE' : 50
 }
 
+/**
+ * Return the PDB structure
+ *
+ * @return {Structure} - The 3D structure of the molecule
+ **/
 PDBParser.prototype.getStructure = function () {
   return this.mol;
 }
 
+/**
+ * Trigger the parsing of the PDB file
+ *
+ * @params {string} text - Text containing the PDB structure
+ **/
 PDBParser.prototype.parse = function (text) {
   // 1- Split the text in an array of rows
   var rows = text.split('\n');
@@ -2658,17 +3189,20 @@ console.log("parse sheet");
 }
 
 
-/*
- *------------------------------------------------------------------------------------
- *COLUMNS       DATA  TYPE     FIELD             DEFINITION
- *------------------------------------------------------------------------------------
- * 1 -  6       Record name    "HEADER"
- *11 - 50       String(40)     classification    Classifies the molecule(s).
- *51 - 59       Date           depDate           Deposition date. This is the date the
- *                                               coordinates  were received at the PDB.
- *63 - 66       IDcode         idCode            This identifier is unique within the PDB.
- *------------------------------------------------------------------------------------
-**/
+/**
+ *
+ * @summary Parse HEADER row - Private method
+ *
+ * @description
+ * 
+ * |COLUMNS  |    DATA  TYPE   |  FIELD           |  DEFINITION
+ * |---------|-----------------|------------------|---------------------------------------
+ * |01 - 06  |    Record name  |  "HEADER"        |  |
+ * |11 - 50  |    String(40)   |  classification  |  Classifies the molecule(s).
+ * |51 - 59  |    Date         |  depDate         |  Deposition date. This is the date the coordinates were received at the PDB.
+ * |63 - 66  |    IDcode       |  idCode          |  This identifier is unique within the PDB.
+ * 
+ **/
 PDBParser.prototype.parseHeader = function (row) {
   this.mol.classification = row.substring(10,50).trim();
   this.mol.date           = row.substring(50,59).trim();
@@ -2676,27 +3210,32 @@ PDBParser.prototype.parseHeader = function (row) {
 }
 
 
-/*
--------------------------------------------------------------------------------------
-COLUMNS        DATA  TYPE    FIELD        DEFINITION
--------------------------------------------------------------------------------------
- 1 -  6        Record name   "ATOM  "
- 7 - 11        Integer       serial       Atom  serial number.
-13 - 16        Atom          name         Atom name.
-17             Character     altLoc       Alternate location indicator.
-18 - 20        Residue name  resName      Residue name.
-22             Character     chainID      Chain identifier.
-23 - 26        Integer       resSeq       Residue sequence number.
-27             AChar         iCode        Code for insertion of residues.
-31 - 38        Real(8.3)     x            Orthogonal coordinates for X in Angstroms.
-39 - 46        Real(8.3)     y            Orthogonal coordinates for Y in Angstroms.
-47 - 54        Real(8.3)     z            Orthogonal coordinates for Z in Angstroms.
-55 - 60        Real(6.2)     occupancy    Occupancy.
-61 - 66        Real(6.2)     tempFactor   Temperature  factor.
-77 - 78        LString(2)    element      Element symbol, right-justified.
-79 - 80        LString(2)    charge       Charge  on the atom.
--------------------------------------------------------------------------------------
-*/
+/**
+ *
+ * @summary Parse ATOM and HETATM row - Private method
+ *
+ * @description
+ * 
+ * 
+ * |COLUMNS   |    DATA  TYPE   | FIELD      |  DEFINITION
+ * |----------|------------------------------|--------------------------------------------
+ * |01 - 06   |    Record name  | "ATOM  "   |  |
+ * |07 - 11   |    Integer      | serial     |  Atom  serial number.
+ * |13 - 16   |    Atom         | name       |  Atom name.
+ * |17        |    Character    | altLoc     |  Alternate location indicator.
+ * |18 - 20   |    Residue name | resName    |  Residue name.
+ * |22        |    Character    | chainID    |  Chain identifier.
+ * |23 - 26   |    Integer      | resSeq     |  Residue sequence number.
+ * |27        |    AChar        | iCode      |  Code for insertion of residues.
+ * |31 - 38   |    Real(8.3)    | x          |  Orthogonal coordinates for X in Angstroms.
+ * |39 - 46   |    Real(8.3)    | y          |  Orthogonal coordinates for Y in Angstroms.
+ * |47 - 54   |    Real(8.3)    | z          |  Orthogonal coordinates for Z in Angstroms.
+ * |55 - 60   |    Real(6.2)    | occupancy  |  Occupancy.
+ * |61 - 66   |    Real(6.2)    | tempFactor |  Temperature  factor.
+ * |77 - 78   |    LString(2)   | element    |  Element symbol, right-justified.
+ * |79 - 80   |    LString(2)   | charge     |  Charge  on the atom.
+ * 
+ **/
 
 PDBParser.prototype.parseAtom = function (line) {
   var atom = {};
@@ -2738,27 +3277,31 @@ PDBParser.prototype.parseAtom = function (line) {
 }
 
 
+/**
+ *
+ * @summary Parse HELIX rows - Private method
+ *
+ * @description
+ * 
+ * 
+ * |COLUMNS   |    DATA  TYPE   | FIELD          |  DEFINITION
+ * |----------|-----------------|----------------|--------------------------------------------
+ * |01 - 06   |    Record name  |    "HELIX      |  | 
+ * |08 - 10   |   Integer       |    serNum      | Serial number of the helix. This starts at 1 and increases incrementally.
+ * |12 - 14   |    LString(3)   |    helixID     | Helix identifier.
+ * |16 - 18   |    Residue name |    initResName | Name of the initial residue.
+ * |20        |    Character    |    initChainID | Chain identifier for the chain containing this helix.
+ * |22 - 25   |    Integer      |    initSeqNum  | Sequence number of the initial residue.
+ * |26        |    AChar        |    initICode   | Insertion code of the initial residue.
+ * |28 - 30   |    Residue name |    endResName  | Name of the terminal residue of the helix.
+ * |32        |    Character    |    endChainID  | Chain identifier for the chain containing this helix.
+ * |34 - 37   |    Integer      |    endSeqNum   | Sequence number of the terminal residue.
+ * |38        |    AChar        |    endICode    | Insertion code of the terminal residue.
+ * |39 - 40   |    Integer      |    helixClass  | Helix class (see below).
+ * |41 - 70   |    String       |    comment     | Comment about this helix.
+ * |72 - 76   |    Integer      |    length      | Length of this helix.
+ **/
 PDBParser.prototype.parseHelix = function(row) {
-
-  // HELIX
-  /******
-   1 -  6       Record name      "HELIX "
-   8 - 10       Integer          serNum       Serial number of the helix. This starts at 1 and increases incrementally.
-  12 - 14       LString(3)       helixID      Helix identifier.
-  16 - 18       Residue name     initResName  Name of the initial residue.
-  20            Character        initChainID  Chain identifier for the chain containing this helix.
-  22 - 25       Integer          initSeqNum   Sequence number of the initial residue.
-  26            AChar            initICode    Insertion code of the initial residue.
-  28 - 30       Residue name     endResName   Name of the terminal residue of the helix.
-  32            Character        endChainID   Chain identifier for the chain containing this helix.
-  34 - 37       Integer          endSeqNum    Sequence number of the terminal residue.
-  38            AChar            endICode     Insertion code of the terminal residue.
-  39 - 40       Integer          helixClass   Helix class (see below).
-  41 - 70       String           comment      Comment about this helix.
-  72 - 76       Integer          length       Length of this helix.
-  ******/
-
-
   this.secondary.push( {
     'type'      : 'H',
     'serial'    : parseInt(row.substring(7,10) ), 
@@ -2777,33 +3320,39 @@ PDBParser.prototype.parseHelix = function(row) {
 *****/
 }
 
-  // SHEET: TODO
-  /********************
-   1 -  6        Record name   "SHEET "
-   8 - 10        Integer       strand         Strand  number which starts at 1 for each strand within a sheet and increases by one.
-  12 - 14        LString(3)    sheetID        Sheet  identifier.
-  15 - 16        Integer       numStrands     Number  of strands in sheet.
-  18 - 20        Residue name  initResName    Residue  name of initial residue.
-  22             Character     initChainID    Chain identifier of initial residue in strand. 
-  23 - 26        Integer       initSeqNum     Sequence number of initial residue in strand.
-  27             AChar         initICode      Insertion code of initial residue in  strand.
-  29 - 31        Residue name  endResName     Residue name of terminal residue.
-  33             Character     endChainID     Chain identifier of terminal residue.
-  34 - 37        Integer       endSeqNum      Sequence number of terminal residue.
-  38             AChar         endICode       Insertion code of terminal residue.
-  39 - 40        Integer       sense          Sense of strand with respect to previous strand. 0 if first strand, 1 if  parallel,and -1 if anti-parallel.
-  42 - 45        Atom          curAtom        Registration.  Atom name in current strand.
-  46 - 48        Residue name  curResName     Registration.  Residue name in current strand
-  50             Character     curChainId     Registration. Chain identifier in current strand.
-  51 - 54        Integer       curResSeq      Registration.  Residue sequence number in current strand.
-  55             AChar         curICode       Registration. Insertion code in current strand.
-  57 - 60        Atom          prevAtom       Registration.  Atom name in previous strand.
-  61 - 63        Residue name  prevResName    Registration.  Residue name in previous strand.
-  65             Character     prevChainId    Registration.  Chain identifier in previous  strand.
-  66 - 69        Integer       prevResSeq     Registration. Residue sequence number in previous strand.
-  70             AChar         prevICode      Registration.  Insertion code in previous strand.
-  ****************/
 
+/**
+ *
+ * @summary Parse SHEET rows - Private method - TODO
+ *
+ * @description
+ *
+ * |COLUMNS   |    DATA  TYPE    | FIELD          |  DEFINITION
+ * |----------|------------------|----------------|--------------------------------------------
+ * |01 - 06   |     Record name  | "SHEET "       |    |
+ * |08 - 10   |     Integer      | strand         | Strand number which starts at 1 for each strand within a sheet and increases by one.
+ * |12 - 14   |     LString(3)   | sheetID        | Sheet identifier.
+ * |15 - 16   |     Integer      | numStrands     | Number of strands in sheet.
+ * |18 - 20   |     Residue name | initResName    | Residue  name of initial residue.
+ * |22        |     Character    | initChainID    | Chain identifier of initial residue in strand. 
+ * |23 - 26   |     Integer      | initSeqNum     | Sequence number of initial residue in strand.
+ * |27        |     AChar        | initICode      | Insertion code of initial residue in  strand.
+ * |29 - 31   |     Residue name | endResName     | Residue name of terminal residue.
+ * |33        |     Character    | endChainID     | Chain identifier of terminal residue.
+ * |34 - 37   |     Integer      | endSeqNum      | Sequence number of terminal residue.
+ * |38        |     AChar        | endICode       | Insertion code of terminal residue.
+ * |39 - 40   |     Integer      | sense          | Sense of strand. 0 if first strand, 1 if parallel,and -1 if anti-parallel.
+ * |42 - 45   |     Atom         | curAtom        | Registration.  Atom name in current strand.
+ * |46 - 48   |     Residue name | curResName     | Registration.  Residue name in current strand
+ * |50        |     Character    | curChainId     | Registration. Chain identifier in current strand.
+ * |51 - 54   |     Integer      | curResSeq      | Registration.  Residue sequence number in current strand.
+ * |55        |     AChar        | curICode       | Registration. Insertion code in current strand.
+ * |57 - 60   |     Atom         | prevAtom       | Registration.  Atom name in previous strand.
+ * |61 - 63   |     Residue name | prevResName    | Registration.  Residue name in previous strand.
+ * |65        |     Character    | prevChainId    | Registration.  Chain identifier in previous  strand.
+ * |66 - 69   |     Integer      | prevResSeq     | Registration. Residue sequence number in previous strand.
+ * |70        |     AChar        | prevICode      | Registration.  Insertion code in previous strand.
+ **/
 PDBParser.prototype.parseSheet = function (row) {
 
   this.secondary.push( {
@@ -2820,16 +3369,19 @@ PDBParser.prototype.parseSheet = function (row) {
 
 }
 
-/*
-----------------------------------------------------------------------------------
-COLUMNS       DATA  TYPE     FIELD         DEFINITION
-----------------------------------------------------------------------------------
- 1 -  6       Record name    "TITLE "
- 9 - 10       Continuation   continuation  Allows concatenation of multiple records.
-11 - 80       String         title         Title of the  experiment.
-----------------------------------------------------------------------------------
-*/
-
+/**
+ *
+ * @summary Parse TITLE rows - Private method - TODO
+ *
+ * @description
+ *
+ * |COLUMNS   |    DATA  TYPE   | FIELD          |  DEFINITION
+ * |----------|-----------------|----------------|--------------------------------------------
+ * |01 -  6   |    Record name  |  "TITLE "      |  |
+ * |09 - 10   |    Continuation |  continuation  | Allows concatenation of multiple records.
+ * |11 - 80   |    String       |  title         | Title of the  experiment.
+ *
+ **/
 PDBParser.prototype.parseTitle = function (row) 
 {
   if (parseInt(row.substring(8,10).trim()) == 1) {
