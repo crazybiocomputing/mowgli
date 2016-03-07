@@ -1,4 +1,6 @@
-This folder containis all the drawing styles of mowgli
+## 5. styles
+
+This folder contains all the drawing styles of mowgli
 <ul>
 <li>Vectorial approaches (points, lines, triangles)</li>
   <ul>

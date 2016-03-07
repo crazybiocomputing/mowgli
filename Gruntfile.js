@@ -13,14 +13,18 @@ module.exports = function(grunt) {
       }
     },
     concat: {
-      dist: {
+      js: {
         src: ['src/**/*.js'],
         dest: 'dist/<%= pkg.name %>.js'
+      },
+      dist: {
+        src: ['src/**/README.md'],
+        dest: 'doc/README.md'
       }
     },
     jsdoc : {
         dist : {
-            src: ['src/**/*.js','src/**/README.md'],
+            src: ['src/**/*.js','doc/README.md'],
             options: {
                 configure: 'doc/jsdoc/config.json',
                 destination: 'gh-pages/doc'
