@@ -1,0 +1,6 @@
+# Temporary gedit files
+############################
+**/*.*~
+
+node_modules/
+
