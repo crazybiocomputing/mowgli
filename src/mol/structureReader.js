@@ -22,8 +22,18 @@
  * Jean-Christophe Taveau
  */
 
-/*
- * Constructor
+"use strict"
+
+/**
+ * @module mol
+ **/
+ 
+ 
+/**
+ * Factory of various readers: pdb, cif, xyz
+ *
+ * @class StructureReader
+ * @constructor
  */
 var StructureReader = function () {
 
@@ -42,19 +52,25 @@ StructureReader.prototype.getFromURL = function(url) {
   if (window.XMLHttpRequest)
   {
     // code for IE7+, Firefox, Chrome, Opera, Safari
-    request=new XMLHttpRequest();
+    var req = new XMLHttpRequest();
+    req.open('GET', url, true);
+    req.onreadystatechange = function (aEvt) {
+        if (req.readyState == 4) {
+            if(req.status == 200) {
+                var mol = this.createStructure(req.responseText,extension);
+                return mol;
+            }
+            else {
+                console.log("ERROR:: Can't download PDB file."+aEvt.description+"\n");
+            }
+        }
+    };
+    req.send(null);
   }
-  else
+  else {
     alert('Please update your browser');
-  try {
-    request.open("GET",url,false);
-    request.send();
-  } catch (e) {
-    alert(e.description);
   }
-  
-  var mol = this.createStructure(request.responseText,extension);
-  return mol;
+
 }
 
 StructureReader.prototype.getFromID = function(pdb_id) {

@@ -24,50 +24,36 @@
 
 "use strict"
 
-/**
- * Bond
- *
- * @class Bond
- * @constructor
- * @memberof module:mol
- *
- * @param {Atom} atom1 - First atom
- * @param {Atom} atom2 - Second atom
- *
- * @author: Jean-Christophe Taveau
+/*
+ * Constructor
  */
-function Bond(atom1, atom2)  {
-  /**
-   * Bond Type
-   *
-   * @property {number} Bond.NONE - Unknown type
-   * @property {number} Bond.COVALENT - Covalent bond
-   * @property {number} Bond.SSBOND - Disulfide bridge
-   * @property {number} Bond.HBOND - Hydrogen bond
-   **/
-  this.type  = Bond.NONE;
+ var MowgliViewer = function (canvasID) {
+ 
+    // 0- Create a renderer for this canvas
+    this.renderer = new Renderer(canvasID);
 
-  /**
-   * First atom
-   **/
-  this.atom1 = atom1;
+    // 1- Create a scene with a default light and camera
+    this.scene = new Scene();
+    this.renderer.addScene(scene);
 
-  /**
-   * Second atom
-   **/
-  this.atom2 = atom2;
+    // 2- Update renderer
+    this.renderer.update();
 
-  /**
-   * Mid-point
-   **/
-  this.middle = {
-    'x': (this.atom1.x + this.atom2.x)/2.0,  
-    'y': (this.atom1.y + this.atom2.y)/2.0,  
-    'z': (this.atom1.z + this.atom2.z)/2.0,  
-  };
+    // 3- Add a sensor
+    var mouse = new MouseSensor(canvasID);
+    this.mouse.attach(this.scene);
+
+    this.renderer.addSensor(mouse);
+
+ }
+ 
+MowgliViewer.prototype.getScene = function () {
+    return this.scene;
 }
 
-Bond.NONE     = 0;
-Bond.COVALENT = 1;
-Bond.SSBOND   = 2;
-Bond.HBOND    = 4;
+
+MowgliViewer.prototype.render = function () {
+    this.renderer.drawScene();
+}
+
+

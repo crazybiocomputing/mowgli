@@ -26,36 +26,113 @@
 
 /**
  * Constructor
+ * @class Structure
+ * @memberof module:mol
  * @constructor
+ *
+ * @author Jean-Christophe Taveau
  **/
-var Structure = function () {
+function Structure() {
 
-  // General Information
+  /**
+   * Identifier
+   *
+   * @type {string}
+   **/
   this.ID             = '0UNK';
+
+  /**
+   * Molecule Classification
+   *
+   * @type {string}
+   **/
   this.classification = 'Unknown';
+  
+  /**
+   * Title
+   *
+   **/
   this.title          = 'No Title';
+  
+  /**
+   * Deposit Date DD-MMM-YY
+   *
+   * @type {string}
+   **/
   this.date           = '00-UNK-00';
 
-  // Atoms
+  /** 
+   * Atoms - Array of Atom
+   * 
+   * @type {Array(Atom)} 
+   *
+   * @property {Atom} atom
+   * @property {string} atom.type - ATOM or HETATM
+   * @property {number} atom.serial - ID of the atom in the file
+   * @property {string} atom.name - Atom name according to the chemical nomenclature
+   * @property {char} atom.altLoc - Alternate Location of the atom
+   * @property {string} atom.group - Group name the atom belongs (three-chars code)
+   * @property {string} atom.groupID  - Location of the group (residue or nucleotide) in the chain.
+   * @property {char} atom.chain -Chain ID 
+   * @property {number} atom.x - X-coordinate 
+   * @property {number} atom.y - Y-coordinate 
+   * @property {number} atom.z - Z-coordinate 
+   * @property {string} atom.symbol - Chemical symbol
+   *
+   **/
   this.atoms=[];
 
-  //Bonds
+  /**
+   * Bonds
+   *
+   * @type {Array(Bond)}
+   * @see {@link mol.Bond}
+   *
+   **/
   this.bonds=[];
 
-  // Colors
+  /**
+   * RGB Colors
+   *
+   * @type {Array(RGBColor)}
+   *
+   **/
   this.colors = [];
 
-  // Chains
+  /**
+   * Chains
+   **/
   this.chains = [];
 
-  // Center of Gravity
+  /**
+   * Center of Gravity - Centroid
+   *
+   * @type {vec3}
+   *
+   * @property {vec3} cg - Center of gravity or centroid of this structure
+   * @property {number} cg.x - X-coordinate
+   * @property {number} cg.y - Y-coordinate
+   * @property {number} cg.y - Z-coordinate
+
+   **/
   this.cg={'x': 0.0,'y': 0.0,'z': 0.0};
 
   // Matrix for rotation(s) and translation(s)
   this.matrix=mat4.create();
   mat4.identity(this.matrix);
 
-  // Bounding Box
+  /**
+   * Bounding Box
+   *
+   * @property {vec3} min - Top-left-front corner of the bounding box
+   * @property {number} min.x - X-coordinate of the 'min' corner
+   * @property {number} min.y - Y-coordinate of the 'min' corner
+   * @property {number} min.y - Z-coordinate of the 'min' corner
+   * @property {vec3} max - Bottom-right-back corner of the bounding box
+   * @property {number} max.x - X-coordinate of the 'max' corner
+   * @property {number} max.y - Y-coordinate of the 'max' corner
+   * @property {number} max.z - Z-coordinate of the 'max' corner
+   **/
   this.bbox={
     'min': {'x': Number.MAX_VALUE,'y': Number.MAX_VALUE,'z': Number.MAX_VALUE},
     'max': {'x': Number.MIN_VALUE,'y': Number.MIN_VALUE,'z': Number.MIN_VALUE},
@@ -77,6 +154,15 @@ Structure.LEFT_HANDED_GAMMA  = 8;
 Structure.RIBBON_HELIX_2_7   = 9;
 Structure.POLYPROLINE        = 10;
 
+  /**
+   * Three to One Letter Converter
+   *
+   * @type {string}
+   *
+   * @example
+   * var aa = Structure.threeToOne("GLN"); // returns 'Q'
+   *
+   **/
 Structure.threeToOne = {
     "ALA" : "A", // Alanine
     "ARG" : "R", // Arginine
@@ -110,7 +196,7 @@ Structure.threeToOne = {
 /**
  * Set Title
  *
- * @param{string} the new title
+ * @param {string} str - Set a new title
  *
  **/
 Structure.prototype.setTitle = function (str) {
@@ -118,10 +204,24 @@ Structure.prototype.setTitle = function (str) {
 }
 
 /**
- * Filter the atoms or bonds in function of their attributes
+ * Filter the atoms or bonds in function of their properties
  *
- * @param{string} The type of objects (ATOM or BOND )on which the filter is applied
- * @param{function} A function for filtering
+ * @param {string} src - The type of objects (ATOM or BOND ) on which the filter is applied
+ * @param {function} callback - A function for filtering
+ *
+ * @return {Array(Atom)}
+ *
+ * @example
+ * // Extract CA atoms from mystructure
+ * var selA = mystructure.finder(
+ *     'ATOM', 
+ *     function (atom) {
+ *         if ( atom.name === 'CA') {
+ *              return true;
+ *         } 
+ *     }
+ * );
+ *
  *
  **/
 Structure.prototype.finder = function (src,callback) {
@@ -129,10 +229,29 @@ Structure.prototype.finder = function (src,callback) {
     return this.atoms.filter(callback);
   }
   else {
-    return this.bonds.filter(callback);     
+    return this.bonds.filter(callback);
   }
 }
 
+/**
+ * Filter the atoms in function of their properties
+ *
+ * @param {function} callback - A function for filtering
+ *
+ * @return {Array(Atom)}
+ *
+ * @example
+ * // Extract CA atoms from mystructure
+ * var selA = mystructure.atomFinder(
+ *     function (atom) {
+ *         if ( atom.name === 'CA') {
+ *              return true;
+ *         } 
+ *     }
+ * );
+ *
+ *
+ **/
 Structure.prototype.atomFinder = function (callback) {
   return this.atoms.filter(callback);
 }
@@ -142,7 +261,7 @@ Structure.prototype.bondFinder = function (callback) {
 }
 
 /**
- * Return the primary sequence in the FASTA format
+ * Return the primary sequence in FASTA format
  *
  * @return {string} The sequence in FASTA format
  *
@@ -200,7 +319,6 @@ Structure.prototype.secondary = function () {
 /**
  * Compute the phi and psi dihedral angles of this structure.
  * The angles are stored in the CA atom of each group.
- *
  *
  **/
 Structure.prototype.calcPhiPsi = function () {
