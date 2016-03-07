@@ -1,0 +1,11 @@
+{
+    "plugins": ["plugins/markdown"],
+
+    "templates": {
+        "default": {
+            "outputSourceFiles": false,
+            "layoutFile" : "mowgli_layout.tmpl"
+        }
+    }
+}
+
