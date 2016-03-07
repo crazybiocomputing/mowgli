@@ -1,10 +1,53 @@
-var About = function(the_id) {
+/*
+ *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
+ *  Copyright (C) 2015  Jean-Christophe Taveau.
+ *
+ *  This file is part of mowgli
+ *
+ * This program is free software: you can redistribute it and/or modify it 
+ * under the terms of the GNU General Public License as published by 
+ * the Free Software Foundation, either version 3 of the License, or 
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, 
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+ * GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * Authors:
+ * Jean-Christophe Taveau
+ */
+
+"use strict"
+
+/**
+ * Constructor
+ * @class AboutGUI
+ * @memberof module:gui
+ * @constructor
+ *
+ * @author Jean-Christophe Taveau
+ **/
+function AboutGUI(the_id) {
+    /**
+     * DOM element ID
+     *
+     **/
     this.element = document.getElementById(the_id);
+    
+    /**
+     * Handle various event types
+     * @param event - The DOM event
+    **/
     this.handleEvent = function(event) {
         console.log(the_id); // 'Something Good', as this is the Something object
         switch(event.type) {
         case 'click':
-            // some code here...
+            // Display modal window
             var popup = new Modal({
                 headerTitle : "<p>About Mowgli... </p>",
                 headerImage : "url('images/headprot.jpg')",
@@ -46,6 +89,32 @@ var About = function(the_id) {
     ]
 }
 
+/*
+ *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
+ *  Copyright (C) 2015  Jean-Christophe Taveau.
+ *
+ *  This file is part of mowgli
+ *
+ * This program is free software: you can redistribute it and/or modify it 
+ * under the terms of the GNU General Public License as published by 
+ * the Free Software Foundation, either version 3 of the License, or 
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, 
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+ * GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * Authors:
+ * Jean-Christophe Taveau
+ */
+
+"use strict"
+
 window.onload = function() {
 
     // 1- File
@@ -53,11 +122,45 @@ window.onload = function() {
     // 7- Help
     // About modal window
     console.log('Add event click on About...');
-    var about = new About("about");
+    var about = new AboutGUI("about");
 
 }
 
-var Modal = function(options) {
+/*
+ *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
+ *  Copyright (C) 2015  Jean-Christophe Taveau.
+ *
+ *  This file is part of mowgli
+ *
+ * This program is free software: you can redistribute it and/or modify it 
+ * under the terms of the GNU General Public License as published by 
+ * the Free Software Foundation, either version 3 of the License, or 
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, 
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+ * GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * Authors:
+ * Jean-Christophe Taveau
+ */
+
+"use strict"
+
+/**
+ * Constructor
+ * @class Modal
+ * @memberof module:gui
+ * @constructor
+ *
+ * @author Jean-Christophe Taveau
+ **/
+ function Modal(options) {
     var element = document.getElementById('modal');
     var html =  '<div class="container"><header id="modalhead">';
     html += '<a href="#close" title="Close modal window" class="droite">&#10060;</a>'
