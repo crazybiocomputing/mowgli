@@ -25,9 +25,14 @@
 
 "use strict"
 
-/*
- * Constructor
- */
+
+/**
+ * Node in the Scene Graph
+ *
+ * @class Leaf
+ * @memberof module:graphics
+ * @constructor
+ **/
 function Leaf(node) {
     this._isDirty = true;
     this.parent = null;
@@ -69,7 +74,7 @@ Leaf.prototype.getRenderer = function() {
  * @param{number} OpenGL context
  **/
 Leaf.prototype.init = function(context) {
-    console.log('INIT ' + this.ID);
+    console.log('INIT leaf ' + this.ID);
     this.getNodeGL().init(context);
 }
 
@@ -86,6 +91,17 @@ Leaf.prototype.render = function(context) {
     mat4.multiply(this.getNodeGL().workmatrix,this.parent.getNodeGL().workmatrix,this.matrix);
     // OpenGL rendering
     this.getNodeGL().render(context);
+}
+
+Leaf.prototype.translate = function(tx, ty, tz) {
+    console.log(this.matrix);
+    mat4.translate(this.matrix,this.matrix,[tx, ty, tz]);
+        console.log(this.matrix);
+}
+
+Leaf.prototype.graph = function(level) {
+    var str = (this.ID || 'unknown');
+    return str;
 }
 
 

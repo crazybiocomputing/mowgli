@@ -24,9 +24,15 @@
 
 "use strict"
 
-/*
- * Constructor
- */
+
+/**
+ * Scene: Root of the scene graph
+ *
+ * @class Scene
+ * @memberof module:graphics
+ * @constructor
+ * @augments Composite
+ **/
 var Scene = function () {
     Composite.call(this);
     
@@ -40,6 +46,11 @@ var Scene = function () {
 
 Scene.prototype = Object.create(Composite.prototype);
 
+/**
+ * Get Camera in the scene
+ *
+ * @return {Camera} Returns the current camera
+ **/
 Scene.prototype.getCamera = function() {
     return this.children['camera_0'];
 }
@@ -51,5 +62,6 @@ Scene.prototype.toString = function() {
     }
     return str;
 }
+
 
 

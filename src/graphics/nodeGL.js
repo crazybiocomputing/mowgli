@@ -25,9 +25,16 @@
 
 "use strict"
 
-/*
- * Constructor
+/** 
+ * @module graphics/gl
  */
+
+/**
+ * OpenGL node of the scene graph
+ *
+ * @class NodeGL
+ * @constructor
+ **/
 function NodeGL(node) {
     this.sgnode = node;
     this.glType = -1;

@@ -25,9 +25,18 @@
 
 "use strict"
 
-/*
- * Constructor
+/** 
+ * @module graphics/gl
  */
+ 
+ 
+/**
+ * CameraGL
+ *
+ * @class CameraGL
+ * @constructor
+ *
+ **/
 function CameraGL(node) {
     this.sgnode = node;
     this.glType = -1;
@@ -43,7 +52,7 @@ CameraGL.prototype.isDirty = function() {
 }
 
 CameraGL.prototype.setViewport = function (width, height) {
-  mat4.perspective(this.sgnode.projMatrix,this.sgnode.fovy * this.sgnode.zoom,width / height,0.1,1000.0);
+    mat4.perspective(this.sgnode.projMatrix,this.sgnode.fovy * this.sgnode.zoom,width / height,this.sgnode.zNear,this.sgnode.zFar);
 }
 
 CameraGL.prototype.init = function(context) {

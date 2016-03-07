@@ -24,9 +24,20 @@
 
 "use strict"
 
-/*
- * Constructor
+/** 
+ * All the classes related to the rendering, scene graph and OpenGL.
+ * @module graphics
  */
+ 
+  
+/**
+ * ShapeGroup: A collection of shapes
+ *
+ * @class ShapeGroup
+ * @constructor
+ * @memberof module:graphics
+ * @augments Composite
+ **/
 var ShapeGroup = function () {
     Composite.call(this);
     

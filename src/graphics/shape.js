@@ -25,9 +25,29 @@
 
 "use strict"
 
-/*
- * Constructor
- */
+
+/**
+ * Shape: Graphical object defined by geometries (Vertex Data) and a rendering style (Shader Program).
+ *
+ * The classical way to create a shape in Mowgli is:
+ *
+ * ```javascript
+ * var shape = new Shape();
+ * shape.type = 'POINTS';
+ * var vrtxData = {
+ *     'content': Shape.XYZ | Shape.RGB,
+ *     'data':vertices, 
+ *     'attributes': [new Attribute("aVertexPosition",0,6), new Attribute("aVertexColor",3,6)] 
+ * };
+ * shape.addVertexData(vrtxData);
+ * shape.setProgram(shaderProgram);
+ *
+ * ```
+ * @class Shape
+ * @memberof module:graphics
+ * @constructor
+ * @augments Leaf
+ **/
 function Shape() {
     Leaf.call(this);
     
@@ -35,6 +55,7 @@ function Shape() {
     this.colorMode = 'monochrome';
     this.shaderProgram = null;
     this.geometries = [];
+    this.textures   = [];
     this.uniforms   = [];
 
     this.type = 'POINTS';
@@ -53,6 +74,7 @@ function Shape() {
 
 Shape.prototype = Object.create(Leaf.prototype);
 
+
 Shape.XYZ    = 1;
 Shape.XYZW   = 2;
 Shape.NXYZ   = 4;
@@ -60,6 +82,7 @@ Shape.RGB    = 8;
 Shape.RGBA   = 16;
 Shape.ST     = 32;
 
+// Private
 Shape.itemLength = {
     1  : 3,
     2  : 4,
@@ -69,15 +92,54 @@ Shape.itemLength = {
     32 : 2
 }
 
+/**
+ * Set Program
+ *
+ * @param {Program} a_program - A shader program defining the rendering style
+ *
+ **/
 Shape.prototype.setProgram = function(a_program) {
   console.log(a_program);
   this.nodeGL.shaderProgram = a_program;
 }
 
+/**
+ * Flag indicating if this shape contains indexed geometries
+ *
+ * @return {boolean}
+ *
+ **/
 Shape.prototype.isIndexedGeometry = function() {
   return this._isIndexed;
 }
 
+/**
+ * Add Vertex Data.
+ *
+ * These data may contain:
+ * - Coordinates
+ * - Normals
+ * - Colors
+ * - Indices
+ * - And/or texture coordinates.
+ *
+ * @param {VertexData} a_geom - Contains all the data describing the vertices of this shape
+ *
+ *
+ * 
+ * @property {VertexData} a_geom 
+ * @property {number}  a_geom.type 
+ * @property {number}  a_geom.type.Shape.XYZ - X, Y, Z- Vertex Coordinates
+ * @property {number}  a_geom.type.Shape.XYZW - X, Y, Z, W- Vertex Coordinates
+ * @property {number}  a_geom.type.Shape.NXYZ - X, Y, Z- Normal Coordinates
+ * @property {number}  a_geom.type.Shape.RGB - Red, Green, and Blue Color 
+ * @property {number}  a_geom.type.Shape.RGBA - Red, Green, Blue, and Alpha Color 
+ * @property {number}  a_geom.type.Shape.ST - S,T Texture Coordinates
+ * @property {Array(number)}  a_geom.data
+ * @property {Array(number)}  a_geom.indices
+ * @property {Array(Attribute)}  a_geom.attributes
+ *
+ **/
 Shape.prototype.addVertexData = function(a_geom) {
     if (a_geom.indices != undefined) {
         this._isIndexed = true;
@@ -108,11 +170,23 @@ Shape.prototype.addVertexData = function(a_geom) {
     // this.numItems = a_geom.data.length / itemSize;
 }
 
+
+Shape.prototype.addTexture = function(image_name) {
+    var image = new Image();
+    image.src = image_name;
+    this.textures.push(image);
+}
+
 Shape.prototype.addUniformData = function(a_uniform) {
     this.uniforms.push(a_uniform);
 }
 
-
+/**
+ * Set centroid
+ *
+ * @param {Point3D} cg - Centroid
+ *
+ **/
 Shape.prototype.setCentroid = function(cg) {
     this.cg = cg;
 }

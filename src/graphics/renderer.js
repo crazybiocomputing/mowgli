@@ -25,12 +25,23 @@
 
 "use strict"
 
-/*
+/**
  * Core class for rendering in the canvas
- * Singleton ??
+ * 
+ * @todo must be a singleton ??
  *
  * @class Renderer
+ * @memberof module:graphics
  * @constructor
+ *
+ * @example
+ * var id = document.getElementById('canvas');
+ * var renderer = new Renderer(id);
+ * renderer.addScene(myScene);
+ * // Inititalize the renderer just before executing the rendering loop
+ * renderer.init();
+ * // Run infinite loop
+ * renderer.drawScene();
  */
 function Renderer(canvas_id) {
   this.scene = null;
@@ -67,19 +78,38 @@ function Renderer(canvas_id) {
   this._initGL();
 }
 
+/**
+ * Get graphics context
+ *
+ * @return {number} - Reference of the OpenGL graphics context
+ *
+ **/
 Renderer.prototype.getContext = function () {
   return this.context;
 }
 
+/**
+ * Add scene
+ *
+ * @param {Scene} - Add a scene which is the root of the scene graph.
+ *
+ **/
 Renderer.prototype.addScene = function (a_scene) {
   this.scene = a_scene;
   a_scene.parent = this;
 }
 
+
 Renderer.prototype.addShader = function (a_shaderprogram) {
     this.shaders.push(a_shaderprogram);
 }
 
+/**
+ * Add sensor 
+ *
+ * @param {Sensor} - Add a sensor or an object interacting with the scene graph
+ *
+ **/
 Renderer.prototype.addSensor = function (a_sensor) {
   this.sensor = a_sensor;
   this.sensor.setRenderer(this);
@@ -92,6 +122,23 @@ Renderer.prototype.setUniform = function (name,value) {
     }
 }
 
+
+/**
+ * Initialize the renderer. 
+ *
+ *
+ **/
+Renderer.prototype.init = function () {
+    var gl = this.context;
+    this.scene.init(gl);
+  // TODO
+}
+
+/**
+ * Draw the scene. This function triggers the OpenGL rendering in an infinite loop. 
+ *
+ *
+ **/
 Renderer.prototype.drawScene = function () {
     var gl = this.context;
     
@@ -103,14 +150,6 @@ Renderer.prototype.drawScene = function () {
     console.log('*************** RENDER ***************');
     this.scene.render(gl);
 }
-
-Renderer.prototype.init = function () {
-    var gl = this.context;
-    this.scene.init(gl);
-  // TODO
-}
-
-
 /*
  * Private
  */

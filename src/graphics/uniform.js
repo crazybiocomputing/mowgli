@@ -25,40 +25,11 @@
 
 "use strict"
 
-
-/**
- * Attribute class used by the shader program
- *
- * @class Attribute
- * @memberof module:graphics
- * @constructor
- **/
-function Attribute (name,offset,stride) {
-
-  /** 
-   * The name
-   * @type {string} 
-   *
-   **/
-  this.name = name;
-
-  /** 
-   * The offset
-   * @type {number}
-   *
-   **/
-  this.offset = offset;
-
-  /** 
-   * The stride
-   * @type {number}
-   *
-   **/
-  this.stride = stride;
-
-  this.size = -1;
-  
-  this.location = -1;
+/*
+ * Constructor
+ */
+function Uniform (options) {
+    this.name = options.name;
 
 }
 

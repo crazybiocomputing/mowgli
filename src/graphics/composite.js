@@ -25,9 +25,14 @@
 
 "use strict"
 
-/*
- * Constructor
- */
+
+/**
+ * Node with children in the Scene Graph
+ *
+ * @class Composite
+ * @memberof module:graphics
+ * @constructor
+ **/
 function Composite(node) {
     this.children = {};
     this._isDirty = true;
@@ -92,7 +97,6 @@ Composite.prototype.init = function(context) {
     this.isDirty = false;
     
     function traverse(context,a_node) {
-        console.log('INIT ' + a_node.ID);
         a_node.init(context);
         for (var i in a_node.children) {
             traverse(context,a_node.children[i]);
@@ -107,7 +111,6 @@ Composite.prototype.init = function(context) {
  * @param{number} OpenGL context
  **/
 Composite.prototype.render = function(context) {
-
     console.log('RENDER_Composite ' + this.ID );
     console.log(this.parent);
     // Update matrix
@@ -123,7 +126,6 @@ Composite.prototype.render = function(context) {
     }
     
     function traverse(context,a_node) {
-        console.log('RENDER_child ' + a_node.ID);
         a_node.render(context);
         for (var i in a_node.children) {
             traverse(context,a_node.children[i]);
@@ -132,6 +134,15 @@ Composite.prototype.render = function(context) {
 
 }
 
+Composite.prototype.graph = function(level) {
+    var lvl = level || 0;
+    var spaces = Array(lvl+1).join(".");
+    var str = (this.ID || 'unknown') +'\n';
+    for (var i in this.children) {
+        str += spaces + '+-'+this.children[i].graph(lvl++)+'\n';
+    }
+    return str;
+}
 
 /***
 Composite.prototype._updateAttributes = function(context) {

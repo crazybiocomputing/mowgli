@@ -23,7 +23,16 @@
  */
  
  "use strict"
+
  
+/**
+ * Camera
+ *
+ * @class Camera
+ * @memberof module:graphics
+ * @constructor
+ * @augments Leaf
+ **/
 function Camera() {
     Leaf.call(this);
     
@@ -34,6 +43,8 @@ function Camera() {
     mat4.identity(this.viewMatrix);
     this.fovy = 45.0*Math.PI/180.0;
     this.zoom = 1.0;
+    this.zNear = 0.1;
+    this.zFar  = 1000.0;
 
       // NodeGL
     this.nodeGL = new CameraGL(this);
@@ -41,6 +52,12 @@ function Camera() {
 
 Camera.prototype = new Leaf;
 
+/**
+ * Set the Y-Field of View. 
+ *
+ * @param {number} angle_in_degrees - Angle of the Field of View expressed in degrees
+ * 
+ **/
 Camera.prototype.setFovy = function (angle_in_degrees) {
   this.fovy= angle_in_degrees * Math.PI/180.0;
 }

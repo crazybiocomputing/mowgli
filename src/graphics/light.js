@@ -22,7 +22,17 @@
  * Jean-Christophe Taveau
  */
 
+"use strict"
 
+ 
+/**
+ * Light
+ *
+ * @class Light
+ * @memberof module:graphics
+ * @constructor
+ * @augments Leaf
+ **/
 function Light() {
     Leaf.call(this);
     this.ID = 'light';
