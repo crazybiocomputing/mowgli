@@ -24,13 +24,17 @@
 
 "use strict"
 
+
 window.onload = function() {
 
+    var mol;
+    
     // 1- File
+    // 1-3 Samples
+    var sample_1ZNI = new SampleGUI("1zni");
 
     // 7- Help
     // About modal window
     console.log('Add event click on About...');
     var about = new AboutGUI("about");
-
 }

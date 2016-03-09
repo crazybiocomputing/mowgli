@@ -35,7 +35,7 @@
  function Modal(options) {
     var element = document.getElementById('modal');
     var html =  '<div class="container"><header id="modalhead">';
-    html += '<a href="#close" title="Close modal window" class="droite">&#10060;</a>'
+    html += '<a href="#close" title="Close modal window" class="droite">&#10060;</a>';
     html += options.headerTitle || 'Modal window';
     html += '</header>';
     html += '<article>';

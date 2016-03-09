@@ -22,17 +22,17 @@
  * Jean-Christophe Taveau
  */
 
-"use strict";
+"use strict"
 
 /**
  * Constructor
- * @class AboutGUI
+ * @class SampleGUI
  * @memberof module:gui
  * @constructor
  *
  * @author Jean-Christophe Taveau
  **/
-function AboutGUI(the_id) {
+function SampleGUI(the_id) {
     /**
      * DOM element ID
      *
@@ -47,16 +47,24 @@ function AboutGUI(the_id) {
         console.log(the_id); // 'Something Good', as this is the Something object
         switch(event.type) {
         case 'click':
-            // Display modal window
-            var popup = new Modal({
-                headerTitle : "<p>About Mowgli... </p>",
-                headerImage : "url('images/headprot.jpg')",
-                body  : content.reduce(
-                        function(prev, current, index, array){
-                            return prev + current;
-                        }
-                    )
-            });
+            // Load JSON file
+            console.log('Load JSON...');
+            var xhr = new XMLHttpRequest();
+            // We need a asynchronous request (3rd argument true) - Wait until completion
+            xhr.open('GET', "samples/1ZNI.json", true);
+            xhr.responseType = 'json';
+            xhr.onreadystatechange = function (aEvt) {
+                if (xhr.readyState == 4) {
+                    if(xhr.status == 200) {
+                        MOWGLI.molecule = xhr.response; // JSON.parse(xhr.responseText);
+                        console.log(MOWGLI.molecule);
+                    }
+                    else {
+                        console.log("ERROR:: Can't download PDB file."+aEvt.description+"\n");
+                    }
+                }
+            };
+            xhr.send(null);
             break;
         case 'dblclick':
             // some code here...
@@ -71,20 +79,6 @@ function AboutGUI(the_id) {
     // You can properly remove the listeners
     // this.element.removeEventListener('click', this, false);
     // this.element.removeEventListener('dblclick', this, false);
-  
-    var content = [
-        "<p>MOWGLI &mdash; <b>MO</b>lecule <b>W</b>eb<b>GL</b> & <b>I</b>mage viewer &mdash; ",
-        "is a collaborative project developed by students of the Master of Science in Bioinformatics, Bordeaux ",
-        "during the course \"Structural Bioinformatics\". </p>",
-        "<p>Maintained and supervised by Jean-Christophe Taveau</a></p>",
-        "<h3>Contributors</h3>",
-        "<h4>Promotion 2014</h4>",
-        "<p>Nullam at enim at nibh mollis feugiat ac nec lorem. Mauris eu ornare erat. Integer facilisis aliquet leo a iaculis. </p>",
-        "<h4>Promotion 2015</h4>",
-        "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. In lobortis orci vel velit rutrum, a dapibus nisl convallis. ",
-        "Nulla quis hendrerit dui. Lorem ipsum dolor sit amet, consectetur adipiscing elit. </p>",
-        "<h4>Promotion 2016</h4>",
-        "<p>Integer commodo faucibus dui vitae maximus. Nullam at enim at nibh mollis feugiat ac nec lorem. Mauris eu ornare erat. </p>",
-        "<p>Published with <a href=\"http://pages.github.com\">GitHub Pages</a></p>"
-    ];
+
+
 }
