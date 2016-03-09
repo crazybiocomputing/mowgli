@@ -26,7 +26,7 @@
 
 /**
  * @namespace MOWGLI
- **/
+ 
 var MOWGLI = (function() {
     var _mol;
     var _renderer;
@@ -41,6 +41,20 @@ var MOWGLI = (function() {
     };
 
 })();
+**/
+
+
+(function(exports) {
+    var _mol;
+    var _renderer;
+    
+    /**
+     * Active structure used by mowgli
+     **/
+    exports.molecule=undefined;
+
+
+})(this.MOWGLI = {});
 
 
 /*
@@ -168,6 +182,7 @@ window.onload = function() {
     // 1- File
     // 1-3 Samples
     var sample_1ZNI = new SampleGUI("1zni");
+    var sample_3CRO = new SampleGUI("3cro");
 
     // 7- Help
     // About modal window
@@ -257,7 +272,7 @@ window.onload = function() {
  * Jean-Christophe Taveau
  */
 
-"use strict"
+"use strict";
 
 /**
  * Constructor
@@ -286,7 +301,19 @@ function SampleGUI(the_id) {
             console.log('Load JSON...');
             var xhr = new XMLHttpRequest();
             // We need a asynchronous request (3rd argument true) - Wait until completion
-            xhr.open('GET', "samples/1ZNI.json", true);
+            var url = "samples/1ZNI.json";
+            switch (the_id) {
+            case '1zni': 
+                url = "samples/1ZNI.json";
+                break;
+            case '1hho': 
+                url = "samples/1HHO.json";
+                break;
+            case '3cro': 
+                url = "samples/3CRO.json";
+                break;
+            }
+            xhr.open('GET', url, true);
             xhr.responseType = 'json';
             xhr.onreadystatechange = function (aEvt) {
                 if (xhr.readyState == 4) {

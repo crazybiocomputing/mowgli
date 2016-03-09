@@ -32,6 +32,7 @@ window.onload = function() {
     // 1- File
     // 1-3 Samples
     var sample_1ZNI = new SampleGUI("1zni");
+    var sample_3CRO = new SampleGUI("3cro");
 
     // 7- Help
     // About modal window

@@ -22,7 +22,7 @@
  * Jean-Christophe Taveau
  */
 
-"use strict"
+"use strict";
 
 /**
  * Constructor
@@ -51,7 +51,19 @@ function SampleGUI(the_id) {
             console.log('Load JSON...');
             var xhr = new XMLHttpRequest();
             // We need a asynchronous request (3rd argument true) - Wait until completion
-            xhr.open('GET', "samples/1ZNI.json", true);
+            var url = "samples/1ZNI.json";
+            switch (the_id) {
+            case '1zni': 
+                url = "samples/1ZNI.json";
+                break;
+            case '1hho': 
+                url = "samples/1HHO.json";
+                break;
+            case '3cro': 
+                url = "samples/3CRO.json";
+                break;
+            }
+            xhr.open('GET', url, true);
             xhr.responseType = 'json';
             xhr.onreadystatechange = function (aEvt) {
                 if (xhr.readyState == 4) {
