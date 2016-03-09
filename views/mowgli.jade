@@ -3,7 +3,10 @@ mixin menu_item(menu)
         ul
             each item in menu.children
                 li(id=item.id, class=item.type)
-                    a(href="#")=item.title
+                    if item.type=="link"
+                         a(href=item.href,target="_blank")=item.title
+                    else
+                        a(href="#")=item.title
                     +menu_item(item)
 
 

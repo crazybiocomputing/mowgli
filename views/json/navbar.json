@@ -375,7 +375,7 @@
                         "id": "api",
                         "title" : "API",
                         "type": "link",
-                        "href": "api.html"
+                        "href": "doc/index.html"
                     },
                     {
                         "id": "tutorials",
