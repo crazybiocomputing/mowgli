@@ -17,6 +17,18 @@ module.exports = function(grunt) {
             dest: 'javascripts/<%= pkg.name %>.js'
         }
     },
+   jshint: {
+      files: ['Gruntfile.js', 'src/**/*.js'],
+      options: {
+        browser:true,
+        strict:false,
+        globals: {
+            jQuery: false,
+            console: true,
+            module: true
+        }
+      }
+    },
     jade: {
       compile: {
         options: {
@@ -35,9 +47,11 @@ module.exports = function(grunt) {
   // These plugins provide necessary tasks.
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-uglify');
-
   grunt.loadNpmTasks('grunt-contrib-jade');
-  // Default task.
-  grunt.registerTask('default',['concat','uglify'],'build', 'Convert Jade templates into html templates', ['jade']);
+  grunt.loadNpmTasks('grunt-contrib-jshint');
+  
+  // Default and other tasks.
+  grunt.registerTask('default',['concat','uglify']);
+  grunt.registerTask('views','Convert Jade templates into html templates', ['jade']);
 };
 
