@@ -2959,6 +2959,10 @@ Structure.prototype.calcPhiPsi = function () {
     }
 }
 
+Structure.prototype.calcBonds = function () {
+  var bondCalc = new BondCalculator(this);
+}
+
 Structure.prototype.toString = function () {
   var quote='';
   var out='{\n';
@@ -3295,8 +3299,7 @@ PDBParser.prototype.parse = function (text) {
         this.parseHelix(rows[i]);
         break;
       case PDBParser.TAGS.SHEET:
-console.log("parse sheet");
-
+        console.log("parse sheet");
         this.parseSheet(rows[i]);
         break;
       case PDBParser.TAGS.TITLE:
@@ -3394,12 +3397,13 @@ PDBParser.prototype.parseAtom = function (line) {
   var i = 0;
   while (i < this.secondary.length) {
     if (this.secondary[i].initChain === atom.chain && atom.groupID >= this.secondary[i].init && atom.groupID <= this.secondary[i].end ) {
-      atom.secondary = this.secondary[i].type+'_'+this.secondary[i].strand+'['+this.secondary[i].serial+';'+this.secondary[i].ID+']';
+      atom.secondary = this.secondary[i].label;
       // Stop
       i = this.secondary.length;
     }
     i++;
   }
+//  if (atom.groupID===24 && atom.chain==="B") console.log(atom.secondary);
 
   this.mol.atoms.push(atom);
 
@@ -3444,13 +3448,14 @@ PDBParser.prototype.parseHelix = function(row) {
   this.secondary.push( {
     'type'      : 'H',
     'serial'    : parseInt(row.substring(7,10) ), 
-    'ID'        : row.substring(11,14),
+    'ID'        : row.substring(11,14).trim(),
     'strand'    : '', 
     'initChain' : row[19], 
     'init'      : parseInt(row.substring(21,25) ), 
     'endChain'  : row[31], 
     'end'       : parseInt(row.substring(33,37) ), 
-    'class'     : Structure.RIGHT_HANDED_ALPHA || parseInt(row.substring(38,40))
+    'class'     : Structure.RIGHT_HANDED_ALPHA || parseInt(row.substring(38,40)),
+    'label'     : 'H('+row.substring(11,14).trim()+';'+parseInt(row.substring(7,10) )+')'
    });
 /****
    console.log('HELIX:'+ 'H{' + this.secondary[this.secondary.length-1].ID +'}'+ 
@@ -3496,16 +3501,17 @@ PDBParser.prototype.parseSheet = function (row) {
 
   this.secondary.push( {
     'type'      : 'E',
-    'serial'    : 'E',
-    'ID'        : row.substring(11,14),
+    'serial'    : 'x',
+    'ID'        : row.substring(11,14).trim(),
     'strand'    : parseInt(row.substring(7,10)),
     'initChain' : row[21], 
     'init'      : parseInt(row.substring(22,26) ), 
     'endChain'  : row[32], 
     'end'       : parseInt(row.substring(33,37) ),
     'sense'     : parseInt(row.substring(38,40) ), 
+    'label'     : 'E'+parseInt(row.substring(7,10))+'('+row.substring(11,14).trim()+';'+parseInt(row.substring(38,40) )+')'
   });
-
+    console.log(this.secondary[this.secondary.length - 1]);
 }
 
 /**
@@ -3548,7 +3554,8 @@ PDBParser.prototype.updateBBox = function (a) {
 
 PDBParser.prototype.postProcess = function () {
   console.log('PostProcess');
-  var bondCalc = new BondCalculator(this.mol);
+  // Now, don't know what to do.
+  // Check data ?
 }
 
 
