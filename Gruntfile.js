@@ -42,12 +42,22 @@ module.exports = function(grunt) {
           './mowgli.html': './views/mowgli.jade'
         }
       }
+    },
+    jsdoc : {
+        dist : {
+            src: ['src/**/*.js'],
+            options: {
+                configure: '../doc/jsdoc/config.json',
+                destination: 'doc/app/'
+            }
+        }
     }
   });
   // These plugins provide necessary tasks.
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-jade');
+  grunt.loadNpmTasks('grunt-jsdoc');
   grunt.loadNpmTasks('grunt-contrib-jshint');
   
   // Default and other tasks.
