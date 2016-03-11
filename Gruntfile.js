@@ -27,7 +27,7 @@ module.exports = function(grunt) {
             src: ['src/**/*.js','doc/README.md'],
             options: {
                 configure: 'doc/jsdoc/config.json',
-                destination: 'gh-pages/doc'
+                destination: 'gh-pages/doc/core/'
             }
         }
     }
