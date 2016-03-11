@@ -22,7 +22,7 @@
  * Jean-Christophe Taveau
  */
  
- "use strict"
+ "use strict";
 
  
 /**
@@ -41,13 +41,29 @@ function Camera() {
     this.projMatrix = mat4.create();
     this.viewMatrix = mat4.create();
     mat4.identity(this.viewMatrix);
+    
+    /**
+     * Y-Field of View
+     **/
     this.fovy = 45.0*Math.PI/180.0;
+    
+    /**
+     * Zoom
+     **/
     this.zoom = 1.0;
+
+    /**
+     * Z-near Plane
+     **/
     this.zNear = 0.1;
+
+    /**
+     * Z-far Plane
+     **/
     this.zFar  = 1000.0;
 
       // NodeGL
-    this.nodeGL = new CameraGL(this);
+    this.nodeGL = new mwGL.Camera(this);
 }
 
 Camera.prototype = new Leaf;
