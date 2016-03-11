@@ -22,20 +22,26 @@
  * Jean-Christophe Taveau
  */
 
-"use strict"
+"use strict";
 
 
 window.onload = function() {
 
-    var mol;
-    
     // 1- File
-    // 1-3 Samples
-    var sample_1ZNI = new SampleGUI("1zni");
-    var sample_3CRO = new SampleGUI("3cro");
+    // 1-1 Open...PDB
+    //var openPDB = mwGUI.Opener("pdb");
+    // 1-2 Open...EMDB
+    //var openEMDB = mwGUI.Opener("emdb");
+    // 1-3 Open...Samples
+    var sample_1ZNI = new mwGUI.Sample("1zni");
+    var sample_3CRO = new mwGUI.Sample("3cro");
 
+    // 2-3-1 Structure...Sequence...FASTA
+    // 2-3-2 Structure...Sequence...Sec.Structures
+    // 2-3-3 Structure...Sequence...Ramachandran
+    
     // 7- Help
     // About modal window
     console.log('Add event click on About...');
-    var about = new AboutGUI("about");
+    var about = new mwGUI.About("about");
 }

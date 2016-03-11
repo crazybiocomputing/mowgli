@@ -24,21 +24,22 @@
 
 "use strict";
 
-/**
- * @namespace MOWGLI
- **/
-var MOWGLI = (function() {
+
+/*
+function MOWGLI() {
+    this.structure;
+}
+*/
+
+(function(exports) {
     var _mol;
     var _renderer;
     
-    return {
-        get molecule() {
-            return _mol;
-        },
-        set molecule(a_mol) {
-            _mol = a_mol;
-        }
-    };
+    /**
+     * Active structure used by mowgli
+     **/
+    exports.structure = undefined;
 
-})();
+
+})(this.MOWGLI = {});
 
