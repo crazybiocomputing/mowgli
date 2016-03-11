@@ -25,6 +25,7 @@
  
 "use strict";
 
+
 /**
  * Atomic model
  * @class Molecule
@@ -34,16 +35,16 @@
  * 
  * @author Jean-Christophe Taveau
  **/
-function Molecule() {
+function Molecule(other) {
     // super()
-    Structure.call(this);
+    Structure.call(this, other);
     
    /**
     * Molecule Classification
     *
     * @type {string}
     **/
-    this.classification = 'Unknown';
+    this.classification = other.classification || 'Unknown';
 
    /** 
     * Atoms - Array of {@link module:mol.Atom}
@@ -65,7 +66,7 @@ function Molecule() {
     * @property {string} atom.symbol - Chemical symbol
     *
     **/
-    this.atoms=[];
+    this.atoms = other.atoms || [];
 
   /**
    * Bonds
@@ -87,11 +88,11 @@ function Molecule() {
    /**
     * Chains
     **/
-    this.chains = [];
+    this.chains = other.chains || [];
 
 }
 
-Molecule.prototype = new Structure;
+Molecule.prototype = Object.create(Structure.prototype);
 
 Molecule.RIGHT_HANDED_ALPHA = 1;
 Molecule.RIGHT_HANDED_OMEGA = 2;
@@ -219,7 +220,7 @@ Molecule.prototype.fasta = function () {
             count = 0;
         }
         if (this.atoms[i].name==="CA" && this.atoms[i].chainID == current_chain) {
-            fasta += Structure.threeToOne[this.atoms[i].group];
+            fasta += Molecule.threeToOne[this.atoms[i].group];
             count++;
             if ( (count % 80) == 0) {
                 fasta += '\n';

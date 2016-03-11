@@ -89,7 +89,7 @@ function Attribute (name,offset,stride) {
  * Jean-Christophe Taveau
  */
  
- "use strict"
+ "use strict";
 
  
 /**
@@ -130,7 +130,7 @@ function Camera() {
     this.zFar  = 1000.0;
 
       // NodeGL
-    this.nodeGL = new CameraGL(this);
+    this.nodeGL = new mwGL.Camera(this);
 }
 
 Camera.prototype = new Leaf;
@@ -461,54 +461,76 @@ Geometry.prototype.isIndexed = function() {
  */
 
 
-"use strict"
+"use strict";
 
 /** 
- * @module graphics/gl
+ * @module mwGL
  */
  
  
 /**
- * CameraGL
+ * WebGL part of Camera class
  *
- * @class CameraGL
- * @constructor
- *
+ * @class Camera
+ * @memberof module:mwGL
+ * 
+ * 
  **/
-function CameraGL(node) {
-    this.sgnode = node;
-    this.glType = -1;
-    this._isDirty = true;
+ 
+(function(exports) {
+    function _Camera(node) {
+        this.sgnode = node;
+        this.glType = -1;
+        this._isDirty = true;
+        
+        // Matrix for rotation(s) and translation(s)
+        this.workmatrix= mat4.create();
+        mat4.identity(this.workmatrix);
+    }
+
+    _Camera.prototype.isDirty = function() {
+        return _isDirty;
+    }
+
+/**
+ * 
+ * 
+ * @desc Set Viewport of canvas
+ *
+ * @param {number} width - Canvas width
+ * @param {number} height - Canvas height
+ *
+ * @author Jean-Christophe Taveau
+ **/
+    _Camera.prototype.setViewport = function (width, height) {
+        mat4.perspective(this.sgnode.projMatrix,this.sgnode.fovy * this.sgnode.zoom,width / height,this.sgnode.zNear,this.sgnode.zFar);
+    }
+
+    _Camera.prototype.init = function(context) {
+        // Do nothing
+        this.isDirty = false;
+    }
+
+    _Camera.prototype.render = function(context) {
+        var gl = context;
+        console.log('RENDER CAM++ ' ,gl.viewportWidth,gl.viewportHeight);
+        console.log(context);
+        this.setViewport(gl.viewportWidth,gl.viewportHeight);
+        this.sgnode.getRenderer().setUniform("uVMatrix", this.sgnode.viewMatrix);
+        this.sgnode.getRenderer().setUniform("uPMatrix", this.sgnode.projMatrix);
+    }
+
+/**
+ * @constructor
+ * @param {Node} node - Camera Object belonging to the scene graph
+ * @extends module:mwGL.Node
+ * @author Jean-Christophe Taveau
+ **/
+
+    exports.Camera = _Camera;
+
     
-    // Matrix for rotation(s) and translation(s)
-    this.workmatrix= mat4.create();
-    mat4.identity(this.workmatrix);
-}
-
-CameraGL.prototype.isDirty = function() {
-    return _isDirty;
-}
-
-CameraGL.prototype.setViewport = function (width, height) {
-    mat4.perspective(this.sgnode.projMatrix,this.sgnode.fovy * this.sgnode.zoom,width / height,this.sgnode.zNear,this.sgnode.zFar);
-}
-
-CameraGL.prototype.init = function(context) {
-    // Do nothing
-    this.isDirty = false;
-}
-
-CameraGL.prototype.render = function(context) {
-    var gl = context;
-    console.log('RENDER CAM++ ' ,gl.viewportWidth,gl.viewportHeight);
-    console.log(context);
-    this.setViewport(gl.viewportWidth,gl.viewportHeight);
-    this.sgnode.getRenderer().setUniform("uVMatrix", this.sgnode.viewMatrix);
-    this.sgnode.getRenderer().setUniform("uPMatrix", this.sgnode.projMatrix);
-}
-
-
-
+})(this.mwGL = this.mwGL || {} );
 
 
 /*
@@ -536,16 +558,16 @@ CameraGL.prototype.render = function(context) {
  */
 
 
-"use strict"
+"use strict";
 
-/** 
- * @module graphics/gl
- */
+
 
 /**
  * OpenGL node of the scene graph
  *
  * @class NodeGL
+ * 
+ *
  * @constructor
  **/
 function NodeGL(node) {
@@ -600,16 +622,15 @@ NodeGL.prototype.render = function(context) {
  */
 
 
-"use strict"
+"use strict";
 
-/** 
- * @module graphics/gl
- */
  
 /**
  * OpenGL part of Shape
  *
  * @class ShapeGL
+ * @memberof module:mwGL
+ *
  * @constructor
  **/
 function ShapeGL(node) {
@@ -2232,7 +2253,7 @@ function PDBMLParser() {
  * @author Jean-Christophe Taveau
  **/
 function PDBParser() {
-  this.mol = new Molecule();
+  this.mol = new Molecule({});
   this.secondary = [];
   this.cubes = [];
   this.cube_side = 5.0; // 5 angstroems
@@ -3266,6 +3287,7 @@ MowgliViewer.prototype.render = function () {
  
 "use strict";
 
+
 /**
  * Atomic model
  * @class Molecule
@@ -3275,16 +3297,16 @@ MowgliViewer.prototype.render = function () {
  * 
  * @author Jean-Christophe Taveau
  **/
-function Molecule() {
+function Molecule(other) {
     // super()
-    Structure.call(this);
+    Structure.call(this, other);
     
    /**
     * Molecule Classification
     *
     * @type {string}
     **/
-    this.classification = 'Unknown';
+    this.classification = other.classification || 'Unknown';
 
    /** 
     * Atoms - Array of {@link module:mol.Atom}
@@ -3306,7 +3328,7 @@ function Molecule() {
     * @property {string} atom.symbol - Chemical symbol
     *
     **/
-    this.atoms=[];
+    this.atoms = other.atoms || [];
 
   /**
    * Bonds
@@ -3328,11 +3350,11 @@ function Molecule() {
    /**
     * Chains
     **/
-    this.chains = [];
+    this.chains = other.chains || [];
 
 }
 
-Molecule.prototype = new Structure;
+Molecule.prototype = Object.create(Structure.prototype);
 
 Molecule.RIGHT_HANDED_ALPHA = 1;
 Molecule.RIGHT_HANDED_OMEGA = 2;
@@ -3460,7 +3482,7 @@ Molecule.prototype.fasta = function () {
             count = 0;
         }
         if (this.atoms[i].name==="CA" && this.atoms[i].chainID == current_chain) {
-            fasta += Structure.threeToOne[this.atoms[i].group];
+            fasta += Molecule.threeToOne[this.atoms[i].group];
             count++;
             if ( (count % 80) == 0) {
                 fasta += '\n';
@@ -3705,28 +3727,28 @@ function Raster() {
  *
  * @author Jean-Christophe Taveau
  **/
-function Structure() {
+function Structure(other) {
 
   /**
    * Identifier
    *
    * @type {string}
    **/
-  this.ID             = '0UNK';
+  this.ID             = other.ID || '0UNK';
 
 
   /**
    * Title
    *
    **/
-  this.title          = 'No Title';
+  this.title          =  other.title || 'No Title';
   
   /**
    * Deposit Date DD-MMM-YY
    *
    * @type {string}
    **/
-  this.date           = '00-UNK-00';
+  this.date           =  other.date || '00-UNK-00';
 
   /**
    * Center of Gravity - Centroid
@@ -3739,14 +3761,20 @@ function Structure() {
    * @property {number} centroid.y - Z-coordinate
 
    **/
-  this.centroid={'x': 0.0,'y': 0.0,'z': 0.0};
+  this.centroid=  other.centroid || {'x': 0.0,'y': 0.0,'z': 0.0};
 
   /**
    *  Matrix for rotation(s) and translation(s)
    * @type {mat4}
    **/
-  this.matrix=mat4.create();
-  mat4.identity(this.matrix);
+    if (other.matrix !== undefined) {
+        this.matrix = other.matrix;
+    }
+    else {
+        this.matrix=mat4.create();
+        mat4.identity(this.matrix);
+    }
+
 
   /**
    * Bounding Box
@@ -3760,7 +3788,7 @@ function Structure() {
    * @property {number} max.y - Y-coordinate of the 'max' corner
    * @property {number} max.z - Z-coordinate of the 'max' corner
    **/
-  this.bbox={
+  this.bbox= other.bbox || {
     'min': {'x': Number.MAX_VALUE,'y': Number.MAX_VALUE,'z': Number.MAX_VALUE},
     'max': {'x': Number.MIN_VALUE,'y': Number.MIN_VALUE,'z': Number.MIN_VALUE},
     'center':  {'x': 0.0,'y': 0.0,'z': 0.0},

@@ -1,0 +1,342 @@
+	        A	R	N	D	C	E	Q	G	H	I	L	K	M	F	P	S	T	W	Y	V
+acidic	    0   0	0	1	0	1	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+aliphatic	1	0	0	0	0	0	0	1	0	1	1	0	0	0	0	0	0	0	0	1
+aromatic	0	0	0	0	0	0	0	0	1	0	0	0	0	1	0	0	0	1	1	0
+basic   	0	1	0	0	0	0	0	0	1	0	0	1	0	0	0	0	0	0	0	0
+buried	    1	0	0	0	1	0	0	0	0	1	1	0	1	1	0	0	0	1	0	1
+charged 	0	1	0	1	0	1	0	0	1	0	0	1	0	0	0	0	0	0	0	0
+cyclic  	0	0	0	0	0	0	0	0	1	0	0	0	0	1	1	0	0	1	1	0
+hydrophobic	1	0	0	0	0	0	0	1	0	1	1	0	1	1	1	0	0	1	1	1
+large   	0	1	0	0	0	1	1	0	1	1	1	1	1	1	0	0	0	1	1	0
+medium  	0	0	1	1	1	0	0	0	0	0	0	0	0	0	1	0	1	0	0	1
+negative	0	0	0	1	0	1	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+neutral	    1	0	1	0	1	0	1	1	1	1	1	0	1	1	1	1	1	1	1	1
+positive	0	1	0	0	0	0	0	0	1	0	0	1	0	0	0	0	0	0	0	0
+small	    1	0	0	0	0	0	0	1	0	0	0	0	0	0	0	1	0	0	0	0
+
+propsAA= {
+'A': "01100100100010010",
+'R': "01001010010001101",
+'N': "01000000001011001",
+'D': "11000010001101001",
+'C': "01000100001011000",
+'E': "11000010010101001",
+'Q': 
+'G':
+'H'
+'I'
+'L'
+'K'
+'M'
+'F'
+'P'
+'S'
+'T'
+'W'
+'Y'
+'V'
+'X':"000000000000000000"
+}
+
+// Type
+Properties.HETERO      = 0x400000;
+Properties.PROTEIN     = 0x200000;   NOT Properties.NUCLEIC AND Properties.NOT HETERO
+// Hetero
+Properties.IONS        = 0x100000;
+Properties.WATER       = 0x080000;
+// Nucleic
+Properties.AT          = 0x040000;
+Properties.PURINE      = 0x020000;
+// II struct
+Properties.HELIX       = 0x010000;
+Properties.SHEET       = 0x008000;
+Properties.TURN        = 0x004000;
+// Amino Acid
+Properties.ACIDIC      = 0x002000;
+Properties.ALIPHATIC   = 0x001000;
+Properties.AROMATIC    = 0x000800;
+Properties.BASIC       = 0x000400;
+Properties.BURIED      = 0x000200;
+Properties.CHARGED     = 0x000100;
+Properties.CYCLIC      = 0x000080;
+Properties.HYDROPHOBIC = 0x000040;
+Properties.LARGE       = 0x000020;
+Properties.MEDIUM      = 0x000010;
+Properties.NEGATIVE    = 0x000008;
+Properties.POSITIVE    = 0x000004;
+Properties.SMALL       = 0x000002;
+// Atom
+Properties.BACKBONE    = 0x000001;
+
+16 384
+215 = 32 768
+216 = 65 536
+217 = 131 072
+218 = 262 144
+219 = 524 288
+220 = 1 048 576
+221 = 2 097 152
+
+Properties.ACYCLIC     = 32768; NOT CYCLIC
+Properties.NEUTRAL     = 16; NOT CHARGED
+Properties.POLAR       = 8; NOT HYDROPHOBIC
+Properties.SURFACE     = 1; NOT BURIED
+Properties.AMINO       = contains one AA prop 
+Properties.ALPHA       =  (atomID === "CA")
+
+Backbone        (protein or nucleic) and not sidechain
+Sidechain       (protein or nucleic) and not backbone
+
+If (ATOM) {
+    if (group.length === 3) 
+        props = Properties.PROTEIN
+        props |= propsAA[group];
+        if (atomID ===="CA" )
+            props|=Properties.ALPHA;
+        if (atomID ===="CA" || atomID ===="N" || atomID ===="C" ||atomID ===="O" )
+            props|=Properties.BACKBONE;
+    else
+        // A, T, C, G, U or DA, DT, DC, DG
+        if (group==="A" || group === "T" || group==="DA" || group === "DT") 
+            props |= Properties.AT;
+        if (group==="A" || group === "G" || group==="DA" || group === "DG") 
+            props |= Properties.PURINE;
+        if (atomID === "P" || atomID === "O1P" || atomID === "O2P" || 
+            atomID === "O5*" || atomID === "C5*" || atomID === "C4*" || atomID === "O4*" || atomID === "C3*" || atomID === "O3*" || atomID === "C2*" || atomID === " C1*")
+
+}
+else // HETATM {
+    props = Properties.HETERO;
+}
+
+Nucleic
+======================
+AT              not CG
+CG              not AT
+Nucleic         
+Purine          not pyrimidine
+Pyrimidine      not purine
+              
+Protein
+======================
+
+II
+----------
+Helix           
+Sheet           
+Turn
+
+Group
+----------
+Acidic          
+Acyclic
+Aliphatic       
+Aromatic        
+Basic
+Buried          
+Charged         
+Cyclic          
+Hydrophobic     
+Large
+Medium          
+Neutral
+Negative
+Polar           
+Protein
+Small
+Surface         
+
+Atoms
+--------
+Alpha           *.CA
+Amino           AA (A	R	N	D	C	E	Q	G	H	I	L	K	M	F	P	S	T	W	Y	V + B + Z )
+Bonded          
+Cystine
+Hydrogen
+
+
+
+
+Hetero
+=======================
+Hetero          
+Ions            
+Ligand          hetero and not solvent
+Solvent         hetero and not ligand   water or ions
+Water
+
+Misc.
+=======================
+Selected
+
+
+Predefined Sets
+
+RasMol atom expressions may contain predefined sets. These sets are single keywords that represent portions of a molecule of interest. Predefined sets are often abbreviations of primitive atom expressions. In some cases the use of predefined sets allows selection of areas of a molecule that could not otherwise be distinguished. A list of the currently predefined sets is given below. In addition to the sets listed here, RasMol also treats element names (and their plurals) as predefined sets containing all atoms of that element type, i.e. the command 'select oxygen' is equivalent to the command 'select elemno=8'.
+
+    AT              Acidic          Acyclic
+    Aliphatic       Alpha           Amino
+    Aromatic        Backbone        Basic
+    Bonded          Buried          CG
+    Charged         Cyclic          Cystine
+    Helix           Hetero          Hydrogen
+    Hydrophobic     Ions            Large
+    Ligand          Medium          Neutral
+    Nucleic         Polar           Protein
+    Purine          Pyrimidine      Selected
+    Sheet           Sidechain       Small
+    Solvent         Surface         Turn
+    Water
+
+AT Set
+
+This set contains the atoms in the complementary nucleotides adenosine and thymidine (A and T, respectively). All nucleotides are classified as either the set 'at' or the set 'cg' This set is equivalent to the RasMol atom expressions "a,t", and "nucleic and not cg".
+
+Acidic Set
+
+The set of acidic amino acids. These are the residue types Asp and Glu. All amino acids are classified as either 'acidic', 'basic' 'or' 'neutral'. This set is equivalent to the RasMol atom expressions "asp, glu" and "amino and not (basic or neutral)".
+
+Acyclic Set
+
+The set of atoms in amino acids not containing a cycle or ring. All amino acids are classified as either 'cyclic' or 'acyclic'. This set is equivalent to the RasMol atom expression "amino and not cyclic".
+
+Aliphatic Set
+
+This set contains the aliphatic amino acids. These are the amino acids Ala, Gly, Ile, Leu and Val. This set is equivalent to the RasMol atom expression "ala, gly, ile, leu, val".
+
+Alpha Set
+
+The set of alpha carbons in the protein molecule. This set is approximately equivalent to the RasMol atom expression "*.CA". This command should not be confused with the predefined set 'helix' which contains the atoms in the amino acids of the protein's alpha helices.
+
+Amino Set
+
+This set contains all the atoms contained in amino acid residues. This is useful for distinguishing the protein from the nucleic acid and heterogeneous atoms in the current molecule database.
+
+Aromatic Set
+
+The set of atoms in amino acids containing aromatic rings. These are the amino acids His, Phe, Trp and Tyr. Because they contain aromatic rings all members of this set are member of the predefined set 'cyclic'. This set is equivalent to the RasMol atom expressions "his, phe, trp, tyr" and "cyclic and not pro".
+
+Backbone Set
+
+This set contains the four atoms of each amino acid that form the polypeptide N-C-C-O backbone of proteins, and the atoms of the sugar phosphate backbone of nucleic acids. Use the RasMol predefined sets 'protein' and 'nucleic' to distinguish between the two forms of backbone. Atoms in nucleic acids and proteins are either 'backbone' or 'sidechain'. This set is equivalent to the RasMol expression "(protein or nucleic) and not sidechain".
+
+The predefined set 'mainchain' is synonymous with the set 'backbone'.
+
+Basic Set
+
+The set of basic amino acids. These are the residue types Arg, His and Lys. All amino acids are classified as either 'acidic', 'basic' or 'neutral'. This set is equivalent to the RasMol atom expressions "arg, his, lys" and "amino and not (acidic or neutral)".
+
+Bonded Set
+
+This set contain all the atoms in the current molecule database that are bonded to at least one other atom.
+
+Buried Set
+
+This set contains the atoms in those amino acids that tend (prefer) to be buried inside protein, away from contact with solvent molecules. This set refers to the amino acids preference and not the actual solvent accessibility for the current protein. All amino acids are classified as either 'surface' or 'buried'. This set is equivalent to the RasMol atom expression "amino and not surface".
+
+CG Set
+
+This set contains the atoms in the complementary nucleotides cytidine and guanosine (C and G, respectively). All nucleotides are classified as either the set 'at' or the set 'cg' This set is equivalent to the RasMol atom expressions "c,g" and "nucleic and not at".
+
+Charged Set
+
+This set contains the charged amino acids. These are the amino acids that are either 'acidic' or 'basic'. Amino acids are classified as being either 'charged' or 'neutral'. This set is equivalent to the RasMol atom expressions "acidic or basic" and "amino and not neutral".
+
+Cyclic Set
+
+The set of atoms in amino acids containing a cycle or rings. All amino acids are classified as either 'cyclic' or 'acyclic'. This set consists of the amino acids His, Phe, Pro, Trp and Tyr. The members of the predefined set 'aromatic' are members of this set. The only cyclic but non-aromatic amino acid is proline. This set is equivalent to the RasMol atom expressions "his, phe, pro, trp, tyr" and "aromatic or pro" and "amino and not acyclic".
+
+Cystine Set
+
+This set contains the atoms of cysteine residues that form part of a disulphide bridge, i.e. half cystines. RasMol automatically determines disulphide bridges, if neither the predefined set 'cystine' nor the RasMol 'ssbonds' command have been used since the molecule was loaded. The set of free cysteines may be determined using the RasMol atom expression "cys and not cystine".
+
+Helix Set
+
+This set contains all atoms that form part of a protein alpha helix as determined by either the PDB file author or Kabsch and Sander's DSSP algorithm. By default, RasMol uses the secondary structure determination given in the PDB file if it exists. Otherwise, it uses the DSSP algorithm as used by the RasMol 'structure' command.
+
+This predefined set should not be confused with the predefined set 'alpha' which contains the alpha carbon atoms of a protein.
+
+Hetero Set
+
+This set contains all the heterogeneous atoms in the molecule. These are the atoms described by HETATM entries in the PDB file. These typically contain water, cofactors and other solvents and ligands. All 'hetero' atoms are classified as either 'ligand' or 'solvent' atoms. These heterogeneous 'solvent' atoms are further classified as either 'water' or 'ions'.
+
+Hydrogen Set
+
+This predefined set contains all the hydrogen, deuterium and tritium atoms of the current molecule. This predefined set is equivalent to the RasMol atom expression "elemno=1".
+
+Hydrophobic Set
+
+This set contains all the hydrophobic amino acids. These are the amino acids Ala, Leu, Val, Ile, Pro, Phe, Met and Trp. All amino acids are classified as either 'hydrophobic' or 'polar'. This set is equivalent to the RasMol atom expressions "ala, leu, val, ile, pro, phe, met, trp" and "amino and not polar".
+
+Ions Set
+
+This set contains all the heterogeneous phosphate and sulphate ions in the current molecule data file. A large number of these ions are sometimes associated with protein and nucleic acid structures determined by X-ray crystallography. These atoms tend to clutter an image. All 'hetero' atoms are classified as either 'ligand' or 'solvent' atoms. All 'solvent' atoms are classified as either 'water' or 'ions'.
+
+Large Set
+
+All amino acids are classified as either 'small', 'medium' or 'large'. This set is equivalent to the RasMol atom expression "amino and not (small or medium)".
+
+Ligand Set
+
+This set contains all the heterogeneous cofactor and ligand moieties that are contained in the current molecule data file. This set is defined to be all 'hetero' atoms that are not 'solvent' atoms. Hence this set is equivalent to the RasMol atom expression "hetero and not solvent".
+
+Medium Set
+
+All amino acids are classified as either 'small', 'medium' or 'large'. This set is equivalent to the RasMol atom expression "amino and not (large or small)".
+
+Neutral Set
+
+The set of neutral amino acids. All amino acids are classified as either 'acidic', 'basic' or 'neutral'. This set is equivalent to the RasMol atom expression "amino and not (acidic or basic)".
+
+Nucleic Set
+
+The set of all atoms in nucleic acids, which consists of the four nucleotide bases adenosine, cytidine, guanosine and thymidine (A, C, G and T, respectively). All neucleotides are classified as either 'purine' or 'pyrimidine'. This set is equivalent to the RasMol atom expressions "a,c,g,t" and "purine or pyrimidine". The symbols for RNA nucleotides (U, +U, I, 1MA, 5MC, OMC, 1MG, 2MG, M2G, 7MG, OMG, YG, H2U, 5MU, and PSU) are also recognized as members of this set.
+
+Polar Set
+
+This set contains the polar amino acids. All amino acids are classified as either 'hydrophobic' or 'polar'. This set is equivalent to the RasMol atom expression "amino and not hydrophobic".
+
+Protein Set
+
+The set of all atoms in proteins. This consists of the RasMol predefined set 'amino' and common post-translation modifications.
+
+Purine Set
+
+The set of purine nucleotides. These are the bases adenosine and guanosine (A and G, respectively). All nucleotides are either 'purines' or 'pyrimidines'. This set is equivalent to the RasMol atom expressions "a,g" and "nucleic and not pyrimidine".
+
+Pyrimidine Set
+
+The set of pyrimidine nucleotides. These are the bases cytidine and thymidine (C and T, respectively). All nucleotides are either 'purines' or 'pyrimidines'. This set is equivalent to the RasMol atom expressions "c,t" and "nucleic and not purine".
+
+Selected Set
+
+This set contains the set of atoms in the currently selected region. The currently selected region is defined by the preceding 'select' or 'restrict' command and not the atom expression containing the 'selected' keyword.
+
+Sheet Set
+
+This set contains all atoms that form part of a protein beta sheet as determined by either the PDB file author or Kabsch and Sander's DSSP algorithm. By default, RasMol uses the secondary structure determination given in the PDB file if it exists. Otherwise, it uses the DSSP algorithm as used by the RasMol 'structure' command.
+
+Sidechain Set
+
+This set contains the functional sidechains of any amino acids and the base of each nucleotide. These are the atoms not part of the polypeptide N-C-C-O backbone of proteins or the sugar phosphate backbone of nucleic acids. Use the RasMol predefined sets 'protein' and 'nucleic' to distinguish between the two forms of sidechain. Atoms in nucleic acids and proteins are either 'backbone' or 'sidechain'. This set is equivalent to the RasMol expression "(protein or nucleic) and not backbone".
+
+Small Set
+
+All amino acids are classified as either 'small', 'medium' or 'large'. This set is equivalent to the RasMol atom expression "amino and not (medium or large)".
+
+Solvent Set
+
+This set contains the solvent atoms in the molecule coordinate file. These are the heterogeneous water molecules, phosphate and sulphate ions. All 'hetero' atoms are classified as either 'ligand' or 'solvent' atoms. All 'solvent' atoms are classified as either 'water' or 'ions'. This set is equivalent to the RasMol atom expressions "hetero and not ligand" and "water or ions".
+
+Surface Set
+
+This set contains the atoms in those amino acids that tend (prefer) to be on the surface of proteins, in contact with solvent molecules. This set refers to the amino acids preference and not the actual solvent accessibility for the current protein. All amino acids are classified as either 'surface' or 'buried'. This set is equivalent to the RasMol atom expression "amino and not buried".
+
+Turn Set
+
+This set contains all atoms that form part of a protein turns as determined by either the PDB file author or Kabsch and Sander's DSSP algorithm. By default, RasMol uses the secondary structure determination given in the PDB file if it exists. Otherwise, it uses the DSSP algorithm as used by the RasMol 'structure' command.
+
+Water Set
+
+This set contains all the heterogeneous water molecules in the current database. A large number of water molecules are sometimes associated with protein and nucleic acid structures determined by X-ray crystallography. These atoms tend to clutter an image. All 'hetero' atoms are classified as either 'ligand' or 'solvent' atoms. The 'solvent' atoms are further classified as either 'water' or 'ions'. 
+

@@ -37,28 +37,28 @@
  *
  * @author Jean-Christophe Taveau
  **/
-function Structure() {
+function Structure(other) {
 
   /**
    * Identifier
    *
    * @type {string}
    **/
-  this.ID             = '0UNK';
+  this.ID             = other.ID || '0UNK';
 
 
   /**
    * Title
    *
    **/
-  this.title          = 'No Title';
+  this.title          =  other.title || 'No Title';
   
   /**
    * Deposit Date DD-MMM-YY
    *
    * @type {string}
    **/
-  this.date           = '00-UNK-00';
+  this.date           =  other.date || '00-UNK-00';
 
   /**
    * Center of Gravity - Centroid
@@ -71,14 +71,20 @@ function Structure() {
    * @property {number} centroid.y - Z-coordinate
 
    **/
-  this.centroid={'x': 0.0,'y': 0.0,'z': 0.0};
+  this.centroid=  other.centroid || {'x': 0.0,'y': 0.0,'z': 0.0};
 
   /**
    *  Matrix for rotation(s) and translation(s)
    * @type {mat4}
    **/
-  this.matrix=mat4.create();
-  mat4.identity(this.matrix);
+    if (other.matrix !== undefined) {
+        this.matrix = other.matrix;
+    }
+    else {
+        this.matrix=mat4.create();
+        mat4.identity(this.matrix);
+    }
+
 
   /**
    * Bounding Box
@@ -92,7 +98,7 @@ function Structure() {
    * @property {number} max.y - Y-coordinate of the 'max' corner
    * @property {number} max.z - Z-coordinate of the 'max' corner
    **/
-  this.bbox={
+  this.bbox= other.bbox || {
     'min': {'x': Number.MAX_VALUE,'y': Number.MAX_VALUE,'z': Number.MAX_VALUE},
     'max': {'x': Number.MIN_VALUE,'y': Number.MIN_VALUE,'z': Number.MIN_VALUE},
     'center':  {'x': 0.0,'y': 0.0,'z': 0.0},
