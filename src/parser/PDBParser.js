@@ -24,13 +24,31 @@
 
 "use strict"
 
-/*
- * Constructor
+/**
  *
- * @author: Jean-Christophe Taveau
- */
-var PDBParser = function() {
-  this.mol = new Structure();
+ * @module parser
+ *
+ **/
+ 
+ 
+ 
+/**
+ * Constructor
+ * @class PDBParser
+ * @classdesc This class allows the parsing of the PDB file format version 3.30
+
+ *
+ * @constructor
+ *
+ * @example
+ * parser = new PDBParser();
+ * parser.parse(myText);
+ * var mol = parser.getStructure();
+ *
+ * @author Jean-Christophe Taveau
+ **/
+function PDBParser() {
+  this.mol = new Molecule({});
   this.secondary = [];
   this.cubes = [];
   this.cube_side = 5.0; // 5 angstroems
@@ -91,10 +109,20 @@ PDBParser.TAGS = {
   'TITLE' : 50
 }
 
+/**
+ * Return the PDB structure
+ *
+ * @return {Structure} - The 3D structure of the molecule
+ **/
 PDBParser.prototype.getStructure = function () {
   return this.mol;
 }
 
+/**
+ * Trigger the parsing of the PDB file
+ *
+ * @params {string} text - Text containing the PDB structure
+ **/
 PDBParser.prototype.parse = function (text) {
   // 1- Split the text in an array of rows
   var rows = text.split('\n');
@@ -119,8 +147,7 @@ PDBParser.prototype.parse = function (text) {
         this.parseHelix(rows[i]);
         break;
       case PDBParser.TAGS.SHEET:
-console.log("parse sheet");
-
+        console.log("parse sheet");
         this.parseSheet(rows[i]);
         break;
       case PDBParser.TAGS.TITLE:
@@ -134,10 +161,10 @@ console.log("parse sheet");
   }
 
   //  3- Finalization
-  this.mol.cg.x/=this.mol.atoms.length;
-  this.mol.cg.y/=this.mol.atoms.length;
-  this.mol.cg.z/=this.mol.atoms.length;
-  mat4.translate(this.mol.matrix,this.mol.matrix, [-this.mol.cg.x, -this.mol.cg.y, -this.mol.cg.z]);
+  this.mol.centroid.x/=this.mol.atoms.length;
+  this.mol.centroid.y/=this.mol.atoms.length;
+  this.mol.centroid.z/=this.mol.atoms.length;
+  mat4.translate(this.mol.matrix,this.mol.matrix, [-this.mol.centroid.x, -this.mol.centroid.y, -this.mol.centroid.z]);
   this.mol.bbox.center.x = (this.mol.bbox.min.x+this.mol.bbox.max.x)/2.0;
   this.mol.bbox.center.y = (this.mol.bbox.min.y+this.mol.bbox.max.y)/2.0;
   this.mol.bbox.center.z = (this.mol.bbox.min.z+this.mol.bbox.max.z)/2.0;
@@ -147,22 +174,25 @@ console.log("parse sheet");
     (this.mol.bbox.min.z-this.mol.bbox.max.z)*(this.mol.bbox.min.z-this.mol.bbox.max.z);
   this.mol.bbox.radius   = Math.sqrt(this.mol.bbox.radius)/2.0;
 
-  console.log('cg '+this.mol.cg.x+' '+this.mol.cg.y+' '+this.mol.cg.z);
+  console.log('centroid '+this.mol.centroid.x+' '+this.mol.centroid.y+' '+this.mol.centroid.z);
   console.log(this.mol.atoms.length+' '+this.mol.bbox.radius+' '+this.mol.bbox.center.x+' '+this.mol.bbox.center.y+' '+this.mol.bbox.center.z);
 }
 
 
-/*
- *------------------------------------------------------------------------------------
- *COLUMNS       DATA  TYPE     FIELD             DEFINITION
- *------------------------------------------------------------------------------------
- * 1 -  6       Record name    "HEADER"
- *11 - 50       String(40)     classification    Classifies the molecule(s).
- *51 - 59       Date           depDate           Deposition date. This is the date the
- *                                               coordinates  were received at the PDB.
- *63 - 66       IDcode         idCode            This identifier is unique within the PDB.
- *------------------------------------------------------------------------------------
-**/
+/**
+ *
+ * @summary Parse HEADER row - Private method
+ *
+ * @description
+ * 
+ * |COLUMNS  |    DATA  TYPE   |  FIELD           |  DEFINITION
+ * |---------|-----------------|------------------|---------------------------------------
+ * |01 - 06  |    Record name  |  "HEADER"        |  |
+ * |11 - 50  |    String(40)   |  classification  |  Classifies the molecule(s).
+ * |51 - 59  |    Date         |  depDate         |  Deposition date. This is the date the coordinates were received at the PDB.
+ * |63 - 66  |    IDcode       |  idCode          |  This identifier is unique within the PDB.
+ * 
+ **/
 PDBParser.prototype.parseHeader = function (row) {
   this.mol.classification = row.substring(10,50).trim();
   this.mol.date           = row.substring(50,59).trim();
@@ -170,27 +200,32 @@ PDBParser.prototype.parseHeader = function (row) {
 }
 
 
-/*
--------------------------------------------------------------------------------------
-COLUMNS        DATA  TYPE    FIELD        DEFINITION
--------------------------------------------------------------------------------------
- 1 -  6        Record name   "ATOM  "
- 7 - 11        Integer       serial       Atom  serial number.
-13 - 16        Atom          name         Atom name.
-17             Character     altLoc       Alternate location indicator.
-18 - 20        Residue name  resName      Residue name.
-22             Character     chainID      Chain identifier.
-23 - 26        Integer       resSeq       Residue sequence number.
-27             AChar         iCode        Code for insertion of residues.
-31 - 38        Real(8.3)     x            Orthogonal coordinates for X in Angstroms.
-39 - 46        Real(8.3)     y            Orthogonal coordinates for Y in Angstroms.
-47 - 54        Real(8.3)     z            Orthogonal coordinates for Z in Angstroms.
-55 - 60        Real(6.2)     occupancy    Occupancy.
-61 - 66        Real(6.2)     tempFactor   Temperature  factor.
-77 - 78        LString(2)    element      Element symbol, right-justified.
-79 - 80        LString(2)    charge       Charge  on the atom.
--------------------------------------------------------------------------------------
-*/
+/**
+ *
+ * @summary Parse ATOM and HETATM row - Private method
+ *
+ * @description
+ * 
+ * 
+ * |COLUMNS   |    DATA  TYPE   | FIELD      |  DEFINITION
+ * |----------|------------------------------|--------------------------------------------
+ * |01 - 06   |    Record name  | "ATOM  "   |  |
+ * |07 - 11   |    Integer      | serial     |  Atom  serial number.
+ * |13 - 16   |    Atom         | name       |  Atom name.
+ * |17        |    Character    | altLoc     |  Alternate location indicator.
+ * |18 - 20   |    Residue name | resName    |  Residue name.
+ * |22        |    Character    | chainID    |  Chain identifier.
+ * |23 - 26   |    Integer      | resSeq     |  Residue sequence number.
+ * |27        |    AChar        | iCode      |  Code for insertion of residues.
+ * |31 - 38   |    Real(8.3)    | x          |  Orthogonal coordinates for X in Angstroms.
+ * |39 - 46   |    Real(8.3)    | y          |  Orthogonal coordinates for Y in Angstroms.
+ * |47 - 54   |    Real(8.3)    | z          |  Orthogonal coordinates for Z in Angstroms.
+ * |55 - 60   |    Real(6.2)    | occupancy  |  Occupancy.
+ * |61 - 66   |    Real(6.2)    | tempFactor |  Temperature  factor.
+ * |77 - 78   |    LString(2)   | element    |  Element symbol, right-justified.
+ * |79 - 80   |    LString(2)   | charge     |  Charge  on the atom.
+ * 
+ **/
 
 PDBParser.prototype.parseAtom = function (line) {
   var atom = {};
@@ -210,12 +245,13 @@ PDBParser.prototype.parseAtom = function (line) {
   var i = 0;
   while (i < this.secondary.length) {
     if (this.secondary[i].initChain === atom.chain && atom.groupID >= this.secondary[i].init && atom.groupID <= this.secondary[i].end ) {
-      atom.secondary = this.secondary[i].type+'_'+this.secondary[i].strand+'['+this.secondary[i].serial+';'+this.secondary[i].ID+']';
+      atom.secondary = this.secondary[i].label;
       // Stop
       i = this.secondary.length;
     }
     i++;
   }
+//  if (atom.groupID===24 && atom.chain==="B") console.log(atom.secondary);
 
   this.mol.atoms.push(atom);
 
@@ -224,45 +260,50 @@ PDBParser.prototype.parseAtom = function (line) {
     this.mol.chains.push(atom.chain);
   }
   // Update centroid and bounding box of the structure
-  this.mol.cg.x += atom.x;
-  this.mol.cg.y += atom.y;
-  this.mol.cg.z += atom.z;
+  this.mol.centroid.x += atom.x;
+  this.mol.centroid.y += atom.y;
+  this.mol.centroid.z += atom.z;
   this.updateBBox(atom);
 
 }
 
 
+/**
+ *
+ * @summary Parse HELIX rows - Private method
+ *
+ * @description
+ * 
+ * 
+ * |COLUMNS   |    DATA  TYPE   | FIELD          |  DEFINITION
+ * |----------|-----------------|----------------|--------------------------------------------
+ * |01 - 06   |    Record name  |    "HELIX      |  | 
+ * |08 - 10   |   Integer       |    serNum      | Serial number of the helix. This starts at 1 and increases incrementally.
+ * |12 - 14   |    LString(3)   |    helixID     | Helix identifier.
+ * |16 - 18   |    Residue name |    initResName | Name of the initial residue.
+ * |20        |    Character    |    initChainID | Chain identifier for the chain containing this helix.
+ * |22 - 25   |    Integer      |    initSeqNum  | Sequence number of the initial residue.
+ * |26        |    AChar        |    initICode   | Insertion code of the initial residue.
+ * |28 - 30   |    Residue name |    endResName  | Name of the terminal residue of the helix.
+ * |32        |    Character    |    endChainID  | Chain identifier for the chain containing this helix.
+ * |34 - 37   |    Integer      |    endSeqNum   | Sequence number of the terminal residue.
+ * |38        |    AChar        |    endICode    | Insertion code of the terminal residue.
+ * |39 - 40   |    Integer      |    helixClass  | Helix class (see below).
+ * |41 - 70   |    String       |    comment     | Comment about this helix.
+ * |72 - 76   |    Integer      |    length      | Length of this helix.
+ **/
 PDBParser.prototype.parseHelix = function(row) {
-
-  // HELIX
-  /******
-   1 -  6       Record name      "HELIX "
-   8 - 10       Integer          serNum       Serial number of the helix. This starts at 1 and increases incrementally.
-  12 - 14       LString(3)       helixID      Helix identifier.
-  16 - 18       Residue name     initResName  Name of the initial residue.
-  20            Character        initChainID  Chain identifier for the chain containing this helix.
-  22 - 25       Integer          initSeqNum   Sequence number of the initial residue.
-  26            AChar            initICode    Insertion code of the initial residue.
-  28 - 30       Residue name     endResName   Name of the terminal residue of the helix.
-  32            Character        endChainID   Chain identifier for the chain containing this helix.
-  34 - 37       Integer          endSeqNum    Sequence number of the terminal residue.
-  38            AChar            endICode     Insertion code of the terminal residue.
-  39 - 40       Integer          helixClass   Helix class (see below).
-  41 - 70       String           comment      Comment about this helix.
-  72 - 76       Integer          length       Length of this helix.
-  ******/
-
-
   this.secondary.push( {
     'type'      : 'H',
     'serial'    : parseInt(row.substring(7,10) ), 
-    'ID'        : row.substring(11,14),
+    'ID'        : row.substring(11,14).trim(),
     'strand'    : '', 
     'initChain' : row[19], 
     'init'      : parseInt(row.substring(21,25) ), 
     'endChain'  : row[31], 
     'end'       : parseInt(row.substring(33,37) ), 
-    'class'     : Structure.RIGHT_HANDED_ALPHA || parseInt(row.substring(38,40))
+    'class'     : Structure.RIGHT_HANDED_ALPHA || parseInt(row.substring(38,40)),
+    'label'     : 'H('+row.substring(11,14).trim()+';'+parseInt(row.substring(7,10) )+')'
    });
 /****
    console.log('HELIX:'+ 'H{' + this.secondary[this.secondary.length-1].ID +'}'+ 
@@ -271,59 +312,69 @@ PDBParser.prototype.parseHelix = function(row) {
 *****/
 }
 
-  // SHEET: TODO
-  /********************
-   1 -  6        Record name   "SHEET "
-   8 - 10        Integer       strand         Strand  number which starts at 1 for each strand within a sheet and increases by one.
-  12 - 14        LString(3)    sheetID        Sheet  identifier.
-  15 - 16        Integer       numStrands     Number  of strands in sheet.
-  18 - 20        Residue name  initResName    Residue  name of initial residue.
-  22             Character     initChainID    Chain identifier of initial residue in strand. 
-  23 - 26        Integer       initSeqNum     Sequence number of initial residue in strand.
-  27             AChar         initICode      Insertion code of initial residue in  strand.
-  29 - 31        Residue name  endResName     Residue name of terminal residue.
-  33             Character     endChainID     Chain identifier of terminal residue.
-  34 - 37        Integer       endSeqNum      Sequence number of terminal residue.
-  38             AChar         endICode       Insertion code of terminal residue.
-  39 - 40        Integer       sense          Sense of strand with respect to previous strand. 0 if first strand, 1 if  parallel,and -1 if anti-parallel.
-  42 - 45        Atom          curAtom        Registration.  Atom name in current strand.
-  46 - 48        Residue name  curResName     Registration.  Residue name in current strand
-  50             Character     curChainId     Registration. Chain identifier in current strand.
-  51 - 54        Integer       curResSeq      Registration.  Residue sequence number in current strand.
-  55             AChar         curICode       Registration. Insertion code in current strand.
-  57 - 60        Atom          prevAtom       Registration.  Atom name in previous strand.
-  61 - 63        Residue name  prevResName    Registration.  Residue name in previous strand.
-  65             Character     prevChainId    Registration.  Chain identifier in previous  strand.
-  66 - 69        Integer       prevResSeq     Registration. Residue sequence number in previous strand.
-  70             AChar         prevICode      Registration.  Insertion code in previous strand.
-  ****************/
 
+/**
+ *
+ * @summary Parse SHEET rows - Private method - TODO
+ *
+ * @description
+ *
+ * |COLUMNS   |    DATA  TYPE    | FIELD          |  DEFINITION
+ * |----------|------------------|----------------|--------------------------------------------
+ * |01 - 06   |     Record name  | "SHEET "       |    |
+ * |08 - 10   |     Integer      | strand         | Strand number which starts at 1 for each strand within a sheet and increases by one.
+ * |12 - 14   |     LString(3)   | sheetID        | Sheet identifier.
+ * |15 - 16   |     Integer      | numStrands     | Number of strands in sheet.
+ * |18 - 20   |     Residue name | initResName    | Residue  name of initial residue.
+ * |22        |     Character    | initChainID    | Chain identifier of initial residue in strand. 
+ * |23 - 26   |     Integer      | initSeqNum     | Sequence number of initial residue in strand.
+ * |27        |     AChar        | initICode      | Insertion code of initial residue in  strand.
+ * |29 - 31   |     Residue name | endResName     | Residue name of terminal residue.
+ * |33        |     Character    | endChainID     | Chain identifier of terminal residue.
+ * |34 - 37   |     Integer      | endSeqNum      | Sequence number of terminal residue.
+ * |38        |     AChar        | endICode       | Insertion code of terminal residue.
+ * |39 - 40   |     Integer      | sense          | Sense of strand. 0 if first strand, 1 if parallel,and -1 if anti-parallel.
+ * |42 - 45   |     Atom         | curAtom        | Registration.  Atom name in current strand.
+ * |46 - 48   |     Residue name | curResName     | Registration.  Residue name in current strand
+ * |50        |     Character    | curChainId     | Registration. Chain identifier in current strand.
+ * |51 - 54   |     Integer      | curResSeq      | Registration.  Residue sequence number in current strand.
+ * |55        |     AChar        | curICode       | Registration. Insertion code in current strand.
+ * |57 - 60   |     Atom         | prevAtom       | Registration.  Atom name in previous strand.
+ * |61 - 63   |     Residue name | prevResName    | Registration.  Residue name in previous strand.
+ * |65        |     Character    | prevChainId    | Registration.  Chain identifier in previous  strand.
+ * |66 - 69   |     Integer      | prevResSeq     | Registration. Residue sequence number in previous strand.
+ * |70        |     AChar        | prevICode      | Registration.  Insertion code in previous strand.
+ **/
 PDBParser.prototype.parseSheet = function (row) {
 
   this.secondary.push( {
     'type'      : 'E',
-    'serial'    : 'E',
-    'ID'        : row.substring(11,14),
+    'serial'    : 'x',
+    'ID'        : row.substring(11,14).trim(),
     'strand'    : parseInt(row.substring(7,10)),
     'initChain' : row[21], 
     'init'      : parseInt(row.substring(22,26) ), 
     'endChain'  : row[32], 
     'end'       : parseInt(row.substring(33,37) ),
     'sense'     : parseInt(row.substring(38,40) ), 
+    'label'     : 'E'+parseInt(row.substring(7,10))+'('+row.substring(11,14).trim()+';'+parseInt(row.substring(38,40) )+')'
   });
-
+    console.log(this.secondary[this.secondary.length - 1]);
 }
 
-/*
-----------------------------------------------------------------------------------
-COLUMNS       DATA  TYPE     FIELD         DEFINITION
-----------------------------------------------------------------------------------
- 1 -  6       Record name    "TITLE "
- 9 - 10       Continuation   continuation  Allows concatenation of multiple records.
-11 - 80       String         title         Title of the  experiment.
-----------------------------------------------------------------------------------
-*/
-
+/**
+ *
+ * @summary Parse TITLE rows - Private method - TODO
+ *
+ * @description
+ *
+ * |COLUMNS   |    DATA  TYPE   | FIELD          |  DEFINITION
+ * |----------|-----------------|----------------|--------------------------------------------
+ * |01 -  6   |    Record name  |  "TITLE "      |  |
+ * |09 - 10   |    Continuation |  continuation  | Allows concatenation of multiple records.
+ * |11 - 80   |    String       |  title         | Title of the  experiment.
+ *
+ **/
 PDBParser.prototype.parseTitle = function (row) 
 {
   if (parseInt(row.substring(8,10).trim()) == 1) {
@@ -351,7 +402,8 @@ PDBParser.prototype.updateBBox = function (a) {
 
 PDBParser.prototype.postProcess = function () {
   console.log('PostProcess');
-  var bondCalc = new BondCalculator(this.mol);
+  // Now, don't know what to do.
+  // Check data ?
 }
 
 
