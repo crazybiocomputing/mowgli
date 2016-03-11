@@ -31,7 +31,7 @@
  */
 
 function XYZParser() {
-  this.mol = new Structure();
+  this.mol = new Molecule({});
 }
 
 XYZParser.prototype.getStructure = function () {
