@@ -22,36 +22,29 @@
  * Jean-Christophe Taveau
  */
 
-"use strict"
+"use strict";
 
 /**
  * Constructor
  * @class Modal
- * @memberof module:gui
+ * @memberof module:mwGUI
  * @constructor
  *
  * @author Jean-Christophe Taveau
  **/
  function Modal(options) {
-    var element = document.getElementById('modal');
-    var html =  '<div class="container"><header id="modalhead">';
-    html += '<a href="#close" title="Close modal window" class="droite">&#10060;</a>';
-    html += options.headerTitle || 'Modal window';
-    html += '</header>';
-    html += '<article>';
-    html += options.body || 'No information';
-    html += '</section>';
-    html += '<footer class="cf">';
-    html += '<a href="#close" class="btn droite" title="Close modal window">Close</a>';
-    html += '</footer></div>';
-
-    element.innerHTML = html;
-    
-    var header = element.children[0].children[0];  // aka document.getElementById("modalhead");
-    console.log(header);
+    // Header
+    var header = document.querySelector(".mwModal .modal-header");
     header.style.backgroundImage = options.headerImage || 'url("images/default-background.jpg")';
-
+    document.querySelector(".mwModal .modal-header h2").innerHTML = options.headerTitle || 'Modal window';
+    
+    // Body
+    var body = document.querySelector(".mwModal .modal-body");
+    body.innerHTML= options.body || '<p>No information</p>';
+    body.style.fontSize = options.fontSize || "1.1em";
+    body.style.fontFamily = options.fontFamily || "Lato";
+    
     // Display modal
-    element.classList.toggle("oModal_target");
+    document.querySelector('.mwModal #modal-one').checked = true;
 
 }

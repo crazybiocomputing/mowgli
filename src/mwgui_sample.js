@@ -88,8 +88,7 @@
                         if(xhr.status == 200) {
                             var json = xhr.response; // JSON.parse(xhr.responseText);
                             MOWGLI.structure = new Molecule(json);
-                            console.log(MOWGLI.structure);
-                            console.log(MOWGLI.structure.fasta());
+                            MOWGLI.alert(the_id.toUpperCase() + " successfully loaded...");
                             console.log(MOWGLI.structure instanceof Molecule);
                         }
                         else {
