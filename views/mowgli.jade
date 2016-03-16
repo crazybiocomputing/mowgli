@@ -17,6 +17,7 @@ html
         link(href='https://fonts.googleapis.com/css?family=Oswald', rel='stylesheet' type='text/css')
         link(href='http://fonts.googleapis.com/css?family=Lato:300,400,700,300italic,400italic',rel='stylesheet' type='text/css')
         link(rel="stylesheet", type="text/css", media="screen", href="stylesheets/mowgli.css")
+        link(rel="stylesheet", type="text/css", media="screen", href="stylesheets/modal.css")
 
         title Mowgli
 
@@ -33,7 +34,7 @@ html
         // MAIN CONTENT 
         section#main_content.inner
             // http://www.html5rocks.com/en/tutorials/casestudies/gopherwoord-studios-resizing-html5-games/ 
-            canvas(id="mowgli")
+            canvas#mowgli
             // GUI Console 
             div#console.slideout(style="padding: 10px; height: 60%")
                 header
@@ -46,8 +47,32 @@ html
                         input(type="text")
                         input(type="submit", name="go", value="Submit", style="display:none;")
         // Modal window
-        section#modal.oModal
-            
+        section#modal.mwModal
+            input.modal-open#modal-one(type="checkbox",hidden)
+            div.modal-wrap(aria-hidden="true", role="dialog")
+                label.modal-overlay(for="modal-one")
+                div.modal-dialog
+                    div.modal-header
+                        label.btn-close(for="modal-one", aria-hidden="true") &#10060;
+                        h2 
+                    div.modal-body
+                    div.modal-footer
+                        label.btn.btn-primary(for="modal-one") OK
+
+
+        // Alert window
+        section.alert
+            input.modal-open#modal-alert(type="checkbox",hidden)
+            div.modal-wrap(aria-hidden="true", role="dialog")
+                label.modal-overlay(for="modal-alert")
+                div.modal-dialog
+                    div.modal-header
+                        label.btn-close(for="modal-alert", aria-hidden="true") &#10060;
+                        h2 
+                    div.modal-body
+                    div.modal-footer
+                        label.btn.btn-primary(for="modal-alert") OK
+
 
 
 

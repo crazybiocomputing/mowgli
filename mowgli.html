@@ -5,6 +5,7 @@
     <link href="https://fonts.googleapis.com/css?family=Oswald" rel="stylesheet" type="text/css">
     <link href="http://fonts.googleapis.com/css?family=Lato:300,400,700,300italic,400italic" rel="stylesheet" type="text/css">
     <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/mowgli.css">
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/modal.css">
     <title>Mowgli</title>
     <script src="javascripts/gl-matrix-min.js"></script>
     <script src="javascripts/mowgli-core.js"></script>
@@ -216,6 +217,38 @@
       </div>
     </section>
     <!-- Modal window-->
-    <section id="modal" class="oModal"></section>
+    <section id="modal" class="mwModal">
+      <input id="modal-one" type="checkbox" hidden class="modal-open">
+      <div aria-hidden="true" role="dialog" class="modal-wrap">
+        <label for="modal-one" class="modal-overlay"></label>
+        <div class="modal-dialog">
+          <div class="modal-header">
+            <label for="modal-one" aria-hidden="true" class="btn-close">&#10060;</label>
+            <h2> </h2>
+          </div>
+          <div class="modal-body"></div>
+          <div class="modal-footer">
+            <label for="modal-one" class="btn btn-primary">OK</label>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- Alert window-->
+    <section class="alert">
+      <input id="modal-alert" type="checkbox" hidden class="modal-open">
+      <div aria-hidden="true" role="dialog" class="modal-wrap">
+        <label for="modal-alert" class="modal-overlay"></label>
+        <div class="modal-dialog">
+          <div class="modal-header">
+            <label for="modal-alert" aria-hidden="true" class="btn-close">&#10060;</label>
+            <h2> </h2>
+          </div>
+          <div class="modal-body"></div>
+          <div class="modal-footer">
+            <label for="modal-alert" class="btn btn-primary">OK</label>
+          </div>
+        </div>
+      </div>
+    </section>
   </body>
 </html>

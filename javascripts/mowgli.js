@@ -35,6 +35,14 @@ function MOWGLI() {
     var _mol;
     var _renderer;
     
+    exports.alert = function(msg) {
+        document.querySelector(".alert .modal-header h2").innerHTML = 'MOWGLI: Info';
+        document.querySelector(".alert .modal-body").innerHTML='<p>'+msg+'</p>';
+        // Trigger display of the alert
+        document.querySelector('.alert #modal-alert').checked = true;
+    }
+    
+    
     /**
      * Active structure used by mowgli
      **/
@@ -43,6 +51,155 @@ function MOWGLI() {
 
 })(this.MOWGLI = {});
 
+
+/*
+ *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
+ *  Copyright (C) 2015  Jean-Christophe Taveau.
+ *
+ *  This file is part of mowgli
+ *
+ * This program is free software: you can redistribute it and/or modify it 
+ * under the terms of the GNU General Public License as published by 
+ * the Free Software Foundation, either version 3 of the License, or 
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, 
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+ * GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * Authors:
+ * Jean-Christophe Taveau
+ */
+
+"use strict";
+
+/**
+ * Display an alert modal window
+ * @class Alert
+ * @memberof module:mwGUI
+ * @constructor
+ *
+ * @author Jean-Christophe Taveau
+ **/
+
+function Alert(msg) {
+    document.querySelector("#alert header #body").innerHTML = '<p>Alert!!</p>';
+    var el = document.querySelector("#alert article");
+    el.innerHTML='<p>'+msg+'</p>';
+    
+    // Display alert
+    document.getElementById('alert').classList.toggle('alert_target');
+}
+
+/*
+ *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
+ *  Copyright (C) 2015  Jean-Christophe Taveau.
+ *
+ *  This file is part of mowgli
+ *
+ * This program is free software: you can redistribute it and/or modify it 
+ * under the terms of the GNU General Public License as published by 
+ * the Free Software Foundation, either version 3 of the License, or 
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, 
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+ * GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * Authors:
+ * Jean-Christophe Taveau
+ */
+
+"use strict";
+
+
+window.onload = function() {
+
+    // 1- File
+    // 1-1 Open...PDB
+    //var openPDB = mwGUI.Opener("pdb");
+    // 1-2 Open...EMDB
+    //var openEMDB = mwGUI.Opener("emdb");
+    // 1-3 Open...Samples
+    var sample_1ZNI = new mwGUI.Sample("1zni");
+    var sample_3CRO = new mwGUI.Sample("3cro");
+    // 1-4 Export
+    var export_menuitem = new mwGUI.SaveAs("export");
+    
+    // 2- Structure
+    // 2-3- Structure...Sequence
+    // 2-3-1 Structure...Sequence...FASTA
+    var sequence_fasta = new mwGUI.Fasta("fasta");
+
+    // 2-3-2 Structure...Sequence...Sec.Structures
+    // 2-3-3 Structure...Sequence...Ramachandran
+    
+    // 7- Help
+    // About modal window
+    console.log('Add event click on About...');
+    var about = new mwGUI.About("about");
+}
+
+/*
+ *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
+ *  Copyright (C) 2015  Jean-Christophe Taveau.
+ *
+ *  This file is part of mowgli
+ *
+ * This program is free software: you can redistribute it and/or modify it 
+ * under the terms of the GNU General Public License as published by 
+ * the Free Software Foundation, either version 3 of the License, or 
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, 
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+ * GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * Authors:
+ * Jean-Christophe Taveau
+ */
+
+"use strict";
+
+/**
+ * Constructor
+ * @class Modal
+ * @memberof module:mwGUI
+ * @constructor
+ *
+ * @author Jean-Christophe Taveau
+ **/
+ function Modal(options) {
+    // Header
+    var header = document.querySelector(".mwModal .modal-header");
+    header.style.backgroundImage = options.headerImage || 'url("images/default-background.jpg")';
+    document.querySelector(".mwModal .modal-header h2").innerHTML = options.headerTitle || 'Modal window';
+    
+    // Body
+    var body = document.querySelector(".mwModal .modal-body");
+    body.innerHTML= options.body || '<p>No information</p>';
+    body.style.fontSize = options.fontSize || "1.1em";
+    body.style.fontFamily = options.fontFamily || "Lato";
+    
+    // Display modal
+    document.querySelector('.mwModal #modal-one').checked = true;
+
+}
 
 /*
  *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
@@ -113,7 +270,7 @@ function MOWGLI() {
             case 'click':
                 // Display modal window
                 var popup = new Modal({
-                    headerTitle : "<p>About Mowgli... </p>",
+                    headerTitle : "About Mowgli...",
                     headerImage : "url('images/headprot.jpg')",
                     body  : content.reduce(
                             function(prev, current, index, array){
@@ -187,85 +344,77 @@ function MOWGLI() {
 
 "use strict";
 
-
-window.onload = function() {
-
-    // 1- File
-    // 1-1 Open...PDB
-    //var openPDB = mwGUI.Opener("pdb");
-    // 1-2 Open...EMDB
-    //var openEMDB = mwGUI.Opener("emdb");
-    // 1-3 Open...Samples
-    var sample_1ZNI = new mwGUI.Sample("1zni");
-    var sample_3CRO = new mwGUI.Sample("3cro");
-
-    // 2-3-1 Structure...Sequence...FASTA
-    // 2-3-2 Structure...Sequence...Sec.Structures
-    // 2-3-3 Structure...Sequence...Ramachandran
-    
-    // 7- Help
-    // About modal window
-    console.log('Add event click on About...');
-    var about = new mwGUI.About("about");
-}
-
-/*
- *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
- *  Copyright (C) 2015  Jean-Christophe Taveau.
- *
- *  This file is part of mowgli
- *
- * This program is free software: you can redistribute it and/or modify it 
- * under the terms of the GNU General Public License as published by 
- * the Free Software Foundation, either version 3 of the License, or 
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
- * GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
- *
- *
- * Authors:
- * Jean-Christophe Taveau
- */
-
-"use strict"
-
 /**
+ * 
+ * @module mwGUI
+ **/
+ 
+ /**
  * Constructor
- * @class Modal
- * @memberof module:gui
- * @constructor
+ * @class Fasta
+ * @memberof module:mwGUI
+ * @param {number} the_id - DOM element ID
  *
  * @author Jean-Christophe Taveau
  **/
- function Modal(options) {
-    var element = document.getElementById('modal');
-    var html =  '<div class="container"><header id="modalhead">';
-    html += '<a href="#close" title="Close modal window" class="droite">&#10060;</a>';
-    html += options.headerTitle || 'Modal window';
-    html += '</header>';
-    html += '<article>';
-    html += options.body || 'No information';
-    html += '</section>';
-    html += '<footer class="cf">';
-    html += '<a href="#close" class="btn droite" title="Close modal window">Close</a>';
-    html += '</footer></div>';
+ 
+/**
+ * @function handleEvent
+ * @memberof module:mwGUI.Fasta
+ * @desc Handle various event types
+ * @param event - The DOM event
+ *
+ * @author Jean-Christophe Taveau
+ **/
 
-    element.innerHTML = html;
+
+(function(exports) {
+
+    function Fasta(the_id) {
+        /**
+         * DOM element ID
+         *
+         **/
+        this.element = document.getElementById(the_id);
+        
+        /**
+         * Handle various event types
+         * @param event - The DOM event
+        **/
+        this.handleEvent = function(event) {
+            console.log(the_id); // 'Something Good', as this is the Something object
+            switch(event.type) {
+            case 'click':
+                // Display modal window
+                var popup = new Modal({
+                    headerTitle : "FASTA Sequence",
+                    headerImage : "url('images/headprot.jpg')",
+                    body  : '<pre>'+MOWGLI.structure.fasta()+'</pre>'
+                });
+                break;
+            case 'dblclick':
+                // some code here...
+                break;
+            }
+        };
+
+        // Note that the listeners in this case are this, not this.handleEvent
+        this.element.addEventListener('click', this, false);
+        this.element.addEventListener('dblclick', this, false);
+
+        // You can properly remove the listeners
+        // this.element.removeEventListener('click', this, false);
+        // this.element.removeEventListener('dblclick', this, false);
+      
+    }
+
+    exports.Fasta = Fasta;
     
-    var header = element.children[0].children[0];  // aka document.getElementById("modalhead");
-    console.log(header);
-    header.style.backgroundImage = options.headerImage || 'url("images/default-background.jpg")';
+    
+})(this.mwGUI = this.mwGUI || {} );
 
-    // Display modal
-    element.classList.toggle("oModal_target");
 
-}
+
 
 /*
  *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
@@ -311,7 +460,7 @@ window.onload = function() {
  * @function handleEvent
  * @memberof module:mwGUI.Sample
  * @desc Handle click events
- * @param event - The DOM event
+ * @param {object} event - The DOM event
  *
  * @author Jean-Christophe Taveau
  **/
@@ -357,8 +506,7 @@ window.onload = function() {
                         if(xhr.status == 200) {
                             var json = xhr.response; // JSON.parse(xhr.responseText);
                             MOWGLI.structure = new Molecule(json);
-                            console.log(MOWGLI.structure);
-                            console.log(MOWGLI.structure.fasta());
+                            MOWGLI.alert(the_id.toUpperCase() + " successfully loaded...");
                             console.log(MOWGLI.structure instanceof Molecule);
                         }
                         else {
@@ -386,6 +534,96 @@ window.onload = function() {
     }
 
     exports.Sample = SampleGUI;
+    
+})(this.mwGUI = this.mwGUI || {} );
+
+
+
+
+/*
+ *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
+ *  Copyright (C) 2015  Jean-Christophe Taveau.
+ *
+ *  This file is part of mowgli
+ *
+ * This program is free software: you can redistribute it and/or modify it 
+ * under the terms of the GNU General Public License as published by 
+ * the Free Software Foundation, either version 3 of the License, or 
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, 
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+ * GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * Authors:
+ * Jean-Christophe Taveau
+ */
+
+"use strict";
+
+/**
+ * 
+ * @module mwGUI
+ **/
+ 
+ /**
+ * Constructor
+ * @class Fasta
+ * @memberof module:mwGUI
+ * @param {number} the_id - DOM element ID
+ *
+ * @author Jean-Christophe Taveau
+ **/
+ 
+/**
+ * @function handleEvent
+ * @memberof module:mwGUI.Fasta
+ * @desc Handle various event types
+ * @param event - The DOM event
+ *
+ * @author Jean-Christophe Taveau
+ **/
+
+
+(function(exports) {
+
+    function SaveAs(the_id) {
+        /**
+         * DOM element ID
+         *
+         **/
+        this.element = document.getElementById(the_id);
+        
+        /**
+         * Handle various event types
+         * @param event - The DOM event
+        **/
+        this.handleEvent = function(event) {
+            console.log(the_id); // 'Something Good', as this is the Something object
+            switch(event.type) {
+            case 'click':
+                // Display modal window
+                MOWGLI.alert("Not implemented. Sorry for the inconvenience");
+                break;
+            }
+        };
+
+        // Note that the listeners in this case are this, not this.handleEvent
+        this.element.addEventListener('click', this, false);
+
+        // You can properly remove the listeners
+        // this.element.removeEventListener('click', this, false);
+        // this.element.removeEventListener('dblclick', this, false);
+      
+    }
+
+    exports.SaveAs = SaveAs;
+    
     
 })(this.mwGUI = this.mwGUI || {} );
 

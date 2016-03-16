@@ -176,97 +176,47 @@ nav li li li {
  *
  *********************************************/
 
-.cf:before,
-.cf:after {
-  content:"";
-  display:table;
-}
-.cf:after {
-  clear:both;
-}
-.droite {
-  float:right;
-}
- 
-.oModal {
-  position: fixed;
-  z-index: 99999;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  background: rgba(0, 0, 0, 0.6);
-  opacity: 0;
-  padding-top : 0px;
-  pointer-events: none;
-  transition-delay: 1s;
-      -webkit-transition: padding 400ms ease-in-out, opacity 200ms ease-in;
-  -moz-transition: padding 400ms ease-in-out, opacity 200ms ease-in;
-  transition: opacity 400ms ease-in, padding 400ms ease-in-out;
-}
- 
-.oModal_target {
-  opacity: 1;
-  padding-top : 10%;
-  pointer-events: auto;
-}
 
- 
-.oModal > .container {
+.mwModal .modal-dialog {
   max-width: 600px;
   overflow-y: auto;
   max-height: 500px;
-  position: relative;
-  padding: 8px 8px 8px 8px;
-  border-radius: 5px;
-  background: #eee;
-  margin: 1% auto;
 }
 
-.oModal > .container_target {
 
-}
-
-.oModal > div header,.oModal > div footer {
-  background-color: #444;
-  color: #fff;
-  font-family: 'Oswald', sans-serif;
-  font-size: 1.2em;
-
-  border-bottom: 1px solid #e7e7e7;
-  border-radius: 5px 5px 0 0;
-  
+.mwModal .btn-primary {
+    border: solid 1px #000;
+    border-radius: 5px;
+    background-color: #444;
+    color:#fff;
+    cursor:pointer;
+    margin: 12px;
+    padding: 5px 15px 5px 15px;
+    line-height: 40px;
+    text-decoration:none;
 }
 
-.oModal  > div header a { 
-  text-decoration: none;
-  color: #fff;
-  font-size: 1.2em;
+.mwModal .btn-primary:hover {
+    background-color: #7d7d7d;
+}
+.mwModal .btn-close {
+    cursor:pointer;
+    float: right;
 }
 
-.oModal  > div article {
-    font-size: 1.1em;
-    font-weight: 300; 
-    font-family:'Lato'; 
-}
 
-.oModal .footer {
-  border:none;
-  border-top: 1px solid #e7e7e7;
-  border-radius: 0 0 5px 5px;
-}
- 
-.oModal > div h2 {
-  margin:0;
-}
- 
-.oModal > div .btn {
-  float:right;
-}
- 
-.oModal > div section,.oModal > div > header, .oModal > div > footer {
-  padding: 1px 15px 0px 15px;
-}
+/***********************************
+ *
+ * Alert modal window
+ *
+ ***********************************/
+
+
+/***********************************
+ *
+ * Console
+ *
+ ***********************************/
 
 #console {
   z-index: 2;
