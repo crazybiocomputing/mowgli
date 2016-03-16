@@ -35,6 +35,14 @@ function MOWGLI() {
     var _mol;
     var _renderer;
     
+    exports.alert = function(msg) {
+        document.querySelector(".alert .modal-header h2").innerHTML = 'MOWGLI: Info';
+        document.querySelector(".alert .modal-body").innerHTML='<p>'+msg+'</p>';
+        // Trigger display of the alert
+        document.querySelector('.alert #modal-alert').checked = true;
+    }
+    
+    
     /**
      * Active structure used by mowgli
      **/

@@ -35,8 +35,14 @@ window.onload = function() {
     // 1-3 Open...Samples
     var sample_1ZNI = new mwGUI.Sample("1zni");
     var sample_3CRO = new mwGUI.Sample("3cro");
-
+    // 1-4 Export
+    var export_menuitem = new mwGUI.SaveAs("export");
+    
+    // 2- Structure
+    // 2-3- Structure...Sequence
     // 2-3-1 Structure...Sequence...FASTA
+    var sequence_fasta = new mwGUI.Fasta("fasta");
+
     // 2-3-2 Structure...Sequence...Sec.Structures
     // 2-3-3 Structure...Sequence...Ramachandran
     
