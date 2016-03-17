@@ -65,11 +65,17 @@
             console.log(the_id); // 'Something Good', as this is the Something object
             switch(event.type) {
             case 'click':
+
+            var Fasta_content;
+            if(MOWGLI.structure instanceof Molecule===false){
+                Fasta_content="Please,Load a Molecule"}
+            else{Fasta_content=MOWGLI.structure.fasta()}
+
                 // Display modal window
                 var popup = new Modal({
                     headerTitle : "FASTA Sequence",
                     headerImage : "url('images/headprot.jpg')",
-                    body  : '<pre>'+MOWGLI.structure.fasta()+'</pre>'
+                    body  : '<pre>'+Fasta_content+'</pre>'
                 });
                 break;
             case 'dblclick':
