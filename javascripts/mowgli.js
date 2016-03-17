@@ -344,7 +344,8 @@ window.onload = function() {
 
             var Fasta_content;
             if(MOWGLI.structure instanceof Molecule===false){
-                Fasta_content="Please,Load a Molecule"}
+                MOWGLI.alert("Please,Load a Molecule")
+                break;}
             else{Fasta_content=MOWGLI.structure.fasta()}
 
                 // Display modal window
