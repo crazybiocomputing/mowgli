@@ -44,7 +44,7 @@ function Molecule(other) {
     *
     * @type {string}
     **/
-    this.classification = other.classification || 'Unknown';
+    this.information.classification = other.classification || 'Unknown';
 
    /** 
     * Atoms - Array of {@link module:mol.Atom}
@@ -105,15 +105,16 @@ Molecule.LEFT_HANDED_GAMMA  = 8;
 Molecule.RIBBON_HELIX_2_7   = 9;
 Molecule.POLYPROLINE        = 10;
 
-  /**
-   * Three to One Letter Converter
-   *
-   * @type {string}
-   *
-   * @example
-   * var aa = Structure.threeToOne("GLN"); // returns 'Q'
-   *
-   **/
+/**
+ * Three to One Letter Converter for amino-acids and nucleotides
+ *
+ * @type {string}
+ *
+ * @example
+ * var aa   = Structure.threeToOne("GLN"); // returns 'Q' in uppercase
+ * var nucl = Structure.threeToOne("DA"); // returns 'a' in lowercase 
+ *
+ **/
 Molecule.threeToOne = {
     "ALA" : "A", // Alanine
     "ARG" : "R", // Arginine
@@ -141,10 +142,54 @@ Molecule.threeToOne = {
     "GLX" : "Z", // Glutamine_or_glutamic_acid
     "XLE" : "J", // Leucine_or_Isoleucine
     "XAA" : "X", // Unspecified_or_unknown_amino_acid
-    "XXX" : "X"  // Unspecified_or_unknown_amino_acid
+    "XXX" : "X", // Unspecified_or_unknown_amino_acid
+    "A"   : "a", // Adenosine (nucleic)
+    "T"   : "t", // Thymine (nucleic)
+    "G"   : "g", // Guanosine (nucleic)
+    "C"   : "c", // Guanosine (nucleic)
+    "U"   : "u", // Uracyl (nucleic)
+    "DA"  : "a", // Adenosine (nucleic)
+    "DT"  : "t", // Thymine (nucleic)
+    "DG"  : "g", // Guanosine (nucleic)
+    "DC"  : "c"  // Guanosine (nucleic)
 }
 
 
+/**
+ * Get first atom corresponding to the pattern  In MOWGLI, each atom has a label following the following syntax:
+ * - &lt;PDBID&gt;.&lt;modelID&gt;.&lt;chainID&gt;[&lt;secStruct&gt;].&lt;groupName&gt;([&lt;groupSerial&gt;].&lt;atomName&gt;[&lt;atomSerial&gt;]
+ * - __A*.*[1].CA__ corresponds to the alpha carbon belonging to the first residue of chain A of the PDB structure 1ZNI
+ * - __.CA__ corresponds to the first alpha carbon found in this structure
+ *
+ * @param {string} pattern - A simplified regular expression
+ *
+ * @return {Atom}
+ *
+ * @example
+ *
+ * // Get the first atom carbon alpha (CA) found in chain B 
+ * var atom = mystructure.getAtomByLabel("B*.CA");
+ *
+ *
+ **/
+Molecule.prototype.getAtomByLabel = function(pattern) {
+    var atom;
+    // Escape characters
+    var motif = pattern.replace(/([.\[\]])/g,"\\$1");
+    motif = motif.replace(/\*/g,".+");
+    console.log(motif);
+    var regexp = new RegExp(motif,'i');
+    var i= 0;
+    var match = false;
+    while (!match && i < this.atoms.length) {
+        match = regexp.test(this.atoms[i].label);
+        if (match) {
+            atom = this.atoms[i];
+        }
+        i++;
+    }
+    return atom;
+}
 
 /**
  * Filter the atoms or bonds in function of their properties
@@ -210,16 +255,17 @@ Molecule.prototype.bondFinder = function (callback) {
  *
  **/
 Molecule.prototype.fasta = function () {
-    var fasta = '> ' + this.ID + ':' + this.atoms[0].chain + ' | ' + this.title + '\n';
-    var current_chain = this.atoms[0].chainID;
+    var fasta = '> ' + this.ID + ':' + this.atoms[0].chain + ' | ' + this.information.title + '\n';
+    var current_chain = this.atoms[0].chain;
     var count = 0;
     for (var i= 0; i < this.atoms.length; i++) {
-        if (this.atoms[i].chainID != current_chain) {
-            fasta += '\n> ' + this.ID + ':' + this.atoms[i].chain + ' | ' + this.title + '\n';
-            current_chain = this.atoms[i].chainID;
+        console.log(this.atoms[i].chain+" "+current_chain);
+        if (this.atoms[i].chain != current_chain && this.atoms[i].type=== "ATOM") {
+            fasta += '\n> ' + this.ID + ':' + this.atoms[i].chain + ' | ' + this.information.title + '\n';
+            current_chain = this.atoms[i].chain;
             count = 0;
         }
-        if (this.atoms[i].name==="CA" && this.atoms[i].chainID == current_chain) {
+        if ( (this.atoms[i].name==="CA" || this.atoms[i].name==="O4*"|| this.atoms[i].name==="O4'") && this.atoms[i].chain == current_chain) {
             fasta += Molecule.threeToOne[this.atoms[i].group];
             count++;
             if ( (count % 80) == 0) {
@@ -263,6 +309,11 @@ Molecule.prototype.secondary = function () {
  * Compute the phi and psi dihedral angles of this structure.
  * The angles are stored in the CA atom of each group.
  *
+ * @example
+ * // Compute phi and psi dihedral angles from mystructure
+ * mystructure.calcPhiPsi();
+ * console.log(mystructure.getAtomByLabel("[10].CA").phi);  // 
+ *
  **/
 Molecule.prototype.calcPhiPsi = function () {
       var ca      = 0;
@@ -276,7 +327,6 @@ Molecule.prototype.calcPhiPsi = function () {
 
     // Assume that the atoms are sorted by ascending index
     for (var i in this.atoms) {
-    
         // New chain
         if (this.atoms[i].chain != ch) {
             if (ch != ' ') {
@@ -307,7 +357,7 @@ Molecule.prototype.calcPhiPsi = function () {
             count++;
         }
         else if (count == 6){
-            var angles=calcPhiPsi(points);
+            var angles = calcPhiPsi(points);
             this.atoms[ca].phi = oldPhi;
             this.atoms[ca].psi = angles[1];
 
@@ -325,28 +375,28 @@ Molecule.prototype.calcPhiPsi = function () {
     this.atoms[ca].phi = oldPhi;
     this.atoms[ca].psi = undefined;
 
-    
+    // Private
     function calcPhiPsi(points)
     {
-      var psi=calcDihedralAngle(points[0],points[1],points[2],points[3]); // [0,1,2,3]);
-      var phi=calcDihedralAngle(points[2],points[3],points[4],points[5]); // [2,3,4,5]);
-      return [phi, psi];
+        var psi=calcDihedralAngle(points[0],points[1],points[2],points[3]); // [0,1,2,3]);
+        var phi=calcDihedralAngle(points[2],points[3],points[4],points[5]); // [2,3,4,5]);
+        return [phi, psi];
     }
 
-
+    // Private
     function calcDihedralAngle(point0,point1,point2,point3) {
-      // UA = (A2−A1) × (A3−A1) is orthogonal to plane A and UB = (B2−B1) × (B3−B1)  
+        // UA = (A2−A1) × (A3−A1) is orthogonal to plane A and UB = (B2−B1) × (B3−B1)  
 
-      var v1 = vec3.fromValues(point1.x-point0.x,point1.y-point0.y, point1.z-point0.z); 
-      var v2 = vec3.fromValues(point2.x-point1.x,point2.y-point1.y, point2.z-point1.z); 
-      var v3 = vec3.fromValues(point3.x-point2.x,point3.y-point2.y, point3.z-point2.z); 
-      var na=vec3.create();
-      var nb=vec3.create();
-      vec3.cross(na,v1,v2);
-      vec3.cross(nb,v2,v3);
-      var sinAngle=vec3.dot(v1,nb) * vec3.length(v2);
-      var cosAngle=vec3.dot(na,nb);
-      return Math.atan2(sinAngle,cosAngle)/Math.PI*180.0;
+        var v1 = vec3.fromValues(point1.x-point0.x,point1.y-point0.y, point1.z-point0.z); 
+        var v2 = vec3.fromValues(point2.x-point1.x,point2.y-point1.y, point2.z-point1.z); 
+        var v3 = vec3.fromValues(point3.x-point2.x,point3.y-point2.y, point3.z-point2.z); 
+        var na=vec3.create();
+        var nb=vec3.create();
+        vec3.cross(na,v1,v2);
+        vec3.cross(nb,v2,v3);
+        var sinAngle=vec3.dot(v1,nb) * vec3.length(v2);
+        var cosAngle=vec3.dot(na,nb);
+        return Math.atan2(sinAngle,cosAngle)/Math.PI*180.0;
     }
 }
 

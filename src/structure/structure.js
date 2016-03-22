@@ -43,22 +43,28 @@ function Structure(other) {
    * Identifier
    *
    * @type {string}
+   *
    **/
-  this.ID             = other.ID || '0UNK';
+  this.ID               = other.ID || '0UNK';
 
 
   /**
-   * Title
+   * Information
+   *
+   * @type {object}
    *
    **/
-  this.title          =  other.title || 'No Title';
+  this.information          =  {};
+  this.information.ID       = this.ID;
+  
+  this.information.title    = other.title || 'No Title';
   
   /**
    * Deposit Date DD-MMM-YY
    *
    * @type {string}
    **/
-  this.date           =  other.date || '00-UNK-00';
+  this.information.date     =  other.date || '00-UNK-00';
 
   /**
    * Center of Gravity - Centroid
@@ -71,7 +77,7 @@ function Structure(other) {
    * @property {number} centroid.y - Z-coordinate
 
    **/
-  this.centroid=  other.centroid || {'x': 0.0,'y': 0.0,'z': 0.0};
+  this.centroid             =  other.centroid || {'x': 0.0,'y': 0.0,'z': 0.0};
 
   /**
    *  Matrix for rotation(s) and translation(s)
@@ -107,12 +113,35 @@ function Structure(other) {
 
 }
 
+
 /**
+ * Is this structure an atomic model? (instance of class Molecule)
+ *
+ * @return {boolean} - true if this structure is an atomic model.
+ *
+ **/
+Structure.prototype.isMolecule = function() {
+    return (this instanceof Molecule);
+}
+ 
+ 
+/**
+ * Is this structure a 2D/3D-raster? (instance of class Raster)
+ *
+ * @return {boolean} - true if this structure is a 2D- or 3D-raster (image or volume/map).
+ *
+ **/
+Structure.prototype.isRaster = function() {
+    return (this instanceof Raster);
+}
+ 
+ 
+ /**
  * Set Title
  *
  * @param {string} str - Set a new title
  *
  **/
 Structure.prototype.setTitle = function (str) {
-    this.title = str;
+    this.information.title = str;
 }
