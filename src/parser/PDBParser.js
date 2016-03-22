@@ -179,25 +179,6 @@ PDBParser.prototype.parse = function (text) {
 }
 
 
-/**
- *
- * @summary Parse HEADER row - Private method
- *
- * @description
- * 
- * |COLUMNS  |    DATA  TYPE   |  FIELD           |  DEFINITION
- * |---------|-----------------|------------------|---------------------------------------
- * |01 - 06  |    Record name  |  "HEADER"        |  |
- * |11 - 50  |    String(40)   |  classification  |  Classifies the molecule(s).
- * |51 - 59  |    Date         |  depDate         |  Deposition date. This is the date the coordinates were received at the PDB.
- * |63 - 66  |    IDcode       |  idCode          |  This identifier is unique within the PDB.
- * 
- **/
-PDBParser.prototype.parseHeader = function (row) {
-  this.mol.classification = row.substring(10,50).trim();
-  this.mol.date           = row.substring(50,59).trim();
-  this.mol.ID             = row.substring(62,66).trim();
-}
 
 
 /**
@@ -228,43 +209,67 @@ PDBParser.prototype.parseHeader = function (row) {
  **/
 
 PDBParser.prototype.parseAtom = function (line) {
-  var atom = {};
-  atom.type = line.substring(0,6).trim();
-  atom.serial = parseInt(line.substring(6,11));
-  atom.name = line.substring(12,16).trim();
-  atom.altLoc = line[16];
-  atom.group = line.substring(17,20).trim();
-  atom.chain = line[21];
-  atom.groupID = parseInt(line.substring(22,26));
-  atom.x = parseFloat(line.substring(30,38));
-  atom.y = parseFloat(line.substring(38,46));
-  atom.z = parseFloat(line.substring(46,54));
-  atom.symbol = line.substring(76,78).trim();
-  // If exists, set the secondary structure (previously parse in HELIX and SHEET)
-  atom.secondary = 'X';
-  var i = 0;
-  while (i < this.secondary.length) {
-    if (this.secondary[i].initChain === atom.chain && atom.groupID >= this.secondary[i].init && atom.groupID <= this.secondary[i].end ) {
-      atom.secondary = this.secondary[i].label;
-      // Stop
-      i = this.secondary.length;
+    var atom = {};
+    atom.type = line.substring(0,6).trim();
+    atom.serial = parseInt(line.substring(6,11));
+    atom.name = line.substring(12,16).trim();
+    atom.altLoc = line[16];
+    atom.group = line.substring(17,20).trim();
+    atom.chain = line[21];
+    atom.groupID = parseInt(line.substring(22,26));
+    atom.x = parseFloat(line.substring(30,38));
+    atom.y = parseFloat(line.substring(38,46));
+    atom.z = parseFloat(line.substring(46,54));
+    atom.symbol = line.substring(76,78).trim();
+    // If exists, set the secondary structure (previously parse in HELIX and SHEET)
+    atom.secondary = 'X';
+    var i = 0;
+    while (i < this.secondary.length) {
+        if (this.secondary[i].initChain === atom.chain && atom.groupID >= this.secondary[i].init && atom.groupID <= this.secondary[i].end ) {
+            atom.secondary = this.secondary[i].label;
+            // Stop
+            i = this.secondary.length;
+        }
+        i++;
     }
-    i++;
-  }
-//  if (atom.groupID===24 && atom.chain==="B") console.log(atom.secondary);
 
-  this.mol.atoms.push(atom);
+    // Atom Label
+    atom.label = this.mol.ID + "." + atom.chain + "["+atom.secondary+"]." + atom.group + "["+atom.groupID+"]." + atom.name + "["+atom.serial+"]."+atom.type.toLowerCase(); 
+    //  if (atom.groupID===24 && atom.chain==="B") console.log(atom.secondary);
 
-  // Update chain
-  if (this.mol.chains.indexOf(atom.chain) == -1) {
-    this.mol.chains.push(atom.chain);
-  }
-  // Update centroid and bounding box of the structure
-  this.mol.centroid.x += atom.x;
-  this.mol.centroid.y += atom.y;
-  this.mol.centroid.z += atom.z;
-  this.updateBBox(atom);
+    this.mol.atoms.push(atom);
 
+    // Update chain
+    if (this.mol.chains.indexOf(atom.chain) == -1) {
+        this.mol.chains.push(atom.chain);
+    }
+    // Update centroid and bounding box of the structure
+    this.mol.centroid.x += atom.x;
+    this.mol.centroid.y += atom.y;
+    this.mol.centroid.z += atom.z;
+    this.updateBBox(atom);
+
+}
+
+
+/**
+ *
+ * @summary Parse HEADER row - Private method
+ *
+ * @description
+ * 
+ * |COLUMNS  |    DATA  TYPE   |  FIELD           |  DEFINITION
+ * |---------|-----------------|------------------|---------------------------------------
+ * |01 - 06  |    Record name  |  "HEADER"        |  |
+ * |11 - 50  |    String(40)   |  classification  |  Classifies the molecule(s).
+ * |51 - 59  |    Date         |  depDate         |  Deposition date. This is the date the coordinates were received at the PDB.
+ * |63 - 66  |    IDcode       |  idCode          |  This identifier is unique within the PDB.
+ * 
+ **/
+PDBParser.prototype.parseHeader = function (row) {
+  this.mol.classification = row.substring(10,50).trim();
+  this.mol.date           = row.substring(50,59).trim();
+  this.mol.ID             = row.substring(62,66).trim();
 }
 
 
