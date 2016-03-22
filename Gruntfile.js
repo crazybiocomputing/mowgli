@@ -47,7 +47,7 @@ module.exports = function(grunt) {
         dist : {
             src: ['src/**/*.js'],
             options: {
-                configure: '../doc/jsdoc/config.json',
+                configure: '../master/doc/jsdoc/config.json',
                 destination: 'doc/app/'
             }
         }

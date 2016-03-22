@@ -477,6 +477,7 @@ Geometry.prototype.isIndexed = function() {
  * 
  **/
  
+ 
 /**
  * @constructor
  * @param {Node} node - Camera Object belonging to the scene graph
@@ -484,10 +485,17 @@ Geometry.prototype.isIndexed = function() {
  * @author Jean-Christophe Taveau
  **/
  
-
- 
- (function(exports) {
- 
+/**
+ * 
+ * 
+ * @desc Set Viewport of canvas
+ *
+ * @param {number} width - Canvas width
+ * @param {number} height - Canvas height
+ *
+ * @author Jean-Christophe Taveau
+ **/
+(function(exports) {
     function _Camera(node) {
         this.sgnode = node;
         this.glType = -1;
@@ -502,16 +510,7 @@ Geometry.prototype.isIndexed = function() {
         return _isDirty;
     }
 
-/**
- * 
- * @memberof module:mwGL.Camera
- * @desc Set Viewport of canvas
- *
- * @param {number} width - Canvas width
- * @param {number} height - Canvas height
- *
- * @author Jean-Christophe Taveau
- **/
+
     _Camera.prototype.setViewport = function (width, height) {
         mat4.perspective(this.sgnode.projMatrix,this.sgnode.fovy * this.sgnode.zoom,width / height,this.sgnode.zNear,this.sgnode.zFar);
     }
@@ -531,8 +530,9 @@ Geometry.prototype.isIndexed = function() {
     }
 
 
+
     exports.Camera = _Camera;
-    exports.Camera.prototype = Object.create(_Camera);
+
     
 })(this.mwGL = this.mwGL || {} );
 
@@ -2257,7 +2257,7 @@ function PDBMLParser() {
  * @author Jean-Christophe Taveau
  **/
 function PDBParser() {
-  this.mol = new Molecule();
+  this.mol = new Molecule({});
   this.secondary = [];
   this.cubes = [];
   this.cube_side = 5.0; // 5 angstroems
@@ -2388,25 +2388,6 @@ PDBParser.prototype.parse = function (text) {
 }
 
 
-/**
- *
- * @summary Parse HEADER row - Private method
- *
- * @description
- * 
- * |COLUMNS  |    DATA  TYPE   |  FIELD           |  DEFINITION
- * |---------|-----------------|------------------|---------------------------------------
- * |01 - 06  |    Record name  |  "HEADER"        |  |
- * |11 - 50  |    String(40)   |  classification  |  Classifies the molecule(s).
- * |51 - 59  |    Date         |  depDate         |  Deposition date. This is the date the coordinates were received at the PDB.
- * |63 - 66  |    IDcode       |  idCode          |  This identifier is unique within the PDB.
- * 
- **/
-PDBParser.prototype.parseHeader = function (row) {
-  this.mol.classification = row.substring(10,50).trim();
-  this.mol.date           = row.substring(50,59).trim();
-  this.mol.ID             = row.substring(62,66).trim();
-}
 
 
 /**
@@ -2437,43 +2418,67 @@ PDBParser.prototype.parseHeader = function (row) {
  **/
 
 PDBParser.prototype.parseAtom = function (line) {
-  var atom = {};
-  atom.type = line.substring(0,6).trim();
-  atom.serial = parseInt(line.substring(6,11));
-  atom.name = line.substring(12,16).trim();
-  atom.altLoc = line[16];
-  atom.group = line.substring(17,20).trim();
-  atom.chain = line[21];
-  atom.groupID = parseInt(line.substring(22,26));
-  atom.x = parseFloat(line.substring(30,38));
-  atom.y = parseFloat(line.substring(38,46));
-  atom.z = parseFloat(line.substring(46,54));
-  atom.symbol = line.substring(76,78).trim();
-  // If exists, set the secondary structure (previously parse in HELIX and SHEET)
-  atom.secondary = 'X';
-  var i = 0;
-  while (i < this.secondary.length) {
-    if (this.secondary[i].initChain === atom.chain && atom.groupID >= this.secondary[i].init && atom.groupID <= this.secondary[i].end ) {
-      atom.secondary = this.secondary[i].label;
-      // Stop
-      i = this.secondary.length;
+    var atom = {};
+    atom.type = line.substring(0,6).trim();
+    atom.serial = parseInt(line.substring(6,11));
+    atom.name = line.substring(12,16).trim();
+    atom.altLoc = line[16];
+    atom.group = line.substring(17,20).trim();
+    atom.chain = line[21];
+    atom.groupID = parseInt(line.substring(22,26));
+    atom.x = parseFloat(line.substring(30,38));
+    atom.y = parseFloat(line.substring(38,46));
+    atom.z = parseFloat(line.substring(46,54));
+    atom.symbol = line.substring(76,78).trim();
+    // If exists, set the secondary structure (previously parse in HELIX and SHEET)
+    atom.secondary = 'X';
+    var i = 0;
+    while (i < this.secondary.length) {
+        if (this.secondary[i].initChain === atom.chain && atom.groupID >= this.secondary[i].init && atom.groupID <= this.secondary[i].end ) {
+            atom.secondary = this.secondary[i].label;
+            // Stop
+            i = this.secondary.length;
+        }
+        i++;
     }
-    i++;
-  }
-//  if (atom.groupID===24 && atom.chain==="B") console.log(atom.secondary);
 
-  this.mol.atoms.push(atom);
+    // Atom Label
+    atom.label = this.mol.ID + "." + atom.chain + "["+atom.secondary+"]." + atom.group + "["+atom.groupID+"]." + atom.name + "["+atom.serial+"]."+atom.type.toLowerCase(); 
+    //  if (atom.groupID===24 && atom.chain==="B") console.log(atom.secondary);
 
-  // Update chain
-  if (this.mol.chains.indexOf(atom.chain) == -1) {
-    this.mol.chains.push(atom.chain);
-  }
-  // Update centroid and bounding box of the structure
-  this.mol.centroid.x += atom.x;
-  this.mol.centroid.y += atom.y;
-  this.mol.centroid.z += atom.z;
-  this.updateBBox(atom);
+    this.mol.atoms.push(atom);
 
+    // Update chain
+    if (this.mol.chains.indexOf(atom.chain) == -1) {
+        this.mol.chains.push(atom.chain);
+    }
+    // Update centroid and bounding box of the structure
+    this.mol.centroid.x += atom.x;
+    this.mol.centroid.y += atom.y;
+    this.mol.centroid.z += atom.z;
+    this.updateBBox(atom);
+
+}
+
+
+/**
+ *
+ * @summary Parse HEADER row - Private method
+ *
+ * @description
+ * 
+ * |COLUMNS  |    DATA  TYPE   |  FIELD           |  DEFINITION
+ * |---------|-----------------|------------------|---------------------------------------
+ * |01 - 06  |    Record name  |  "HEADER"        |  |
+ * |11 - 50  |    String(40)   |  classification  |  Classifies the molecule(s).
+ * |51 - 59  |    Date         |  depDate         |  Deposition date. This is the date the coordinates were received at the PDB.
+ * |63 - 66  |    IDcode       |  idCode          |  This identifier is unique within the PDB.
+ * 
+ **/
+PDBParser.prototype.parseHeader = function (row) {
+  this.mol.classification = row.substring(10,50).trim();
+  this.mol.date           = row.substring(50,59).trim();
+  this.mol.ID             = row.substring(62,66).trim();
 }
 
 
@@ -2650,7 +2655,7 @@ PDBParser.prototype.postProcess = function () {
  */
 
 function XYZParser() {
-  this.mol = new Molecule();
+  this.mol = new Molecule({});
 }
 
 XYZParser.prototype.getStructure = function () {
@@ -3310,7 +3315,7 @@ function Molecule(other) {
     *
     * @type {string}
     **/
-    this.classification = other.classification || 'Unknown';
+    this.information.classification = other.classification || 'Unknown';
 
    /** 
     * Atoms - Array of {@link module:mol.Atom}
@@ -3371,15 +3376,16 @@ Molecule.LEFT_HANDED_GAMMA  = 8;
 Molecule.RIBBON_HELIX_2_7   = 9;
 Molecule.POLYPROLINE        = 10;
 
-  /**
-   * Three to One Letter Converter
-   *
-   * @type {string}
-   *
-   * @example
-   * var aa = Structure.threeToOne("GLN"); // returns 'Q'
-   *
-   **/
+/**
+ * Three to One Letter Converter for amino-acids and nucleotides
+ *
+ * @type {string}
+ *
+ * @example
+ * var aa   = Structure.threeToOne("GLN"); // returns 'Q' in uppercase
+ * var nucl = Structure.threeToOne("DA"); // returns 'a' in lowercase 
+ *
+ **/
 Molecule.threeToOne = {
     "ALA" : "A", // Alanine
     "ARG" : "R", // Arginine
@@ -3407,10 +3413,54 @@ Molecule.threeToOne = {
     "GLX" : "Z", // Glutamine_or_glutamic_acid
     "XLE" : "J", // Leucine_or_Isoleucine
     "XAA" : "X", // Unspecified_or_unknown_amino_acid
-    "XXX" : "X"  // Unspecified_or_unknown_amino_acid
+    "XXX" : "X", // Unspecified_or_unknown_amino_acid
+    "A"   : "a", // Adenosine (nucleic)
+    "T"   : "t", // Thymine (nucleic)
+    "G"   : "g", // Guanosine (nucleic)
+    "C"   : "c", // Guanosine (nucleic)
+    "U"   : "u", // Uracyl (nucleic)
+    "DA"  : "a", // Adenosine (nucleic)
+    "DT"  : "t", // Thymine (nucleic)
+    "DG"  : "g", // Guanosine (nucleic)
+    "DC"  : "c"  // Guanosine (nucleic)
 }
 
 
+/**
+ * Get first atom corresponding to the pattern  In MOWGLI, each atom has a label following the following syntax:
+ * - &lt;PDBID&gt;.&lt;modelID&gt;.&lt;chainID&gt;[&lt;secStruct&gt;].&lt;groupName&gt;([&lt;groupSerial&gt;].&lt;atomName&gt;[&lt;atomSerial&gt;]
+ * - __A*.*[1].CA__ corresponds to the alpha carbon belonging to the first residue of chain A of the PDB structure 1ZNI
+ * - __.CA__ corresponds to the first alpha carbon found in this structure
+ *
+ * @param {string} pattern - A simplified regular expression
+ *
+ * @return {Atom}
+ *
+ * @example
+ *
+ * // Get the first atom carbon alpha (CA) found in chain B 
+ * var atom = mystructure.getAtomByLabel("B*.CA");
+ *
+ *
+ **/
+Molecule.prototype.getAtomByLabel = function(pattern) {
+    var atom;
+    // Escape characters
+    var motif = pattern.replace(/([.\[\]])/g,"\\$1");
+    motif = motif.replace(/\*/g,".+");
+    console.log(motif);
+    var regexp = new RegExp(motif,'i');
+    var i= 0;
+    var match = false;
+    while (!match && i < this.atoms.length) {
+        match = regexp.test(this.atoms[i].label);
+        if (match) {
+            atom = this.atoms[i];
+        }
+        i++;
+    }
+    return atom;
+}
 
 /**
  * Filter the atoms or bonds in function of their properties
@@ -3476,16 +3526,17 @@ Molecule.prototype.bondFinder = function (callback) {
  *
  **/
 Molecule.prototype.fasta = function () {
-    var fasta = '> ' + this.ID + ':' + this.atoms[0].chain + ' | ' + this.title + '\n';
-    var current_chain = this.atoms[0].chainID;
+    var fasta = '> ' + this.ID + ':' + this.atoms[0].chain + ' | ' + this.information.title + '\n';
+    var current_chain = this.atoms[0].chain;
     var count = 0;
     for (var i= 0; i < this.atoms.length; i++) {
-        if (this.atoms[i].chainID != current_chain) {
-            fasta += '\n> ' + this.ID + ':' + this.atoms[i].chain + ' | ' + this.title + '\n';
-            current_chain = this.atoms[i].chainID;
+        console.log(this.atoms[i].chain+" "+current_chain);
+        if (this.atoms[i].chain != current_chain && this.atoms[i].type=== "ATOM") {
+            fasta += '\n> ' + this.ID + ':' + this.atoms[i].chain + ' | ' + this.information.title + '\n';
+            current_chain = this.atoms[i].chain;
             count = 0;
         }
-        if (this.atoms[i].name==="CA" && this.atoms[i].chainID == current_chain) {
+        if ( (this.atoms[i].name==="CA" || this.atoms[i].name==="O4*"|| this.atoms[i].name==="O4'") && this.atoms[i].chain == current_chain) {
             fasta += Molecule.threeToOne[this.atoms[i].group];
             count++;
             if ( (count % 80) == 0) {
@@ -3529,6 +3580,11 @@ Molecule.prototype.secondary = function () {
  * Compute the phi and psi dihedral angles of this structure.
  * The angles are stored in the CA atom of each group.
  *
+ * @example
+ * // Compute phi and psi dihedral angles from mystructure
+ * mystructure.calcPhiPsi();
+ * console.log(mystructure.getAtomByLabel("A.(1).CA").phi);  // 
+ *
  **/
 Molecule.prototype.calcPhiPsi = function () {
       var ca      = 0;
@@ -3542,7 +3598,6 @@ Molecule.prototype.calcPhiPsi = function () {
 
     // Assume that the atoms are sorted by ascending index
     for (var i in this.atoms) {
-    
         // New chain
         if (this.atoms[i].chain != ch) {
             if (ch != ' ') {
@@ -3573,7 +3628,7 @@ Molecule.prototype.calcPhiPsi = function () {
             count++;
         }
         else if (count == 6){
-            var angles=calcPhiPsi(points);
+            var angles = calcPhiPsi(points);
             this.atoms[ca].phi = oldPhi;
             this.atoms[ca].psi = angles[1];
 
@@ -3591,28 +3646,28 @@ Molecule.prototype.calcPhiPsi = function () {
     this.atoms[ca].phi = oldPhi;
     this.atoms[ca].psi = undefined;
 
-    
+    // Private
     function calcPhiPsi(points)
     {
-      var psi=calcDihedralAngle(points[0],points[1],points[2],points[3]); // [0,1,2,3]);
-      var phi=calcDihedralAngle(points[2],points[3],points[4],points[5]); // [2,3,4,5]);
-      return [phi, psi];
+        var psi=calcDihedralAngle(points[0],points[1],points[2],points[3]); // [0,1,2,3]);
+        var phi=calcDihedralAngle(points[2],points[3],points[4],points[5]); // [2,3,4,5]);
+        return [phi, psi];
     }
 
-
+    // Private
     function calcDihedralAngle(point0,point1,point2,point3) {
-      // UA = (A2−A1) × (A3−A1) is orthogonal to plane A and UB = (B2−B1) × (B3−B1)  
+        // UA = (A2−A1) × (A3−A1) is orthogonal to plane A and UB = (B2−B1) × (B3−B1)  
 
-      var v1 = vec3.fromValues(point1.x-point0.x,point1.y-point0.y, point1.z-point0.z); 
-      var v2 = vec3.fromValues(point2.x-point1.x,point2.y-point1.y, point2.z-point1.z); 
-      var v3 = vec3.fromValues(point3.x-point2.x,point3.y-point2.y, point3.z-point2.z); 
-      var na=vec3.create();
-      var nb=vec3.create();
-      vec3.cross(na,v1,v2);
-      vec3.cross(nb,v2,v3);
-      var sinAngle=vec3.dot(v1,nb) * vec3.length(v2);
-      var cosAngle=vec3.dot(na,nb);
-      return Math.atan2(sinAngle,cosAngle)/Math.PI*180.0;
+        var v1 = vec3.fromValues(point1.x-point0.x,point1.y-point0.y, point1.z-point0.z); 
+        var v2 = vec3.fromValues(point2.x-point1.x,point2.y-point1.y, point2.z-point1.z); 
+        var v3 = vec3.fromValues(point3.x-point2.x,point3.y-point2.y, point3.z-point2.z); 
+        var na=vec3.create();
+        var nb=vec3.create();
+        vec3.cross(na,v1,v2);
+        vec3.cross(nb,v2,v3);
+        var sinAngle=vec3.dot(v1,nb) * vec3.length(v2);
+        var cosAngle=vec3.dot(na,nb);
+        return Math.atan2(sinAngle,cosAngle)/Math.PI*180.0;
     }
 }
 
@@ -3737,22 +3792,28 @@ function Structure(other) {
    * Identifier
    *
    * @type {string}
+   *
    **/
-  this.ID             = other.ID || '0UNK';
+  this.ID               = other.ID || '0UNK';
 
 
   /**
-   * Title
+   * Information
+   *
+   * @type {object}
    *
    **/
-  this.title          =  other.title || 'No Title';
+  this.information          =  {};
+  this.information.ID       = this.ID;
+  
+  this.information.title    = other.title || 'No Title';
   
   /**
    * Deposit Date DD-MMM-YY
    *
    * @type {string}
    **/
-  this.date           =  other.date || '00-UNK-00';
+  this.information.date     =  other.date || '00-UNK-00';
 
   /**
    * Center of Gravity - Centroid
@@ -3765,7 +3826,7 @@ function Structure(other) {
    * @property {number} centroid.y - Z-coordinate
 
    **/
-  this.centroid=  other.centroid || {'x': 0.0,'y': 0.0,'z': 0.0};
+  this.centroid             =  other.centroid || {'x': 0.0,'y': 0.0,'z': 0.0};
 
   /**
    *  Matrix for rotation(s) and translation(s)
@@ -3801,14 +3862,37 @@ function Structure(other) {
 
 }
 
+
 /**
+ * Is this structure an atomic model? (instance of class Molecule)
+ *
+ * @return {boolean} - true if this structure is an atomic model.
+ *
+ **/
+Structure.prototype.isMolecule = function() {
+    return (this instanceof Molecule);
+}
+ 
+ 
+/**
+ * Is this structure a 2D/3D-raster? (instance of class Raster)
+ *
+ * @return {boolean} - true if this structure is a 2D- or 3D-raster (image or volume/map).
+ *
+ **/
+Structure.prototype.isRaster = function() {
+    return (this instanceof Raster);
+}
+ 
+ 
+ /**
  * Set Title
  *
  * @param {string} str - Set a new title
  *
  **/
 Structure.prototype.setTitle = function (str) {
-    this.title = str;
+    this.information.title = str;
 }
 
 /*
