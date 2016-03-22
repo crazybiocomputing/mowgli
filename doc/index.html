@@ -4,13 +4,13 @@
     <meta charset="utf-8">
     <title>JSDoc: Home</title>
 
-    <script src="scripts/prettify/prettify.js"> </script>
-    <script src="scripts/prettify/lang-css.js"> </script>
+    <script src="core/scripts/prettify/prettify.js"> </script>
+    <script src="core/scripts/prettify/lang-css.js"> </script>
     <!--[if lt IE 9]>
       <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
-    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
-    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <link type="text/css" rel="stylesheet" href="core/styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="core/styles/jsdoc-default.css">
     <style>
         h3 { font-size: 25px;}
         h4 { background-color: gold}
@@ -34,154 +34,43 @@
 
 <div id="main">
 
-    <h1 class="page-title">Home</h1>
-
-    
-
-
-
-    
-
-
-    <h3> </h3>
-
-
-
-
-
-
-
-
-
-
-    
-
-
+    <h1 class="page-title">MOWGLI: <span style="font-weight:bold">MO</span>lecule <span style="font-weight:bold">W</span>eb<span style="font-weight:bold">GL</span> v<span style="font-weight:bold">I</span>ewer</h1>
 
 
     <section>
-        <article><p>This folder <strong>src</strong> contains all the codes required for mowgli-core.</p>
-<ul>
-<li>graphics<ul>
-<li>shaders</li>
-<li>shapes</li>
-</ul>
-</li>
-<li>mol</li>
-<li>parser</li>
-<li>styles</li>
-<li>ui</li>
-</ul>
-<h2>1. Introduction</h2><p>Various objects required to build the scene graph.</p>
-<h3>1.1. Example of a simple scene graph</h3><ul>
-<li>Renderer<ul>
-<li>Camera</li>
-<li>Light</li>
-<li>ShapeGroup<ul>
-<li>Shape #1<ul>
-<li>Geometry (vertex data)</li>
-<li>Shader</li>
-</ul>
-</li>
-<li>Shape #2</li>
-<li>...</li>
-<li>Shape #n</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-<h3>1.2. Corresponding code</h3><pre class="prettyprint source lang-javascript"><code>  // 0- Create a renderer for this canvas
-  var renderer = new Renderer('canvas');
-
-  // 1- Create a scene with a default light and camera
-  var scene = new Scene();
-  console.log(scene);
-  renderer.addScene(scene);
-
-  // 2- Create a shape with geometry and colors
-    var shape = new Cube();
-    shape.setStyle('wireframe');
-    console.log(shape);
-
-  // 2ter- Define shader program by hand 
-  var shaderProgram = new Program(renderer.getContext(),'wireframe-cpk');
-  shaderProgram.loadDOM(&quot;vertex&quot;  ,&quot;wireframe-vs&quot;);
-  shaderProgram.loadDOM(&quot;fragment&quot;,&quot;wireframe-fs&quot;);
-  shaderProgram.link();
-  // Get uniformLocation
-  shaderProgram.setUniformLocation(&quot;uPMatrix&quot;);
-  shaderProgram.setUniformLocation(&quot;uVMatrix&quot;);
-  shaderProgram.setUniformLocation(&quot;uMMatrix&quot;);
-
-  shape.setProgram(shaderProgram);
-
-  scene.add(shape);
-
-  // Move camera to see the structure in its entirety
-  mat4.translate(scene.getCamera().viewMatrix,scene.getCamera().viewMatrix,[0.0,0.0,-5.0]);
-
-  // 3- Add a sensor
-  var mouse = new MouseSensor('canvas');
-  mouse.attach(shape);
-
-  renderer.addSensor(mouse);
-
-  // 4- Init renderer
-  renderer.init();
-
-  // 5- Draw Scene
-  renderer.drawScene();
-}</code></pre><h2>2. graphics</h2><p>This directory contains all the nodes of the scene graph. </p>
-<p>Each node is split in two parts: </p>
-<ol>
-<li>the pure javascript is located in this directory. </li>
-<li>All the WebGL code is located in <strong>gl</strong> directory.</li>
-</ol>
-<h3>2.1. shaders</h3><p>The folder containing the various WebGL shaders</p>
-<h3>2.2. shapes</h3><p>The folder containing the basic graphics objects used as tests.</p>
-<h2>3. mol</h2><p>Source of all the objects related to a structure (aka molecule).</p>
-<h2>4. parser</h2><h3>4.1. vector</h3><h3>4.2. raster</h3><h2>5. styles</h2><p>This folder contains all the drawing styles of mowgli</p>
-<ul>
-<li>Vectorial approaches (points, lines, triangles)</li>
-  <ul>
-    <li>Wireframe (lines)</li>
-    <li>Dots (points)</li>
-    <li>Strands (lines)</li>
-    <li>Ribbon (triangles)</li>
-    <li>Cartoon (triangles)</li>
-</ul>
-<li>Impostor approaches (spheres, cylinders)</li>
-  <ul>
-    <li>SpaceFill (spheres)</li>
-    <li>Sticks (cylinders)</li>
-    <li>Backbone (cylinders)</li>
-    <li>Trace (cylinders)</li>
-    <li>Ball &amp; Sticks (spheres + cylinders)</li>
-    <li>Wireframe</li>
-</ul>
-
-<p></ul></p></article>
+        <article>
+            <p>This app <strong>MOWGLI</strong> is composed of two main parts.</p>
+            <ul>
+                <li>
+                    <a href="core/index.html">mowgli-core</a> is the core engine for rendering from a scene graph</a>
+                </li>
+                <li>
+                    <a href="app/index.html">mowgli</a> is the user interface based on the core engine.</a>
+                </li>
+            </ul>
+        </article>
     </section>
-
-
-
-
 
 
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-graphics.html">graphics</a></li><li><a href="module-graphics_gl.html">graphics/gl</a></li><li><a href="module-mol.html">mol</a></li><li><a href="module-parser.html">parser</a></li></ul><h3>Classes</h3><ul><li><a href="module-graphics.Attribute.html">Attribute</a></li><li><a href="module-graphics.Camera.html">Camera</a></li><li><a href="module-graphics.Composite.html">Composite</a></li><li><a href="module-graphics.Geometry.html">Geometry</a></li><li><a href="module-graphics.Leaf.html">Leaf</a></li><li><a href="module-graphics.Light.html">Light</a></li><li><a href="module-graphics.Program.html">Program</a></li><li><a href="module-graphics.Renderer.html">Renderer</a></li><li><a href="module-graphics.Scene.html">Scene</a></li><li><a href="module-graphics.Shape.html">Shape</a></li><li><a href="module-graphics.ShapeGroup.html">ShapeGroup</a></li><li><a href="module-graphics_gl-CameraGL.html">CameraGL</a></li><li><a href="module-graphics_gl-NodeGL.html">NodeGL</a></li><li><a href="module-graphics_gl-ShapeGL.html">ShapeGL</a></li><li><a href="module-mol.Atom.html">Atom</a></li><li><a href="module-mol.Bond.html">Bond</a></li><li><a href="module-mol.Structure.html">Structure</a></li><li><a href="module-mol-StructureReader.html">StructureReader</a></li><li><a href="module-parser-PDBParser.html">PDBParser</a></li></ul>
+    <h2><a href="index.html">Home</a></h2>
+    <h3>Modules</h3>
+    <ul>
+    <li>
+        <a href="core/index.html">Core development</a>
+    </li>
+    <li>
+        <a href="app/index.html">Application User Interface</a>
+    </li>
+    </ul>
 </nav>
 
 <br class="clear">
 
-<footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Mon Mar 07 2016 17:01:44 GMT+0100 (CET)
-</footer>
 
 <script> prettyPrint(); </script>
-<script src="scripts/linenumber.js"> </script>
+<script src="core/scripts/linenumber.js"> </script>
 </body>
 </html>

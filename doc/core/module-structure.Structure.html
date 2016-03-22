@@ -692,73 +692,6 @@
 
         
             
-<h4 class="name" id="date"><span class="type-signature"></span>date<span class="type-signature"> :string</span></h4>
-
-
-
-
-<div class="description">
-    <p>Deposit Date DD-MMM-YY</p>
-</div>
-
-
-
-    <h5>Type:</h5>
-    <ul>
-        <li>
-            
-<span class="param-type">string</span>
-
-
-        </li>
-    </ul>
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-            
 <h4 class="name" id="ID"><span class="type-signature"></span>ID<span class="type-signature"> :string</span></h4>
 
 
@@ -826,13 +759,13 @@
 
         
             
-<h4 class="name" id="matrix"><span class="type-signature"></span>matrix<span class="type-signature"> :mat4</span></h4>
+<h4 class="name" id="information"><span class="type-signature"></span>information<span class="type-signature"> :object</span></h4>
 
 
 
 
 <div class="description">
-    <p>Matrix for rotation(s) and translation(s)</p>
+    <p>Information</p>
 </div>
 
 
@@ -841,7 +774,7 @@
     <ul>
         <li>
             
-<span class="param-type">mat4</span>
+<span class="param-type">object</span>
 
 
         </li>
@@ -892,15 +825,31 @@
 
 
         
-            
-<h4 class="name" id="title"><span class="type-signature"></span>title<span class="type-signature"></span></h4>
+    
 
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    <h4 class="name" id="isMolecule"><span class="type-signature"></span>isMolecule<span class="signature">()</span><span class="type-signature"> &rarr; {boolean}</span></h4>
+
+    
 
 
 
 <div class="description">
-    <p>Title</p>
+    <p>Is this structure an atomic model? (instance of class Molecule)</p>
 </div>
+
+
+
+
+
+
 
 
 
@@ -948,11 +897,140 @@
 
 
 
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
         
+<div class="param-desc">
+    <ul>
+<li>true if this structure is an atomic model.</li>
+</ul>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">boolean</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="isRaster"><span class="type-signature"></span>isRaster<span class="signature">()</span><span class="type-signature"> &rarr; {boolean}</span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Is this structure a 2D/3D-raster? (instance of class Raster)</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
     
 
     
-        <h3 class="subsection-title">Methods</h3>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <ul>
+<li>true if this structure is a 2D- or 3D-raster (image or volume/map).</li>
+</ul>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">boolean</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
 
         
             
@@ -1096,13 +1174,13 @@
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-graphics.html">graphics</a></li><li><a href="module-graphics_gl.html">graphics/gl</a></li><li><a href="module-mol.html">mol</a></li><li><a href="module-parser.html">parser</a></li><li><a href="module-structure.html">structure</a></li></ul><h3>Classes</h3><ul><li><a href="module-graphics.Attribute.html">Attribute</a></li><li><a href="module-graphics.Camera.html">Camera</a></li><li><a href="module-graphics.Composite.html">Composite</a></li><li><a href="module-graphics.Geometry.html">Geometry</a></li><li><a href="module-graphics.Leaf.html">Leaf</a></li><li><a href="module-graphics.Light.html">Light</a></li><li><a href="module-graphics.Program.html">Program</a></li><li><a href="module-graphics.Renderer.html">Renderer</a></li><li><a href="module-graphics.Scene.html">Scene</a></li><li><a href="module-graphics.Shape.html">Shape</a></li><li><a href="module-graphics.ShapeGroup.html">ShapeGroup</a></li><li><a href="module-graphics_gl-CameraGL.html">CameraGL</a></li><li><a href="module-graphics_gl-NodeGL.html">NodeGL</a></li><li><a href="module-graphics_gl-ShapeGL.html">ShapeGL</a></li><li><a href="module-mol.Atom.html">Atom</a></li><li><a href="module-mol.Bond.html">Bond</a></li><li><a href="module-mol-StructureReader.html">StructureReader</a></li><li><a href="module-parser-PDBParser.html">PDBParser</a></li><li><a href="module-structure.Molecule.html">Molecule</a></li><li><a href="module-structure.Raster.html">Raster</a></li><li><a href="module-structure.Structure.html">Structure</a></li><li><a href="module-structure.VecObj.html">VecObj</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-graphics.html">graphics</a></li><li><a href="module-mol.html">mol</a></li><li><a href="module-mwGL.html">mwGL</a></li><li><a href="module-parser.html">parser</a></li><li><a href="module-structure.html">structure</a></li></ul><h3>Classes</h3><ul><li><a href="module-graphics.Attribute.html">Attribute</a></li><li><a href="module-graphics.Camera.html">Camera</a></li><li><a href="module-graphics.Composite.html">Composite</a></li><li><a href="module-graphics.Geometry.html">Geometry</a></li><li><a href="module-graphics.Leaf.html">Leaf</a></li><li><a href="module-graphics.Light.html">Light</a></li><li><a href="module-graphics.Program.html">Program</a></li><li><a href="module-graphics.Renderer.html">Renderer</a></li><li><a href="module-graphics.Scene.html">Scene</a></li><li><a href="module-graphics.Shape.html">Shape</a></li><li><a href="module-graphics.ShapeGroup.html">ShapeGroup</a></li><li><a href="module-mol.Atom.html">Atom</a></li><li><a href="module-mol.Bond.html">Bond</a></li><li><a href="module-mol-StructureReader.html">StructureReader</a></li><li><a href="module-mwGL.Camera.html">Camera</a></li><li><a href="module-mwGL.ShapeGL.html">ShapeGL</a></li><li><a href="module-parser-PDBParser.html">PDBParser</a></li><li><a href="module-structure.Molecule.html">Molecule</a></li><li><a href="module-structure.Raster.html">Raster</a></li><li><a href="module-structure.Structure.html">Structure</a></li><li><a href="module-structure.VecObj.html">VecObj</a></li><li><a href="NodeGL.html">NodeGL</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Thu Mar 10 2016 16:19:58 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Tue Mar 22 2016 16:57:25 GMT+0100 (CET)
 </footer>
 
 <script> prettyPrint(); </script>
