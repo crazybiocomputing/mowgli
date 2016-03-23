@@ -494,7 +494,7 @@ window.onload = function() {
             case 'click':
                 // Display modal window
                 var popup = new Modal({
-                    headerTitle : "About Mowgli...",
+                    headerTitle : "Phi/Psi...",
                     headerImage : "url('images/headprot.jpg')",
                     body  : "Sorry it's empty"
                             
