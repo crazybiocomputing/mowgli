@@ -109,6 +109,11 @@
                                 "type": "item"
                             },
                             {
+                                "id": "phipsi",
+                                "title" : "Phi-Psi",
+                                "type": "item"
+                            },
+                            {
                                 "id": "ramachandran",
                                 "title" : "Ramachandran",
                                 "type": "item"
