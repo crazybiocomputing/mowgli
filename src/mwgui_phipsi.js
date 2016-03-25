@@ -65,24 +65,39 @@
             console.log(the_id); // 'Something Good', as this is the Something object
             switch(event.type) {
             case 'click':
-            console.log(selection);
-            var Phipsi_content=function(array){
-            var str='Chain'+'\t'+'Group'+'\t'+'GroupID'+'\t'+'Phi'+'\t'+'Psi'+'\n';
-            for (var i=1; i < selection.length; i++) {
-                str+=(selection[i].chain+'\t'+selection[i].group+'\t'+(selection[i].phi=='X' ?'.' : selection[i].phi[0])+'\t'+(selection[i].psi=='X') ?'.' : selection[i].psi+"\n")
+            if( MOWGLI.structure.isMolecule() ) {
+                 MOWGLI.structure.calcPhiPsi();
+                var selection=MOWGLI.structure.finder(
+                    'ATOM', 
+                    function (atom) {
+                        if ( atom.name === 'CA') {
+                            return true;
+                         } 
                     }
-                return str                        
+                );
+
+                 var Phipsi_content=function(array){
+                     var str='Chain'+'\t'+'Group'+'\t'+'GroupID'+'\t'+'Phi'+'\t'+'Psi'+'\n';
+                    for (var i=1; i < selection.length; i++) {
+                        str+=selection[i].chain+'\t'+selection[i].group+'\t'+selection[i].groupID+'\t'+selection[i].phi+'\t'+selection[i].psi+'\n'
+                        
+                    }
+                    return str                        
                 }
                 var content=Phipsi_content(selection);
-                console.log(content);
+                
                 // Display modal window
                 var popup = new Modal({
                     headerTitle : "Phi/Psi...",
                     headerImage : "url('images/headprot.jpg')",
-                    body  : "Sorry it's empty"
+                    body  : '<pre>'+content+'</pre>'
                             
                         
                 });
+                }
+                else {
+                    MOWGLI.alert("No Phi/Psi angles are available for this structure");
+                }
                 break;
             case 'dblclick':
                 // some code here...
