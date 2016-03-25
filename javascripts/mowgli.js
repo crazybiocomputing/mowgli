@@ -492,6 +492,16 @@ window.onload = function() {
             console.log(the_id); // 'Something Good', as this is the Something object
             switch(event.type) {
             case 'click':
+            console.log(selection);
+            var Phipsi_content=function(array){
+            var str='Chain'+'\t'+'Group'+'\t'+'GroupID'+'\t'+'Phi'+'\t'+'Psi'+'\n';
+            for (var i=1; i < selection.length; i++) {
+                str+=(selection[i].chain[0]+'\t'+selection[i].group[0]+'\t'+(selection[i].phi[0]=='X' ?'.' : selection[i].phi[0])+'\t'+(selection[i].psi[0]=='X') ?'.' : selection[i].psi[0]+"\n")
+                    }
+                return str                        
+                }
+                var content=Phipsi_content(selection);
+                console.log(content);
                 // Display modal window
                 var popup = new Modal({
                     headerTitle : "Phi/Psi...",
@@ -618,15 +628,8 @@ window.onload = function() {
                             MOWGLI.alert(the_id.toUpperCase() + " successfully loaded...");
                             console.log(MOWGLI.structure instanceof Molecule);
                             MOWGLI.structure.calcPhiPsi();
-                            var phipsi_content=MOWGLI.structure.finder(
-                                'ATOM', 
-                                function (atom) {
-                                    if ( atom.name === 'CA') {
-                                        return true;
-                                    } 
-                                }
-                            );
                         }
+                        
                         else {
                             console.log("ERROR:: Can't download PDB file."+aEvt.description+"\n");
                         }

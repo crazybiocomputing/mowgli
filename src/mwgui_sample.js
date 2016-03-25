@@ -91,15 +91,8 @@
                             MOWGLI.alert(the_id.toUpperCase() + " successfully loaded...");
                             console.log(MOWGLI.structure instanceof Molecule);
                             MOWGLI.structure.calcPhiPsi();
-                            var phipsi_content=MOWGLI.structure.finder(
-                                'ATOM', 
-                                function (atom) {
-                                    if ( atom.name === 'CA') {
-                                        return true;
-                                    } 
-                                }
-                            );
                         }
+                        
                         else {
                             console.log("ERROR:: Can't download PDB file."+aEvt.description+"\n");
                         }
