@@ -496,7 +496,7 @@ window.onload = function() {
             var Phipsi_content=function(array){
             var str='Chain'+'\t'+'Group'+'\t'+'GroupID'+'\t'+'Phi'+'\t'+'Psi'+'\n';
             for (var i=1; i < selection.length; i++) {
-                str+=(selection[i].chain[0]+'\t'+selection[i].group[0]+'\t'+(selection[i].phi[0]=='X' ?'.' : selection[i].phi[0])+'\t'+(selection[i].psi[0]=='X') ?'.' : selection[i].psi[0]+"\n")
+                str+=(selection[i].chain+'\t'+selection[i].group+'\t'+(selection[i].phi=='X' ?'.' : selection[i].phi[0])+'\t'+(selection[i].psi=='X') ?'.' : selection[i].psi+"\n")
                     }
                 return str                        
                 }
