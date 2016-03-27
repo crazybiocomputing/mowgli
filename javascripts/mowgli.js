@@ -504,12 +504,14 @@ window.onload = function() {
                 );
 
                  var Phipsi_content=function(array){
-                     var str='Chain'+'\t'+'Group'+'\t'+'GroupID'+'\t'+'Phi'+'\t'+'Psi'+'\n';
-                    for (var i=1; i < selection.length; i++) {
-                        str+=selection[i].chain+'\t'+selection[i].group+'\t'+selection[i].groupID+'\t'+selection[i].phi+'\t'+selection[i].psi+'\n'
+                     var tab='<table id="tabphi">'
+                      tab+='<tr><th>Chain</th><th>Group</th><th>GroupID</th><th>Phi</th><th>Psi</th></tr>'
+                    for (var i=0; i < selection.length; i++) {
+                        tab+='<tr><td>'+selection[i].chain+'</td>'+'<td>'+selection[i].group+'</td>'+'<td>'+selection[i].groupID+'</td>'+'<td>'+selection[i].phi+'</td>'+'<td>'+selection[i].psi+'</td></tr>';
                         
                     }
-                    return str                        
+                    tab+='</table>'
+                    return tab     
                 }
                 var content=Phipsi_content(selection);
                 
@@ -517,7 +519,7 @@ window.onload = function() {
                 var popup = new Modal({
                     headerTitle : "Phi/Psi...",
                     headerImage : "url('images/headprot.jpg')",
-                    body  : '<pre>'+content+'</pre>'
+                    body  : content
                             
                         
                 });
