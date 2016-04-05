@@ -511,6 +511,7 @@ window.onload = function() {
                         
                     }
                     tab+='</table>'
+                    tab=tab.replace(/undefined/g,"-");
                     return tab     
                 }
                 var content=Phipsi_content(selection);
