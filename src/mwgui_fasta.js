@@ -65,7 +65,7 @@
             console.log(the_id); // 'Something Good', as this is the Something object
             switch(event.type) {
             case 'click':
-                var Fasta_content;
+                var fasta_content;
                 if( MOWGLI.structure.isMolecule() ) {
                     fasta_content = MOWGLI.structure.fasta();
                     // Display modal window

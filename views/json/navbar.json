@@ -48,13 +48,18 @@
                                         "type": "separator"
                                     },
                                     {
+                                        "id": "toricSolenoid.png",
+                                        "title": "ToricSolenoid (png)",
+                                        "type": "item"
+                                    },
+                                    {
                                         "id": "lena-std.tif",
-                                        "title": "Lena (TIFF)",
+                                        "title": "Lena (tiff)",
                                         "type": "item"
                                     },
                                     {
                                         "id": "t1-head.tif",
-                                        "title": "T1-Head (TIFF)",
+                                        "title": "T1-Head (tiff)",
                                         "type": "item"
                                     }
                                 ]
