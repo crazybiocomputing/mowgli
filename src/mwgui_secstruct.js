@@ -76,23 +76,24 @@
                     }
                 );
                 console.log(selection);
-                 var Secondary_content=function(array){
-                     var str='<table id="tabsec">'
-                      str+='<tr><th>Chain</th><th>Group</th><th>GroupID</th><th>Phi</th><th>Psi</th></tr>'
+                var Secondary_content=function(array){
+                    var str='Secondary structures without sequence \n';
                     for (var i=0; i < selection.length; i++) {
-                        str+='<tr><td>'+selection[i].chain+'</td>'+'<td>'+selection[i].group+'</td>'+'<td>'+selection[i].groupID+'</td>'+'<td>'+selection[i].secondary+'</td>'+'</tr>'
-                        }
-                    str+='</table>'
-                    str=str.replace(/undefined/g,"-");
-                    return str                        
-                }
+                        if (i%10 == 0) str+=" ";
+                        if (i%50 == 0) str+="\n";
+                        str+=(selection[i].secondary[0]=='X') ?'.' : selection[i].secondary[0] ;
+
+                    }
+                    return str
+                };
+                
                 var content=Secondary_content(selection);
                 
                 // Display modal window
                 var popup = new Modal({
                     headerTitle : "Secondary structure...",
                     headerImage : "url('images/headprot.jpg')",
-                    body  : content
+                    body  :"<pre>"+content+"</pre>"
                             
                         
                 });
