@@ -122,57 +122,6 @@ function Alert(msg) {
 
 "use strict";
 
-/**
- * Constructor
- * @class CheckBox
- * @memberof module:mwGUI
- * @constructor
- *
- * @author Jean-Christophe Taveau
- **/
- function CheckBox(options) {
-     // Do nothing?
-}
-
-CheckBox.prototype.update = function(el,value) {
-    // Needs the parent <ul>
-    var list = el.parentNode;
-    for (var i=0; i < list.children.length; i++) {
-        if (list.children[i].children[0].dataset.value === value) {
-            list.children[i].className = "checked";
-        }
-        else {
-            list.children[i].className = "checkbox_item";
-        }
-    }
-}
-
-/*
- *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
- *  Copyright (C) 2015  Jean-Christophe Taveau.
- *
- *  This file is part of mowgli
- *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
- *
- *
- * Authors:
- * Jean-Christophe Taveau
- */
-
-"use strict";
-
 
 window.onload = function() {
 
@@ -461,12 +410,14 @@ window.onload = function() {
                     console.log('cam_cross');
                 }
                 else if  (value === 'cam_mono') {
+                    // Default settings
                     console.log('cam_mono');
                 }
                 else {
                     console.log('cam_stereo');
                 }
 
+                // Update checkbox display
                 this.checkbox.update(event.target.parentNode,value);
                 break;
             }
@@ -1117,18 +1068,24 @@ window.onload = function() {
                     }
                 );
                 console.log(selection);
-                var Secondary_content=function(array){
-                    var str='Secondary structures without sequence \n';
+                 var Secondary_content=function(array){
+                   var str="Sequence and secondary sructure for "+MOWGLI.structure.ID;
+                    var seq="";
+                    var sec="";
                     for (var i=0; i < selection.length; i++) {
-                        if (i%10 == 0) str+=" ";
-                        if (i%50 == 0) str+="\n";
-                        str+=(selection[i].secondary[0]=='X') ?'.' : selection[i].secondary[0] ;
-
+                        if (i%10 == 0) seq+=" ", sec+=" ";
+                        if (i%50 == 0) str+=seq+"\n"+sec+"\n"+"\n",sec="",seq="";
+                        sec+=(selection[i].secondary[0]=='X') ?'.' : selection[i].secondary[0] ;
+                        seq+=Molecule.threeToOne[selection[i].group];
                     }
-                    return str
+                    str+=seq+"\n"+sec;
+                    return str 
+
+
                 };
-                
+
                 var content=Secondary_content(selection);
+                
                 
                 // Display modal window
                 var popup = new Modal({
