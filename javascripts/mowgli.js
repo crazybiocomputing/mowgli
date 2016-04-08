@@ -131,34 +131,20 @@ function Alert(msg) {
  * @author Jean-Christophe Taveau
  **/
  function CheckBox(options) {
-
+     // Do nothing?
 }
 
-
-function updateCheckBox(el,value) {
-    // var el = document.getElementById(id);
-    for (var i=0; i < el.children.length; i++) {
-        if (el.children[i].dataset.value === value) {
-            el.children[i].className = "checked";
+CheckBox.prototype.update = function(el,value) {
+    // Needs the parent <ul>
+    var list = el.parentNode;
+    for (var i=0; i < list.children.length; i++) {
+        if (list.children[i].children[0].dataset.value === value) {
+            list.children[i].className = "checked";
         }
         else {
-            el.children[i].className = "checkbox";
+            list.children[i].className = "checkbox_item";
         }
     }
-}
-
-function updateConsole(element) {
-    // element:<a> <- parentNode: <li data-value> <- parentNode: <ul>
-    var value = element.parentNode.dataset.value;
-    // Show/Hide console panel
-    if (value === 'on') {
-        document.getElementById('console').classList.add('on');
-    }
-    else {
-        document.getElementById('console').classList.remove('on');
-    }
-    // Update GUI
-    updateCheckBox(element.parentNode.parentNode,value);
 }
 
 /*
@@ -167,14 +153,14 @@ function updateConsole(element) {
  *
  *  This file is part of mowgli
  *
- * This program is free software: you can redistribute it and/or modify it 
- * under the terms of the GNU General Public License as published by 
- * the Free Software Foundation, either version 3 of the License, or 
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
@@ -200,7 +186,7 @@ window.onload = function() {
     var sample_3CRO = new mwGUI.Sample("3cro");
     // 1-4 Export
     var export_menuitem = new mwGUI.SaveAs("export");
-    
+
     // 2- Structure
     // 2-3- Structure...Sequence
     // 2-3-1 Structure...Sequence...FASTA
@@ -212,7 +198,20 @@ window.onload = function() {
     // 2-3-3 Structure...Sequence...Phipsi
     var phipsi = new mwGUI.Phipsi("phipsi");
     // 2-3-4 Structure...Sequence...Ramachandran
-    
+
+    // 3- Display
+
+    // 4- Colors
+
+    // 5- Settings
+    // 5-1 FullScreen
+    var fullscreen = new mwGUI.FullScreen("fullscreen");
+
+    // 5-2 Camera
+    var camera_settings = new mwGUI.Camera("camera");
+
+    // 6- Tools
+
     // 7- Help
     // About modal window
     console.log('Add event click on About...');
@@ -393,6 +392,103 @@ window.onload = function() {
  *
  *  This file is part of mowgli
  *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * Authors:
+ * Jean-Christophe Taveau
+ */
+
+"use strict";
+
+/**
+ *
+ * @module mwGUI
+ **/
+
+ /**
+ * Constructor
+ * @class Camera
+ * @memberof module:mwGUI
+ * @param {number} the_id - DOM element ID
+ *
+ * @author Jean-Christophe Taveau
+ **/
+
+/**
+ * @function handleEvent
+ * @memberof module:mwGUI.Camera
+ * @desc Handle various event types
+ * @param event - The DOM event
+ *
+ * @author Jean-Christophe Taveau
+ **/
+
+
+(function(exports) {
+
+    function Camera(the_id) {
+        /**
+         * DOM element ID
+         *
+         **/
+        this.element = document.getElementById(the_id);
+        this.checkbox = new CheckBox(the_id);
+
+        /**
+         * Handle various event types
+         * @param event - The DOM event
+        **/
+        this.handleEvent = function(event) {
+            switch(event.type) {
+            case 'click':
+                var value = event.target.dataset.value;
+                if (value === 'cam_anaglyph') {
+                    console.log('cam_anaglyph');
+                }
+                else if  (value === 'cam_cross') {
+                    console.log('cam_cross');
+                }
+                else if  (value === 'cam_mono') {
+                    console.log('cam_mono');
+                }
+                else {
+                    console.log('cam_stereo');
+                }
+
+                this.checkbox.update(event.target.parentNode,value);
+                break;
+            }
+        };
+
+        // Note that the listeners in this case are this, not this.handleEvent
+        this.element.addEventListener('click', this, false);
+
+
+    }
+
+    exports.Camera = Camera;
+
+
+})(this.mwGUI = this.mwGUI || {} );
+
+/*
+ *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
+ *  Copyright (C) 2015  Jean-Christophe Taveau.
+ *
+ *  This file is part of mowgli
+ *
  * This program is free software: you can redistribute it and/or modify it 
  * under the terms of the GNU General Public License as published by 
  * the Free Software Foundation, either version 3 of the License, or 
@@ -550,7 +646,6 @@ window.onload = function() {
          *
          **/
         this.element = document.getElementById(the_id);
-        this.checkbox = new CheckBox(the_id);
 
         /**
          * Handle various event types
@@ -559,17 +654,39 @@ window.onload = function() {
         this.handleEvent = function(event) {
             switch(event.type) {
             case 'click':
-                this.checkbox.update();
+                toggleFullScreen();
                 break;
+            }
+
+            function toggleFullScreen() {
+                if (!document.fullscreenElement &&    // alternative standard method
+                    !document.mozFullScreenElement && !document.webkitFullscreenElement) {  // current working methods
+                    if (document.documentElement.requestFullscreen) {
+                        document.documentElement.requestFullscreen();
+                    }
+                    else if (document.documentElement.mozRequestFullScreen) {
+                        document.documentElement.mozRequestFullScreen();
+                    }
+                    else if (document.documentElement.webkitRequestFullscreen) {
+                        document.documentElement.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+                    }
+                } else {
+                    if (document.cancelFullScreen) {
+                        document.cancelFullScreen();
+                    }
+                    else if (document.mozCancelFullScreen) {
+                        document.mozCancelFullScreen();
+                    }
+                    else if (document.webkitCancelFullScreen) {
+                        document.webkitCancelFullScreen();
+                    }
+                }
             }
         };
 
         // Note that the listeners in this case are this, not this.handleEvent
         this.element.addEventListener('click', this, false);
 
-        // You can properly remove the listeners
-        // this.element.removeEventListener('click', this, false);
-        // this.element.removeEventListener('dblclick', this, false);
 
     }
 

@@ -247,19 +247,7 @@
                     {
                         "id": "fullscreen",
                         "title" : "FullScreen",
-                        "type": "checkbox",
-                        "children" : [
-                            {
-                                "id": "screen_on",
-                                "title" : "On",
-                                "type": "checkbox_item"
-                            },
-                            {
-                                "id": "screen_off",
-                                "title" : "Off",
-                                "type": "checked"
-                            }
-                        ]
+                        "type": "item"
                     },
                     {
                         "id": "camera",
@@ -269,22 +257,26 @@
                             {
                                 "id": "cam_mono",
                                 "title" : "Mono",
-                                "type": "checked"
+                                "type": "checked",
+                                "value": "cam_mono"
                             },
                             {
                                 "id": "cam_anaglyph",
                                 "title" : "Anaglyph",
-                                "type": "checkbox_item"
+                                "type": "checkbox_item",
+                                "value": "cam_anaglyph"
                             },
                             {
                                 "id": "cam_stereo",
                                 "title" : "Parallel-Eye",
-                                "type": "checkbox_item"
+                                "type": "checkbox_item",
+                                "value": "cam_stereo"
                             },
                             {
                                 "id": "cam_cross",
                                 "title" : "Cross-Eye",
-                                "type": "checkbox_item"
+                                "type": "checkbox_item",
+                                "value": "cam_cross"
                             }
                         ]
                     },

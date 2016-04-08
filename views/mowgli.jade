@@ -5,6 +5,8 @@ mixin menu_item(menu)
                 li(id=item.id, class=item.type)
                     if item.type=="link"
                          a(href=item.href,target="_blank")=item.title
+                    else if item.type == "checkbox_item" || item.type == "checked"
+                        a(href="#",data-value=item.value)=item.title
                     else
                         a(href="#")=item.title
                     +menu_item(item)
@@ -72,9 +74,3 @@ html
                     div.modal-body
                     div.modal-footer
                         label.btn.btn-primary(for="modal-alert") OK
-
-
-
-
-
-

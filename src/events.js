@@ -4,14 +4,14 @@
  *
  *  This file is part of mowgli
  *
- * This program is free software: you can redistribute it and/or modify it 
- * under the terms of the GNU General Public License as published by 
- * the Free Software Foundation, either version 3 of the License, or 
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
@@ -37,7 +37,7 @@ window.onload = function() {
     var sample_3CRO = new mwGUI.Sample("3cro");
     // 1-4 Export
     var export_menuitem = new mwGUI.SaveAs("export");
-    
+
     // 2- Structure
     // 2-3- Structure...Sequence
     // 2-3-1 Structure...Sequence...FASTA
@@ -49,7 +49,20 @@ window.onload = function() {
     // 2-3-3 Structure...Sequence...Phipsi
     var phipsi = new mwGUI.Phipsi("phipsi");
     // 2-3-4 Structure...Sequence...Ramachandran
-    
+
+    // 3- Display
+
+    // 4- Colors
+
+    // 5- Settings
+    // 5-1 FullScreen
+    var fullscreen = new mwGUI.FullScreen("fullscreen");
+
+    // 5-2 Camera
+    var camera_settings = new mwGUI.Camera("camera");
+
+    // 6- Tools
+
     // 7- Help
     // About modal window
     console.log('Add event click on About...');
