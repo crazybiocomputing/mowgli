@@ -73,12 +73,14 @@
                     console.log('cam_cross');
                 }
                 else if  (value === 'cam_mono') {
+                    // Default settings
                     console.log('cam_mono');
                 }
                 else {
                     console.log('cam_stereo');
                 }
 
+                // Update checkbox display
                 this.checkbox.update(event.target.parentNode,value);
                 break;
             }
