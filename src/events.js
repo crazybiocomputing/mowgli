@@ -44,6 +44,8 @@ window.onload = function() {
     var sequence_fasta = new mwGUI.Fasta("fasta");
 
     // 2-3-2 Structure...Sequence...Sec.Structures
+    var second_struct = new mwGUI.SecStruct("secstruct");
+
     // 2-3-3 Structure...Sequence...Phipsi
     var phipsi = new mwGUI.Phipsi("phipsi");
     // 2-3-4 Structure...Sequence...Ramachandran

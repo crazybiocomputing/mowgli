@@ -31,7 +31,7 @@
  
  /**
  * Constructor
- * @class About
+ * @class SecStruct
  * @memberof module:mwGUI
  * @param {number} the_id - DOM element ID
  *
@@ -40,7 +40,7 @@
  
 /**
  * @function handleEvent
- * @memberof module:mwGUI.Phipsi
+ * @memberof module:mwGUI.Secstruct
  * @desc Handle various event types
  * @param event - The DOM event
  *
@@ -50,7 +50,7 @@
 
 (function(exports) {
 
-    function PhipsiGUI(the_id) {
+    function SecStructGUI(the_id) {
         /**
          * DOM element ID
          *
@@ -66,7 +66,7 @@
             switch(event.type) {
             case 'click':
             if( MOWGLI.structure.isMolecule() ) {
-                 MOWGLI.structure.calcPhiPsi();
+                 MOWGLI.structure.secondary();
                 var selection=MOWGLI.structure.finder(
                     'ATOM', 
                     function (atom) {
@@ -75,31 +75,32 @@
                          } 
                     }
                 );
-
-                 var Phipsi_content=function(array){
-                     var tab='<table id="tabphi">'
-                      tab+='<tr><th>Chain</th><th>Group</th><th>GroupID</th><th>Phi</th><th>Psi</th></tr>'
+                console.log(selection);
+                var Secondary_content=function(array){
+                    var str='Secondary structures without sequence \n';
                     for (var i=0; i < selection.length; i++) {
-                        tab+='<tr><td>'+selection[i].chain+'</td>'+'<td>'+selection[i].group+'</td>'+'<td>'+selection[i].groupID+'</td>'+'<td>'+selection[i].phi+'</td>'+'<td>'+selection[i].psi+'</td></tr>';
-                        
+                        if (i%10 == 0) str+=" ";
+                        if (i%50 == 0) str+="\n";
+                        str+=(selection[i].secondary[0]=='X') ?'.' : selection[i].secondary[0] ;
+
                     }
-                    tab+='</table>'
-                    tab=tab.replace(/undefined/g,"-");
-                    return tab     
-                }
-                var content=Phipsi_content(selection);
+                    return str
+                };
+                
+                var content=Secondary_content(selection);
                 
                 // Display modal window
                 var popup = new Modal({
-                    headerTitle : "Phi/Psi...",
+                    headerTitle : "Secondary structure...",
                     headerImage : "url('images/headprot.jpg')",
-                    body  : content
+                    body  :"<pre>"+content+"</pre>"
                             
                         
                 });
                 }
+                
                 else {
-                    MOWGLI.alert("No Phi/Psi angles are available for this structure");
+                    MOWGLI.alert("No Secondary Structure are available for this structure");
                 }
                 break;
             case 'dblclick':
@@ -118,7 +119,7 @@
       
     }
 
-    exports.Phipsi = PhipsiGUI;
+    exports.SecStruct = SecStructGUI;
     
     
 })(this.mwGUI = this.mwGUI || {} );

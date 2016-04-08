@@ -91,6 +91,11 @@
     margin:0;
 }
 
+.modal-body table{
+    text-align: center;
+    border-spacing: 5px;
+}
+
 .modal-header,.modal-footer{
     background-color: #444;
     color: #fff;
