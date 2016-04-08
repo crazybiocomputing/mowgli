@@ -4,14 +4,14 @@
  *
  *  This file is part of mowgli
  *
- * This program is free software: you can redistribute it and/or modify it 
- * under the terms of the GNU General Public License as published by 
- * the Free Software Foundation, either version 3 of the License, or 
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
@@ -24,7 +24,7 @@
 
 "use strict";
 
- 
+
  /**
  * Load various samples for testing:
  * - from PDB: 1ZNI, 1HHO, and 3CRO (here in pre-loaded JSON files)
@@ -37,7 +37,7 @@
  *
  * @author Jean-Christophe Taveau
  **/
- 
+
 /**
  * @function handleEvent
  * @memberof module:mwGUI.Sample
@@ -56,7 +56,7 @@
          *
          **/
         this.element = document.getElementById(the_id);
-        
+
         /**
          * Handle various event types
          * @param event - The DOM event
@@ -64,42 +64,45 @@
         this.handleEvent = function(event) {
             console.log(the_id); // 'Something Good', as this is the Something object
             switch(event.type) {
-            case 'click':
-                // Load JSON file
-                console.log('Load JSON...');
-                var xhr = new XMLHttpRequest();
-                // We need a asynchronous request (3rd argument true) - Wait until completion
-                var url = "samples/1ZNI.json";
-                switch (the_id) {
-                case '1zni': 
-                    url = "samples/1ZNI.json";
-                    break;
-                case '1hho': 
-                    url = "samples/1HHO.json";
-                    break;
-                case '3cro': 
-                    url = "samples/3CRO.json";
-                    break;
-                }
-                xhr.open('GET', url, true);
-                xhr.responseType = 'json';
-                xhr.onreadystatechange = function (aEvt) {
-                    if (xhr.readyState == 4) {
-                        if(xhr.status == 200) {
-                            var json = xhr.response; // JSON.parse(xhr.responseText);
-                            MOWGLI.structure = new Molecule(json);
-                            MOWGLI.alert(the_id.toUpperCase() + " successfully loaded...");
-                            console.log(MOWGLI.structure instanceof Molecule);
-                            MOWGLI.structure.calcPhiPsi();
-                        }
-                        
-                        else {
-                            console.log("ERROR:: Can't download PDB file."+aEvt.description+"\n");
-                        }
+                case 'click':
+                    // Load JSON file
+                    console.log('Load Sample...');
+                    var xhr = new XMLHttpRequest();
+                    // We need a asynchronous request (3rd argument true) - Wait until completion
+                    var url = "samples/1ZNI.json";
+                    switch (the_id) {
+                    case '1zni':
+                        url = "samples/1ZNI.json";
+                        break;
+                    case '1hho':
+                        url = "samples/1HHO.json";
+                        break;
+                    case '3cro':
+                        url = "samples/3CRO.json";
+                        break;
+                    case 'toricSolenoid.png':
+                        url = "samples/toricSolenoid.png";
+                        break;
                     }
-                };
-                xhr.send(null);
-                break;
+                    xhr.open('GET', url, true);
+                    xhr.responseType = 'json';
+                    xhr.onreadystatechange = function (aEvt) {
+                        if (xhr.readyState == 4) {
+                            if(xhr.status == 200) {
+                                var json = xhr.response; // JSON.parse(xhr.responseText);
+                                MOWGLI.structure = new Molecule(json);
+                                MOWGLI.alert(the_id.toUpperCase() + " successfully loaded...");
+                                console.log(MOWGLI.structure instanceof Molecule);
+                                MOWGLI.structure.calcPhiPsi();
+                            }
+
+                            else {
+                                console.log("ERROR:: Can't download sample." + aEvt.description+"\n");
+                            }
+                        }
+                    };
+                    xhr.send(null);
+                    break;
             case 'dblclick':
                 // some code here...
                 break;
@@ -118,8 +121,5 @@
     }
 
     exports.Sample = SampleGUI;
-    
+
 })(this.mwGUI = this.mwGUI || {} );
-
-
-
