@@ -23,15 +23,41 @@
  */
 
 
-"use strict"
+"use strict";
 
-/*
- * Constructor
- */
-function Uniform (options) {
-    this.name = options.name;
 
+
+/**
+ * OpenGL node of the scene graph
+ *
+ * @class NodeGL
+ * 
+ *
+ * @constructor
+ **/
+function NodeGL(node) {
+    this.sgnode = node;
+    this.glType = -1;
+    this._isDirty = true;
+    
+    // Matrix for rotation(s) and translation(s)
+    this.workmatrix= mat4.create();
+    mat4.identity(this.workmatrix);
 }
+
+NodeGL.prototype.isDirty = function() {
+    return _isDirty;
+}
+
+NodeGL.prototype.init = function(context) {
+    // Do nothing
+    this.isDirty = false;
+}
+
+NodeGL.prototype.render = function(context) {
+    // Do nothing
+}
+
 
 
 
