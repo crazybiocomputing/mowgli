@@ -4,14 +4,14 @@
  *
  *  This file is part of mowgli
  *
- * This program is free software: you can redistribute it and/or modify it 
- * under the terms of the GNU General Public License as published by 
- * the Free Software Foundation, either version 3 of the License, or 
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
@@ -25,10 +25,10 @@
 "use strict";
 
 /**
- * 
+ *
  * @module mwGUI
  **/
- 
+
  /**
  * Constructor
  * @class About
@@ -37,7 +37,7 @@
  *
  * @author Jean-Christophe Taveau
  **/
- 
+
 /**
  * @function handleEvent
  * @memberof module:mwGUI.Phipsi
@@ -56,7 +56,7 @@
          *
          **/
         this.element = document.getElementById(the_id);
-        
+
         /**
          * Handle various event types
          * @param event - The DOM event
@@ -68,34 +68,55 @@
             if( MOWGLI.structure.isMolecule() ) {
                  MOWGLI.structure.calcPhiPsi();
                 var selection=MOWGLI.structure.finder(
-                    'ATOM', 
+                    'ATOM',
                     function (atom) {
                         if ( atom.name === 'CA') {
                             return true;
-                         } 
+                         }
                     }
                 );
 
-                 var Phipsi_content=function(array){
-                     var tab='<table id="tabphi">'
+                var Phipsi_content=function(array){
+                     var tab='<table id="tabphi" style="font-family: monospace">'
                       tab+='<tr><th>Chain</th><th>Group</th><th>GroupID</th><th>Phi</th><th>Psi</th></tr>'
                     for (var i=0; i < selection.length; i++) {
-                        tab+='<tr><td>'+selection[i].chain+'</td>'+'<td>'+selection[i].group+'</td>'+'<td>'+selection[i].groupID+'</td>'+'<td>'+selection[i].phi+'</td>'+'<td>'+selection[i].psi+'</td></tr>';
-                        
+                        if (selection[i].phi === undefined) {
+                            selection[i].phi = '-';
+                        }
+                        if (selection[i].psi === undefined) {
+                            selection[i].psi = '-';
+                        }
+
+                        tab+='<tr>';
+                        tab+='<td>'+selection[i].chain+'</td>';
+                        tab+='<td>'+selection[i].group+'</td>';
+                        tab+='<td>'+selection[i].groupID+'</td>';
+                        if (!isNaN(selection[i].phi)) {
+                            tab+='<td>'+selection[i].phi.toFixed(2)+'</td>';
+                        }
+                        else {
+                            tab+='<td>'+selection[i].phi+'</td>';
+                        }
+                        if (!isNaN(selection[i].psi)) {
+                            tab+='<td>'+selection[i].psi.toFixed(2)+'</td>';
+                        }
+                        else {
+                            tab+='<td>'+selection[i].psi+'</td>';
+                        }
+                        tab+='</tr>';
                     }
                     tab+='</table>'
-                    tab=tab.replace(/undefined/g,"-");
-                    return tab     
+                    return tab
                 }
                 var content=Phipsi_content(selection);
-                
+
                 // Display modal window
                 var popup = new Modal({
                     headerTitle : "Phi/Psi...",
                     headerImage : "url('images/headprot.jpg')",
                     body  : content
-                            
-                        
+
+
                 });
                 }
                 else {
@@ -115,13 +136,10 @@
         // You can properly remove the listeners
         // this.element.removeEventListener('click', this, false);
         // this.element.removeEventListener('dblclick', this, false);
-      
+
     }
 
     exports.Phipsi = PhipsiGUI;
-    
-    
+
+
 })(this.mwGUI = this.mwGUI || {} );
-
-
-
