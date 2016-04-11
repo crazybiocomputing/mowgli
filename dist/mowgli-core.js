@@ -2163,6 +2163,132 @@ function Uniform (options) {
 
 
 
+function EMDBInfoParser() {
+
+}
+
+
+/**
+ * Convert XML to JSON
+ * @author David Walsh
+ * https://davidwalsh.name/convert-xml-json
+ */
+EMDBInfoParser.prototype.xmlToJson = function (xml) {
+	
+	// Create the return object
+	var obj = {};
+
+	if (xml.nodeType == 1) { // element
+		// do attributes
+		if (xml.attributes.length > 0) {
+		obj["@attributes"] = {};
+			for (var j = 0; j < xml.attributes.length; j++) {
+				var attribute = xml.attributes.item(j);
+				obj["@attributes"][attribute.nodeName] = attribute.nodeValue;
+			}
+		}
+	} else if (xml.nodeType == 3) { // text
+		obj = xml.nodeValue;
+	}
+
+	// do children
+	if (xml.hasChildNodes()) {
+		for(var i = 0; i < xml.childNodes.length; i++) {
+			var item = xml.childNodes.item(i);
+			var nodeName = item.nodeName;
+			if (typeof(obj[nodeName]) == "undefined") {
+				obj[nodeName] = this.xmlToJson(item);
+			} else {
+				if (typeof(obj[nodeName].push) == "undefined") {
+					var old = obj[nodeName];
+					obj[nodeName] = [];
+					obj[nodeName].push(old);
+				}
+				obj[nodeName].push(this.xmlToJson(item));
+			}
+		}
+	}
+	return obj;
+};
+
+/*
+ *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
+ *  Copyright (C) 2015  Jean-Christophe Taveau.
+ *
+ *  This file is part of mowgli
+ *
+ * This program is free software: you can redistribute it and/or modify it 
+ * under the terms of the GNU General Public License as published by 
+ * the Free Software Foundation, either version 3 of the License, or 
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, 
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+ * GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * Authors:
+ * Jean-Christophe Taveau
+ */
+
+"use strict";
+
+/**
+ *
+ * @module raster
+ *
+ **/
+ 
+ 
+ 
+/**
+ * Constructor
+ * @class PDBParser
+ * @classdesc This class allows the parsing of the PDB file format version 3.30
+
+ *
+ * @constructor
+ *
+ * @example
+ * parser = new PDBParser();
+ * parser.parse(myText);
+ * var mol = parser.getStructure();
+ *
+ * @author Jean-Christophe Taveau
+ **/
+function ImageParser() {
+  this.raster = new Raster({});
+}
+
+
+/**
+ * Return the 2D- or 3D-raster
+ *
+ * @return {Structure} - The 3D structure
+ **/
+ImageParser.prototype.getRaster = function () {
+  return this.raster;
+}
+
+/**
+ * Trigger the parsing of the PDB file
+ *
+ * @params {string} text - Text containing the PDB structure
+ **/
+ImageParser.prototype.parse = function (data) {
+
+
+var pixelData = canvas.getContext('2d').getImageData(event.offsetX, event.offsetY, 1, 1).data;
+
+}
+
+
+
+
 
 
 function MMCIFParser() {
@@ -2743,14 +2869,160 @@ XYZParser.prototype.updateBBox = function (a) {
  *
  *  This file is part of mowgli
  *
- * This program is free software: you can redistribute it and/or modify it 
- * under the terms of the GNU General Public License as published by 
- * the Free Software Foundation, either version 3 of the License, or 
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * Authors:
+ * Jean-Christophe Taveau
+ */
+
+"use strict";
+
+/**
+ * @module mol
+ **/
+
+
+/**
+ * Factory of various readers of atomic models: pdb, cif, xyz
+ *
+ * @class StructureReader
+ * @constructor
+ */
+var RasterReader = function () {
+
+}
+
+RasterReader.prototype.getFromDOM = function(document_id,format) {
+    var img = document.getElementById(document_id);
+    var canvas = document.createElement('mwCanvas2D');
+    canvas.width = img.width;
+    canvas.height = img.height;
+    canvas.getContext('2d').drawImage(img, 0, 0, img.width, img.height);
+
+    var pix = canvas.getContext('2d').getImageData(x, y, img.width, img.height).data;
+    return this._createStructure(pix,format);
+}
+
+RasterReader.prototype.getFromURL = function(url,callback) {
+    var extension = url.split('.').pop().toLowerCase();
+    console.log(extension);
+
+    if (extension === "png" || extension === "jpg" || extension === "jpeg" || extension === "gif") {
+        loadThruImageObj(url, callback);
+    }
+    else {
+         if (window.XMLHttpRequest) {
+           // code for IE7+, Firefox, Chrome, Opera, Safari
+           var req = new XMLHttpRequest();
+           // We need an asynchronous request (3rd argument true) - Wait until completion
+           req.open('GET', url, true);
+           var cFunc = this.createStructure;
+           req.onreadystatechange = function (aEvt) {
+               if (req.readyState == 4) {
+                   if(req.status == 200) {
+                       var mol = cFunc(req.responseText,extension);
+                       callback(mol);
+                   }
+                   else {
+                       alert("ERROR:: Can't load image/volume file." + aEvt.description+"\n");
+                   }
+               }
+           };
+           req.send(null);
+         }
+         else {
+           alert('Please update your browser');
+         }
+    }
+
+
+    function loadThruImageObj(url,callback) {
+        var canvas = document.createElement('mwCanvas2D');
+        var ctx = canvas.getContext('2d');
+
+        var img = new Image();
+        img.src = url;
+        img.onload = function() {
+            // Load image and decompress data
+            ctx.drawImage(img, 0, 0, img.width,img.height);
+            this.style.display = 'none';
+            canvas.width  = this.naturalWidth;
+            canvas.height = this.naturalHeight;
+            // Get pixels aka ImageData object
+            var pix = ctx.getImageData(0, 0, this.width, this.height).data;
+            callback(pix);
+        }
+    }
+}
+
+RasterReader.prototype.getFromID = function(pdb_id,callback) {
+    // TODO
+    // return this.getFromURL("http://www.rcsb.org/pdb/files/"+pdb_id+".pdb",callback);
+    return null;
+}
+
+RasterReader.prototype._createStructure = function(pix,format) {
+
+  // 1- Choose the good parser
+  var parser = null;
+
+  if (format === 'png') {
+    parser = new PDBParser();
+  }
+  else if (format === 'jpg') {
+    parser = new MMCIFParser();
+  }
+  else if (format === 'xml') {
+    parser = new PDBMLParser();
+  }
+  else if (format === 'xyz') {
+    parser = new XYZParser();
+  }
+  else {
+  // Unknown format
+  }
+
+    // 2- Parse the file
+    parser.parse(text);
+    var mol = parser.getStructure();
+
+    // 3- Compute Bonds
+    computeBonds(mol);
+
+    return mol;
+
+    // Private
+    function computeBonds (a_mol) {
+        // TODO
+    }
+}
+
+/*
+ *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
+ *  Copyright (C) 2015  Jean-Christophe Taveau.
+ *
+ *  This file is part of mowgli
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
@@ -2766,8 +3038,8 @@ XYZParser.prototype.updateBBox = function (a) {
 /**
  * @module mol
  **/
- 
- 
+
+
 /**
  * Factory of various readers of atomic models: pdb, cif, xyz
  *
@@ -2779,15 +3051,15 @@ var StructureReader = function () {
 }
 
 StructureReader.prototype.getFromDOM = function(document_id,format) {
-  var text = document.getElementById(document_id).innerHTML;  
+  var text = document.getElementById(document_id).innerHTML;
   var mol = this.createStructure(text,format);
   return mol;
 }
 
 StructureReader.prototype.getFromURL = function(url,callback) {
-  var extension = url.substr(url.length-3,url.length-1);
+  var extension = url.split('.').pop().toLowerCase();
   console.log(extension);
-  
+
   if (window.XMLHttpRequest)
   {
     // code for IE7+, Firefox, Chrome, Opera, Safari
@@ -2839,13 +3111,13 @@ StructureReader.prototype.createStructure = function(text,format) {
   else {
   // Unknown format
   }
-  
+
     // 2- Parse the file
-    parser.parse(text); 
-    var mol = parser.getStructure(); 
+    parser.parse(text);
+    var mol = parser.getStructure();
 
     // 3- Compute Bonds
-    computeBonds(mol); 
+    computeBonds(mol);
 
     return mol;
 
@@ -2855,8 +3127,768 @@ StructureReader.prototype.createStructure = function(text,format) {
     }
 }
 
+/*
+ *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
+ *  Copyright (C) 2015  Jean-Christophe Taveau.
+ *
+ *  This file is part of mowgli
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * Authors:
+ * Jean-Christophe Taveau
+ */
+
+"use strict";
 
 
+// class Cube
+function IsoCube(x,y,z,size) {
+    this.x = x;
+    this.y = y;
+    this.z = z;
+    this.size = size;
+    this.voxels = [];
+    this.edges=[-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1];
+    this.key=0;
+}
+
+IsoCube.prototype.getVertex = function (index) {
+    switch (index) {
+        case 0:
+            return {'x':this.x,           'y':this.y,           'z':this.z, 'voxel':this.voxels[0] }; // v0
+        case 1:
+            return {'x':this.x+this.size, 'y':this.y,           'z':this.z, 'voxel':this.voxels[1] }; // v1
+        case 2:
+            return {'x':this.x+this.size, 'y':this.y+this.size, 'z':this.z, 'voxel':this.voxels[2] }; // v2
+        case 3:
+            return {'x':this.x,           'y':this.y+this.size, 'z':this.z, 'voxel':this.voxels[3] }; // v3
+        case 4:
+            return {'x':this.x,           'y':this.y,           'z':this.z+this.size, 'voxel':this.voxels[4] }; // v4
+        case 5:
+            return {'x':this.x+this.size, 'y':this.y,           'z':this.z+this.size, 'voxel':this.voxels[5] }; // v5
+        case 6:
+            return {'x':this.x+this.size, 'y':this.y+this.size, 'z':this.z+this.size, 'voxel':this.voxels[6] }; // v6
+        case 7:
+            return {'x':this.x,           'y':this.y+this.size, 'z':this.z+this.size, 'voxel':this.voxels[7] }; // v7
+    }
+}
+
+IsoCube.prototype.setVoxels = function (stack) {
+    this.voxels[0]=stack.getVoxel(x          ,y          ,z          ); // v0
+    this.voxels[1]=stack.getVoxel(x+this.size,y          ,z          ); // v1
+    this.voxels[2]=stack.getVoxel(x+this.size,y+this.size,z          ); // v2
+    this.voxels[3]=stack.getVoxel(x          ,y+this.size,z          ); // v3
+    this.voxels[4]=stack.getVoxel(x          ,y          ,z+this.size); // v4
+    this.voxels[5]=stack.getVoxel(x+this.size,y          ,z+this.size); // v5
+    this.voxels[6]=stack.getVoxel(x+this.size,y+this.size,z+this.size); // v6
+    this.voxels[7]=stack.getVoxel(x          ,y+this.size,z+this.size); // v7
+    }
+
+IsoCube.prototype.calcKey = function (threshold) {
+    var keystr = '';
+    keystr +=(this.voxels[7] > threshold)?"1":"0";
+    keystr +=(this.voxels[6] > threshold)?"1":"0";
+    keystr +=(this.voxels[5] > threshold)?"1":"0";
+    keystr +=(this.voxels[4] > threshold)?"1":"0";
+    keystr +=(this.voxels[3] > threshold)?"1":"0";
+    keystr +=(this.voxels[2] > threshold)?"1":"0";
+    keystr +=(this.voxels[1] > threshold)?"1":"0";
+    keystr +=(this.voxels[0] > threshold)?"1":"0";
+
+    this.key = parseInt(keystr,2);
+}
+
+IsoCube.prototype.toString = function () {
+    var str='[';
+    for (var i=0;i<12;i++) {
+        str+=(this.edges[i]+"; ");
+    }
+    return ("Cube["+this.key+"]=(" + this.x +" "+this.y+" "+this.z +") "+str+"]");
+}
+
+/*
+ *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
+ *  Copyright (C) 2015  Jean-Christophe Taveau.
+ *
+ *  This file is part of mowgli
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * Authors:
+ * Jean-Christophe Taveau
+ */
+
+'use strict';
+
+
+/**
+ * Slice used by IsoSurfacer class to store temporary cubes (probes in Marching Cubes algorithm)
+ * @class IsoSlice
+ * @constructor
+ *
+ * @author Jean-Christophe Taveau
+ */
+function IsoSlice(cubes_per_row, cubes_per_column) {
+    this.cubes = [];
+    this.count = 0;
+    this.w = cubes_per_row;
+    this.h = cubes_per_column;
+}
+
+IsoSlice.prototype.reset_count = function () {
+    this.count=0;
+};
+
+IsoSlice.prototype.push = function (a_cube) {
+    this.cubes[this.count++] = a_cube;
+};
+
+IsoSlice.prototype.previous = function () {
+    return this.cubes[this.count - 1];
+};
+
+IsoSlice.prototype.above = function () {
+    return this.cubes[this.count - this.w];
+};
+
+IsoSlice.prototype.back = function () {
+    return this.cubes[this.count];
+};
+
+/*
+ *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
+ *  Copyright (C) 2015  Jean-Christophe Taveau.
+ *
+ *  This file is part of mowgli
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * Authors:
+ * Jean-Christophe Taveau
+ */
+
+"use strict";
+
+/**
+ * IsoSurface Generator based on the Marching Cubes algorithm
+ * All the details explained in http://crazybiocomputing.blogspot.fr/2014/11/graphics-marching-cubes-implementation.html
+ *
+ * @class IsoSurfacer
+ * @constructor
+ *
+ * @author Jean-Christophe Taveau
+ */
+function IsoSurfacer(maps) {
+    if (maps instanceof Raster) {
+        this.voxels = maps.data;
+        this.mesh = {};
+        this.mesh.vertices = [];
+        this.mesh.faces = [];
+
+        // Default Marching Cubes Parameters
+        this.threshold = 128;
+        this.cubeSize = 2;
+        this.interpolate = function (v0,v1) {
+            var x = ( v0.x + v1.x )/2.0;
+            var y = ( v0.y + v1.y )/2.0;
+            var z = ( v0.z + v1.z )/2.0;
+            return {"x":x,"y":y,"z":z};
+        };
+    }
+    else {
+        MOWGLI.alert("This structure is not a raster/map");
+    }
+}
+
+IsoSurfacer.prototype.setInterpolation = function(mode) {
+    function interpolateNone(v0,v1) {
+        var x = ( v0.x + v1.x )/2.0;
+        var y = ( v0.y + v1.y )/2.0;
+        var z = ( v0.z + v1.z )/2.0;
+        return {"x":x,"y":y,"z":z};
+    }
+
+    function interpolateBilinear(v0,v1) {
+        var k = (this.threshold - v0.voxel)/(v1.voxel - v0.voxel);
+        var x = v0.x + (v1.x - v0.x) * k;
+        var y = v0.y + (v1.y - v0.y) * k;
+        var z = v0.z + (v1.z - v0.z) * k;
+        return {x:x, y:y, z:z};
+    }
+    if (mode === 'None') {
+        this.interpolate = interpolateNone;
+    }
+    else if (mode === 'Bilinear') {
+        this.interpolate = interpolateBilinear;
+    }
+}
+
+IsoSurfacer.prototype.compute = function(threshold) {
+
+    var slice= new IsoSlice(Math.floor( (nx -1)/this.cubeSize ),Math.floor( (ny-1)/this.cubeSize ) );
+
+    // M a i n   L o o p
+    console.log("Start of the main loop... Please wait.");
+    for (var z=0; z < nz-this.cubeSize; z+=this.cubeSize) {
+        slice.reset_count();
+        for (var y=0; y < ny-this.cubeSize; y+=this.cubeSize) {
+            for (var x=0; x < nx-this.cubeSize; x+=this.cubeSize) {
+                // 1- Create a new marching cube
+                var cube = new IsoCube(x,y,z,this.cubeSize);
+                // 2- Set voxels in the cube
+                cube.setVoxels(stack);
+                // 3- Calc configuration
+                cube.calcKey(threshold);
+                // 4- Create vertices and triangles
+                if (cube.key != 0 && cube.key != 255) {
+                    createTriangles(cube);
+                }
+                // 5- Update slice
+                slice.push(cube);
+            }
+        }
+        if ( (z%10) == 0) IJ.log("z="+z);
+    }
+
+    function createTriangles(probe) {
+      //console.log("key "+probe.key+" "+ probe.x +" "+probe.y+" "+probe.z);
+      var vertices=[];
+      var vertex = null;
+      var edges=triangles[probe.key];
+      for (var i=0;i<edges.length;i++) {
+        var index=-1;
+        var edge = edges[i];
+        //IJ.log("edge "+edge);
+        if (probe.edges[edge] != -1) {
+          // Edge already calculated
+          index = probe.edges[edge];
+        }
+        else {
+          switch (edge) {
+          case 0:
+            if (probe.y != 0) {
+              probe.edges[edge] = slice.above().edges[2];
+              index = probe.edges[edge];
+            }
+            else {
+              vertex=interpolate(probe.getVertex(0),probe.getVertex(1) );
+              this.mesh.vertices.push(vertex);
+              index = this.mesh.vertices.length-1;
+              probe.edges[edge]= index;
+            }
+            break;
+          case 1:
+            if (probe.z != 0) {
+              probe.edges[edge] = slice.back().edges[5];
+              index = probe.edges[edge];
+            }
+            else {
+              vertex=interpolate(probe.getVertex(1),probe.getVertex(2) );
+              this.mesh.vertices.push(vertex);
+              index = this.mesh.vertices.length-1;
+              probe.edges[edge]= index;
+            }
+            break;
+          case 2:
+            if (probe.z != 0) {
+              probe.edges[edge] = slice.back().edges[6];
+              index = probe.edges[edge];
+            }
+            else {
+              vertex=interpolate(probe.getVertex(2),probe.getVertex(3) );
+              this.mesh.vertices.push(vertex);
+              index = this.mesh.vertices.length-1;
+              probe.edges[edge]= index;
+            }
+            break;
+          case 3:
+            if (probe.x != 0) {
+              probe.edges[edge] = slice.previous().edges[1];
+              index = probe.edges[edge];
+            }
+            else {
+              vertex=interpolate(probe.getVertex(0),probe.getVertex(3) );
+              this.mesh.vertices.push(vertex);
+              index = this.mesh.vertices.length-1;
+              probe.edges[edge]= index;
+            }
+            break;
+          case 4:
+            if (probe.y != 0) {
+              probe.edges[edge] = slice.above().edges[6];
+              index = probe.edges[edge];
+            }
+            else {
+              vertex=interpolate(probe.getVertex(4),probe.getVertex(5) );
+              this.mesh.vertices.push(vertex);
+              index = this.mesh.vertices.length-1;
+              probe.edges[edge]= index;
+            }
+            break;
+          case 5:
+            vertex=interpolate(probe.getVertex(5),probe.getVertex(6) );
+            this.mesh.vertices.push(vertex);
+            index = this.mesh.vertices.length-1;
+            probe.edges[edge]= index;
+            break;
+          case 6:
+            vertex=interpolate(probe.getVertex(6),probe.getVertex(7) );
+            this.mesh.vertices.push(vertex);
+            index = this.mesh.vertices.length-1;
+            probe.edges[edge]= index;
+            break;
+          case 7:
+            if (probe.x != 0) {
+              probe.edges[edge] = slice.previous().edges[5];
+              index = probe.edges[edge];
+            }
+            else {
+              vertex=interpolate(probe.getVertex(4),probe.getVertex(7) );
+              this.mesh.vertices.push(vertex);
+              index = this.mesh.vertices.length-1;
+              probe.edges[edge]= index;
+            }
+            break;
+          case 8:
+            if (probe.x != 0) {
+              probe.edges[edge] = slice.previous().edges[9];
+              index = probe.edges[edge];
+            }
+            else {
+              vertex=interpolate(probe.getVertex(0),probe.getvertex(4) );
+              this.mesh.vertices.push(vertex);
+              index = this.mesh.vertices.length-1;
+              probe.edges[edge]= index;
+            }
+            break;
+          case 9:
+            if (probe.y != 0) {
+              probe.edges[edge] = slice.above().edges[11];
+              index = probe.edges[edge];
+            }
+            else {
+              vertex=interpolate(probe.getVertex(1),probe.getVertex(5) );
+              this.mesh.vertices.push(vertex);
+              index = this.mesh.vertices.length-1;
+              probe.edges[edge]= index;
+            }
+            break;
+          case 10:
+            if (probe.x != 0) {
+              probe.edges[edge] = slice.previous().edges[11];
+              index = probe.edges[edge];
+            }
+            else {
+              vertex = interpolate(probe.getVertex(3),probe.getVertex(7) );
+              this.mesh.vertices.push(vertex);
+              index = this.mesh.vertices.length-1;
+              probe.edges[edge]= index;
+            }
+            break;
+          case 11:
+            vertex=interpolate(probe.getVertex(2),probe.getVertex(6) );
+            this.mesh.vertices.push(vertex);
+            index = this.mesh.vertices.length-1;
+            probe.edges[edge]= index;
+            break;
+          }
+        //IJ.log ("faces["+(mesh.faces.length-1)+"]= "+index);
+        }
+        this.mesh.faces.push(index);
+      }
+    }
+
+}
+
+
+
+/*
+
+// F U N C T I O N S
+
+function dialog() {
+  var gd = new GenericDialog("Marching Cubes");
+  gd.addNumericField("Threshold: ", threshold, 0);
+  gd.addNumericField("Cube Size: ", this.cubeSize, 0);
+  gd.addChoice("Interpolation: ", ["None","Bilinear"], 0);
+  gd.showDialog();
+  if (gd.wasCanceled()) {
+    return;
+  }
+  threshold = gd.getNextNumber();
+  this.cubeSize = gd.getNextNumber();
+  mode = gd.getNextChoiceIndex();
+
+  if (mode ==0) {
+    interpolate = function (v0,v1) {
+      return interpolateNone(v0,v1);
+    }
+  }
+  else {
+    interpolate = function (v0,v1) {
+      return interpolateBilinear(v0,v1);
+    }
+  }
+
+  var saveDialog = new SaveDialog("Save OBJ File As ...","Untitled",".obj");
+  filename=saveDialog.getDirectory()+saveDialog.getFileName();
+
+  IJ.log(filename);
+
+}
+
+
+
+
+
+function interpolateBilinear(v0,v1) {
+  var k = (threshold - v0)/(v1 - v0);
+  var x = x0 + (x1 - x0) * k;
+  var y = y0 + (y1 - y0) * k;
+  var z = z0 + (z1 - z0) * k;
+  return {"x":x,"y":y,"z":z};
+}
+
+
+function saveAsOBJ() {
+  IJ.log("Preparing file ...");
+  var text='';
+  // Header
+  text+="# Marching Cubes\n";
+  text+="# Jean-Christophe Taveau\n";
+  text+="# CrazyBioComputing\n";
+  text+="# WaveFront OBJ File Format\n";
+  text+="# Vertices: "+mesh.vertices.length+"\n";
+  text+="\n";
+  text+="o "+imp.getTitle()+"\n";
+  text+="\n";
+
+  // Write output text in file
+  var file = new java.io.File(filename);
+  var  printWriter = new java.io.PrintWriter (filename);
+
+  IJ.log("Writing header...");
+  printWriter.println (text);
+
+  // Vertices
+  for (var i=0;i<mesh.vertices.length;i++) {
+    printWriter.println ("v "+ (mesh.vertices[i].x - center.x)+" "+ (mesh.vertices[i].y - center.y) + " " + (mesh.vertices[i].z - center.z) );
+  }
+  IJ.log("Writing vertices...");
+  printWriter.println (" ");
+
+  // Faces (aka lines)
+  // *Note*: The first vertex in OBJ format has the index 1 (and not 0).
+  for (var i=0;i<mesh.faces.length;i+=3)
+    printWriter.println ("f "+(mesh.faces[i]+1) +" "+ (mesh.faces[i+1]+1) +" "+ (mesh.faces[i+2]+1) );
+
+  IJ.log("Writing faces...");
+
+  // Close file
+  printWriter.close ();
+}
+
+
+}
+*/
+
+
+// triangles to be drawn in each case
+IsoSurfacer.triangles = [
+    [],
+    [0,8,3],
+    [0,1,9],
+    [1,8,3,9,8,1],
+    [1,2,11],
+    [0,8,3,1,2,11],
+    [9,2,11,0,2,9],
+    [2,8,3,2,11,8,11,9,8],
+    [3,10,2],
+    [0,10,2,8,10,0],
+    [1,9,0,2,3,10],
+    [1,10,2,1,9,10,9,8,10],
+    [3,11,1,10,11,3],
+    [0,11,1,0,8,11,8,10,11],
+    [3,9,0,3,10,9,10,11,9],
+    [9,8,11,11,8,10],
+    [4,7,8],
+    [4,3,0,7,3,4],
+    [0,1,9,8,4,7],
+    [4,1,9,4,7,1,7,3,1],
+    [1,2,11,8,4,7],
+    [3,4,7,3,0,4,1,2,11],
+    [9,2,11,9,0,2,8,4,7],
+    [2,11,9,2,9,7,2,7,3,7,9,4],
+    [8,4,7,3,10,2],
+    [10,4,7,10,2,4,2,0,4],
+    [9,0,1,8,4,7,2,3,10],
+    [4,7,10,9,4,10,9,10,2,9,2,1],
+    [3,11,1,3,10,11,7,8,4],
+    [1,10,11,1,4,10,1,0,4,7,10,4],
+    [4,7,8,9,0,10,9,10,11,10,0,3],
+    [4,7,10,4,10,9,9,10,11],
+    [9,5,4],
+    [9,5,4,0,8,3],
+    [0,5,4,1,5,0],
+    [8,5,4,8,3,5,3,1,5],
+    [1,2,11,9,5,4],
+    [3,0,8,1,2,11,4,9,5],
+    [5,2,11,5,4,2,4,0,2],
+    [2,11,5,3,2,5,3,5,4,3,4,8],
+    [9,5,4,2,3,10],
+    [0,10,2,0,8,10,4,9,5],
+    [0,5,4,0,1,5,2,3,10],
+    [2,1,5,2,5,8,2,8,10,4,8,5],
+    [11,3,10,11,1,3,9,5,4],
+    [4,9,5,0,8,1,8,11,1,8,10,11],
+    [5,4,0,5,0,10,5,10,11,10,0,3],
+    [5,4,8,5,8,11,11,8,10],
+    [9,7,8,5,7,9],
+    [9,3,0,9,5,3,5,7,3],
+    [0,7,8,0,1,7,1,5,7],
+    [1,5,3,3,5,7],
+    [9,7,8,9,5,7,11,1,2],
+    [11,1,2,9,5,0,5,3,0,5,7,3],
+    [8,0,2,8,2,5,8,5,7,11,5,2],
+    [2,11,5,2,5,3,3,5,7],
+    [7,9,5,7,8,9,3,10,2],
+    [9,5,7,9,7,2,9,2,0,2,7,10],
+    [2,3,10,0,1,8,1,7,8,1,5,7],
+    [10,2,1,10,1,7,7,1,5],
+    [9,5,8,8,5,7,11,1,3,11,3,10],
+    [5,7,0,5,0,9,7,10,0,1,0,11,10,11,0],
+    [10,11,0,10,0,3,11,5,0,8,0,7,5,7,0],
+    [10,11,5,7,10,5],
+    [11,6,5],
+    [0,8,3,5,11,6],
+    [9,0,1,5,11,6],
+    [1,8,3,1,9,8,5,11,6],
+    [1,6,5,2,6,1],
+    [1,6,5,1,2,6,3,0,8],
+    [9,6,5,9,0,6,0,2,6],
+    [5,9,8,5,8,2,5,2,6,3,2,8],
+    [2,3,10,11,6,5],
+    [10,0,8,10,2,0,11,6,5],
+    [0,1,9,2,3,10,5,11,6],
+    [5,11,6,1,9,2,9,10,2,9,8,10],
+    [6,3,10,6,5,3,5,1,3],
+    [0,8,10,0,10,5,0,5,1,5,10,6],
+    [3,10,6,0,3,6,0,6,5,0,5,9],
+    [6,5,9,6,9,10,10,9,8],
+    [5,11,6,4,7,8],
+    [4,3,0,4,7,3,6,5,11],
+    [1,9,0,5,11,6,8,4,7],
+    [11,6,5,1,9,7,1,7,3,7,9,4],
+    [6,1,2,6,5,1,4,7,8],
+    [1,2,5,5,2,6,3,0,4,3,4,7],
+    [8,4,7,9,0,5,0,6,5,0,2,6],
+    [7,3,9,7,9,4,3,2,9,5,9,6,2,6,9],
+    [3,10,2,7,8,4,11,6,5],
+    [5,11,6,4,7,2,4,2,0,2,7,10],
+    [0,1,9,4,7,8,2,3,10,5,11,6],
+    [9,2,1,9,10,2,9,4,10,7,10,4,5,11,6],
+    [8,4,7,3,10,5,3,5,1,5,10,6],
+    [5,1,10,5,10,6,1,0,10,7,10,4,0,4,10],
+    [0,5,9,0,6,5,0,3,6,10,6,3,8,4,7],
+    [6,5,9,6,9,10,4,7,9,7,10,9],
+    [11,4,9,6,4,11],
+    [4,11,6,4,9,11,0,8,3],
+    [11,0,1,11,6,0,6,4,0],
+    [8,3,1,8,1,6,8,6,4,6,1,11],
+    [1,4,9,1,2,4,2,6,4],
+    [3,0,8,1,2,9,2,4,9,2,6,4],
+    [0,2,4,4,2,6],
+    [8,3,2,8,2,4,4,2,6],
+    [11,4,9,11,6,4,10,2,3],
+    [0,8,2,2,8,10,4,9,11,4,11,6],
+    [3,10,2,0,1,6,0,6,4,6,1,11],
+    [6,4,1,6,1,11,4,8,1,2,1,10,8,10,1],
+    [9,6,4,9,3,6,9,1,3,10,6,3],
+    [8,10,1,8,1,0,10,6,1,9,1,4,6,4,1],
+    [3,10,6,3,6,0,0,6,4],
+    [6,4,8,10,6,8],
+    [7,11,6,7,8,11,8,9,11],
+    [0,7,3,0,11,7,0,9,11,6,7,11],
+    [11,6,7,1,11,7,1,7,8,1,8,0],
+    [11,6,7,11,7,1,1,7,3],
+    [1,2,6,1,6,8,1,8,9,8,6,7],
+    [2,6,9,2,9,1,6,7,9,0,9,3,7,3,9],
+    [7,8,0,7,0,6,6,0,2],
+    [7,3,2,6,7,2],
+    [2,3,10,11,6,8,11,8,9,8,6,7],
+    [2,0,7,2,7,10,0,9,7,6,7,11,9,11,7],
+    [1,8,0,1,7,8,1,11,7,6,7,11,2,3,10],
+    [10,2,1,10,1,7,11,6,1,6,7,1],
+    [8,9,6,8,6,7,9,1,6,10,6,3,1,3,6],
+    [0,9,1,10,6,7],
+    [7,8,0,7,0,6,3,10,0,10,6,0],
+    [7,10,6],
+    [7,6,10],
+    [3,0,8,10,7,6],
+    [0,1,9,10,7,6],
+    [8,1,9,8,3,1,10,7,6],
+    [11,1,2,6,10,7],
+    [1,2,11,3,0,8,6,10,7],
+    [2,9,0,2,11,9,6,10,7],
+    [6,10,7,2,11,3,11,8,3,11,9,8],
+    [7,2,3,6,2,7],
+    [7,0,8,7,6,0,6,2,0],
+    [2,7,6,2,3,7,0,1,9],
+    [1,6,2,1,8,6,1,9,8,8,7,6],
+    [11,7,6,11,1,7,1,3,7],
+    [11,7,6,1,7,11,1,8,7,1,0,8],
+    [0,3,7,0,7,11,0,11,9,6,11,7],
+    [7,6,11,7,11,8,8,11,9],
+    [6,8,4,10,8,6],
+    [3,6,10,3,0,6,0,4,6],
+    [8,6,10,8,4,6,9,0,1],
+    [9,4,6,9,6,3,9,3,1,10,3,6],
+    [6,8,4,6,10,8,2,11,1],
+    [1,2,11,3,0,10,0,6,10,0,4,6],
+    [4,10,8,4,6,10,0,2,9,2,11,9],
+    [11,9,3,11,3,2,9,4,3,10,3,6,4,6,3],
+    [8,2,3,8,4,2,4,6,2],
+    [0,4,2,4,6,2],
+    [1,9,0,2,3,4,2,4,6,4,3,8],
+    [1,9,4,1,4,2,2,4,6],
+    [8,1,3,8,6,1,8,4,6,6,11,1],
+    [11,1,0,11,0,6,6,0,4],
+    [4,6,3,4,3,8,6,11,3,0,3,9,11,9,3],
+    [11,9,4,6,11,4],
+    [4,9,5,7,6,10],
+    [0,8,3,4,9,5,10,7,6],
+    [5,0,1,5,4,0,7,6,10],
+    [10,7,6,8,3,4,3,5,4,3,1,5],
+    [9,5,4,11,1,2,7,6,10],
+    [6,10,7,1,2,11,0,8,3,4,9,5],
+    [7,6,10,5,4,11,4,2,11,4,0,2],
+    [3,4,8,3,5,4,3,2,5,11,5,2,10,7,6],
+    [7,2,3,7,6,2,5,4,9],
+    [9,5,4,0,8,6,0,6,2,6,8,7],
+    [3,6,2,3,7,6,1,5,0,5,4,0],
+    [6,2,8,6,8,7,2,1,8,4,8,5,1,5,8],
+    [9,5,4,11,1,6,1,7,6,1,3,7],
+    [1,6,11,1,7,6,1,0,7,8,7,0,9,5,4],
+    [4,0,11,4,11,5,0,3,11,6,11,7,3,7,11],
+    [7,6,11,7,11,8,5,4,11,4,8,11],
+    [6,9,5,6,10,9,10,8,9],
+    [3,6,10,0,6,3,0,5,6,0,9,5],
+    [0,10,8,0,5,10,0,1,5,5,6,10],
+    [6,10,3,6,3,5,5,3,1],
+    [1,2,11,9,5,10,9,10,8,10,5,6],
+    [0,10,3,0,6,10,0,9,6,5,6,9,1,2,11],
+    [10,8,5,10,5,6,8,0,5,11,5,2,0,2,5],
+    [6,10,3,6,3,5,2,11,3,11,5,3],
+    [5,8,9,5,2,8,5,6,2,3,8,2],
+    [9,5,6,9,6,0,0,6,2],
+    [1,5,8,1,8,0,5,6,8,3,8,2,6,2,8],
+    [1,5,6,2,1,6],
+    [1,3,6,1,6,11,3,8,6,5,6,9,8,9,6],
+    [11,1,0,11,0,6,9,5,0,5,6,0],
+    [0,3,8,5,6,11],
+    [11,5,6],
+    [10,5,11,7,5,10],
+    [10,5,11,10,7,5,8,3,0],
+    [5,10,7,5,11,10,1,9,0],
+    [11,7,5,11,10,7,9,8,1,8,3,1],
+    [10,1,2,10,7,1,7,5,1],
+    [0,8,3,1,2,7,1,7,5,7,2,10],
+    [9,7,5,9,2,7,9,0,2,2,10,7],
+    [7,5,2,7,2,10,5,9,2,3,2,8,9,8,2],
+    [2,5,11,2,3,5,3,7,5],
+    [8,2,0,8,5,2,8,7,5,11,2,5],
+    [9,0,1,5,11,3,5,3,7,3,11,2],
+    [9,8,2,9,2,1,8,7,2,11,2,5,7,5,2],
+    [1,3,5,3,7,5],
+    [0,8,7,0,7,1,1,7,5],
+    [9,0,3,9,3,5,5,3,7],
+    [9,8,7,5,9,7],
+    [5,8,4,5,11,8,11,10,8],
+    [5,0,4,5,10,0,5,11,10,10,3,0],
+    [0,1,9,8,4,11,8,11,10,11,4,5],
+    [11,10,4,11,4,5,10,3,4,9,4,1,3,1,4],
+    [2,5,1,2,8,5,2,10,8,4,5,8],
+    [0,4,10,0,10,3,4,5,10,2,10,1,5,1,10],
+    [0,2,5,0,5,9,2,10,5,4,5,8,10,8,5],
+    [9,4,5,2,10,3],
+    [2,5,11,3,5,2,3,4,5,3,8,4],
+    [5,11,2,5,2,4,4,2,0],
+    [3,11,2,3,5,11,3,8,5,4,5,8,0,1,9],
+    [5,11,2,5,2,4,1,9,2,9,4,2],
+    [8,4,5,8,5,3,3,5,1],
+    [0,4,5,1,0,5],
+    [8,4,5,8,5,3,9,0,5,0,3,5],
+    [9,4,5],
+    [4,10,7,4,9,10,9,11,10],
+    [0,8,3,4,9,7,9,10,7,9,11,10],
+    [1,11,10,1,10,4,1,4,0,7,4,10],
+    [3,1,4,3,4,8,1,11,4,7,4,10,11,10,4],
+    [4,10,7,9,10,4,9,2,10,9,1,2],
+    [9,7,4,9,10,7,9,1,10,2,10,1,0,8,3],
+    [10,7,4,10,4,2,2,4,0],
+    [10,7,4,10,4,2,8,3,4,3,2,4],
+    [2,9,11,2,7,9,2,3,7,7,4,9],
+    [9,11,7,9,7,4,11,2,7,8,7,0,2,0,7],
+    [3,7,11,3,11,2,7,4,11,1,11,0,4,0,11],
+    [1,11,2,8,7,4],
+    [4,9,1,4,1,7,7,1,3],
+    [4,9,1,4,1,7,0,8,1,8,7,1],
+    [4,0,3,7,4,3],
+    [4,8,7],
+    [9,11,8,11,10,8],
+    [3,0,9,3,9,10,10,9,11],
+    [0,1,11,0,11,8,8,11,10],
+    [3,1,11,10,3,11],
+    [1,2,10,1,10,9,9,10,8],
+    [3,0,9,3,9,10,1,2,9,2,10,9],
+    [0,2,10,8,0,10],
+    [3,2,10],
+    [2,3,8,2,8,11,11,8,9],
+    [9,11,2,0,9,2],
+    [2,3,8,2,8,11,0,1,8,1,11,8],
+    [1,11,2],
+    [1,3,8,9,1,8],
+    [0,9,1],
+    [0,3,8],
+    []
+];
 
 /*
  *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
@@ -3275,14 +4307,14 @@ MowgliViewer.prototype.render = function () {
  *
  *  This file is part of mowgli
  *
- * This program is free software: you can redistribute it and/or modify it 
- * under the terms of the GNU General Public License as published by 
- * the Free Software Foundation, either version 3 of the License, or 
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
@@ -3293,8 +4325,8 @@ MowgliViewer.prototype.render = function () {
  * Jean-Christophe Taveau
  */
 
- 
-"use strict";
+
+'use strict';
 
 
 /**
@@ -3303,13 +4335,13 @@ MowgliViewer.prototype.render = function () {
  * @memberof module:structure
  * @constructor
  * @extends module:structure.Structure
- * 
+ *
  * @author Jean-Christophe Taveau
  **/
 function Molecule(other) {
     // super()
     Structure.call(this, other);
-    
+
    /**
     * Molecule Classification
     *
@@ -3317,12 +4349,12 @@ function Molecule(other) {
     **/
     this.information.classification = other.classification || 'Unknown';
 
-   /** 
+   /**
     * Atoms - Array of {@link module:mol.Atom}
-    * 
+    *
     * @see {@link module:mol.Atom}
-    * @type {Array(Atom)} 
-    * 
+    * @type {Array(Atom)}
+    *
     * @property {Atom} atom
     * @property {string} atom.type - ATOM or HETATM
     * @property {number} atom.serial - ID of the atom in the file
@@ -3330,10 +4362,10 @@ function Molecule(other) {
     * @property {char} atom.altLoc - Alternate Location of the atom
     * @property {string} atom.group - Group name the atom belongs (three-chars code)
     * @property {string} atom.groupID  - Location of the group (residue or nucleotide) in the chain.
-    * @property {char} atom.chain -Chain ID 
-    * @property {number} atom.x - X-coordinate 
-    * @property {number} atom.y - Y-coordinate 
-    * @property {number} atom.z - Z-coordinate 
+    * @property {char} atom.chain -Chain ID
+    * @property {number} atom.x - X-coordinate
+    * @property {number} atom.y - Y-coordinate
+    * @property {number} atom.z - Z-coordinate
     * @property {string} atom.symbol - Chemical symbol
     *
     **/
@@ -3382,48 +4414,48 @@ Molecule.POLYPROLINE        = 10;
  * @type {string}
  *
  * @example
- * var aa   = Structure.threeToOne("GLN"); // returns 'Q' in uppercase
- * var nucl = Structure.threeToOne("DA"); // returns 'a' in lowercase 
+ * var aa   = Structure.threeToOne('GLN'); // returns 'Q' in uppercase
+ * var nucl = Structure.threeToOne('DA'); // returns 'a' in lowercase
  *
  **/
 Molecule.threeToOne = {
-    "ALA" : "A", // Alanine
-    "ARG" : "R", // Arginine
-    "ASN" : "N", // Asparagine
-    "ASP" : "D", // Aspartic_acid
-    "CYS" : "C", // Cysteine
-    "GLU" : "E", // Glutamic_acid
-    "GLN" : "Q", // Glutamine
-    "GLY" : "G", // Glycine
-    "HIS" : "H", // Histidine
-    "ILE" : "I", // Isoleucine
-    "LEU" : "L", // Leucine
-    "LYS" : "K", // Lysine
-    "MET" : "M", // Methionine
-    "PHE" : "F", // Phenylalanine
-    "PRO" : "P", // Proline
-    "SER" : "S", // Serine
-    "THR" : "T", // Threonine
-    "TRP" : "W", // Tryptophan
-    "TYR" : "Y", // Tyrosine
-    "VAL" : "V", // Valine
-    "SEC" : "U", // Selenocysteine
-    "PYL" : "O", // Pyrrolysine
-    "ASX" : "B", // Asparagine_or_aspartic_acid
-    "GLX" : "Z", // Glutamine_or_glutamic_acid
-    "XLE" : "J", // Leucine_or_Isoleucine
-    "XAA" : "X", // Unspecified_or_unknown_amino_acid
-    "XXX" : "X", // Unspecified_or_unknown_amino_acid
-    "A"   : "a", // Adenosine (nucleic)
-    "T"   : "t", // Thymine (nucleic)
-    "G"   : "g", // Guanosine (nucleic)
-    "C"   : "c", // Guanosine (nucleic)
-    "U"   : "u", // Uracyl (nucleic)
-    "DA"  : "a", // Adenosine (nucleic)
-    "DT"  : "t", // Thymine (nucleic)
-    "DG"  : "g", // Guanosine (nucleic)
-    "DC"  : "c"  // Guanosine (nucleic)
-}
+    'ALA' : 'A', // Alanine
+    'ARG' : 'R', // Arginine
+    'ASN' : 'N', // Asparagine
+    'ASP' : 'D', // Aspartic_acid
+    'CYS' : 'C', // Cysteine
+    'GLU' : 'E', // Glutamic_acid
+    'GLN' : 'Q', // Glutamine
+    'GLY' : 'G', // Glycine
+    'HIS' : 'H', // Histidine
+    'ILE' : 'I', // Isoleucine
+    'LEU' : 'L', // Leucine
+    'LYS' : 'K', // Lysine
+    'MET' : 'M', // Methionine
+    'PHE' : 'F', // Phenylalanine
+    'PRO' : 'P', // Proline
+    'SER' : 'S', // Serine
+    'THR' : 'T', // Threonine
+    'TRP' : 'W', // Tryptophan
+    'TYR' : 'Y', // Tyrosine
+    'VAL' : 'V', // Valine
+    'SEC' : 'U', // Selenocysteine
+    'PYL' : 'O', // Pyrrolysine
+    'ASX' : 'B', // Asparagine_or_aspartic_acid
+    'GLX' : 'Z', // Glutamine_or_glutamic_acid
+    'XLE' : 'J', // Leucine_or_Isoleucine
+    'XAA' : 'X', // Unspecified_or_unknown_amino_acid
+    'XXX' : 'X', // Unspecified_or_unknown_amino_acid
+    'A'   : 'a', // Adenosine (nucleic)
+    'T'   : 't', // Thymine (nucleic)
+    'G'   : 'g', // Guanosine (nucleic)
+    'C'   : 'c', // Guanosine (nucleic)
+    'U'   : 'u', // Uracyl (nucleic)
+    'DA'  : 'a', // Adenosine (nucleic)
+    'DT'  : 't', // Thymine (nucleic)
+    'DG'  : 'g', // Guanosine (nucleic)
+    'DC'  : 'c'  // Guanosine (nucleic)
+};
 
 
 /**
@@ -3438,16 +4470,16 @@ Molecule.threeToOne = {
  *
  * @example
  *
- * // Get the first atom carbon alpha (CA) found in chain B 
- * var atom = mystructure.getAtomByLabel("B*.CA");
+ * // Get the first atom carbon alpha (CA) found in chain B
+ * var atom = mystructure.getAtomByLabel('B*.CA');
  *
  *
  **/
 Molecule.prototype.getAtomByLabel = function(pattern) {
     var atom;
     // Escape characters
-    var motif = pattern.replace(/([.\[\]])/g,"\\$1");
-    motif = motif.replace(/\*/g,".+");
+    var motif = pattern.replace(/([.\[\]])/g,'\\$1');
+    motif = motif.replace(/\*/g,'.+');
     console.log(motif);
     var regexp = new RegExp(motif,'i');
     var i= 0;
@@ -3460,7 +4492,7 @@ Molecule.prototype.getAtomByLabel = function(pattern) {
         i++;
     }
     return atom;
-}
+};
 
 /**
  * Filter the atoms or bonds in function of their properties
@@ -3473,24 +4505,24 @@ Molecule.prototype.getAtomByLabel = function(pattern) {
  * @example
  * // Extract CA atoms from mystructure
  * var selA = mystructure.finder(
- *     'ATOM', 
+ *     'ATOM',
  *     function (atom) {
  *         if ( atom.name === 'CA') {
  *              return true;
- *         } 
+ *         }
  *     }
  * );
  *
  *
  **/
 Molecule.prototype.finder = function (src,callback) {
-  if (src === 'ATOM') {
-    return this.atoms.filter(callback);
-  }
-  else {
-    return this.bonds.filter(callback);
-  }
-}
+    if (src === 'ATOM') {
+        return this.atoms.filter(callback);
+    }
+    else {
+        return this.bonds.filter(callback);
+    }
+};
 
 /**
  * Filter the atoms in function of their properties
@@ -3505,19 +4537,19 @@ Molecule.prototype.finder = function (src,callback) {
  *     function (atom) {
  *         if ( atom.name === 'CA') {
  *              return true;
- *         } 
+ *         }
  *     }
  * );
  *
  *
  **/
 Molecule.prototype.atomFinder = function (callback) {
-  return this.atoms.filter(callback);
-}
+    return this.atoms.filter(callback);
+};
 
 Molecule.prototype.bondFinder = function (callback) {
-  return this.bonds.filter(callback);
-}
+    return this.bonds.filter(callback);
+};
 
 /**
  * Return the primary sequence in FASTA format
@@ -3530,13 +4562,13 @@ Molecule.prototype.fasta = function () {
     var current_chain = this.atoms[0].chain;
     var count = 0;
     for (var i= 0; i < this.atoms.length; i++) {
-        console.log(this.atoms[i].chain+" "+current_chain);
-        if (this.atoms[i].chain != current_chain && this.atoms[i].type=== "ATOM") {
+        // console.log(this.atoms[i].chain+' '+current_chain);
+        if (this.atoms[i].chain != current_chain && this.atoms[i].type=== 'ATOM') {
             fasta += '\n> ' + this.ID + ':' + this.atoms[i].chain + ' | ' + this.information.title + '\n';
             current_chain = this.atoms[i].chain;
             count = 0;
         }
-        if ( (this.atoms[i].name==="CA" || this.atoms[i].name==="O4*"|| this.atoms[i].name==="O4'") && this.atoms[i].chain == current_chain) {
+        if ( (this.atoms[i].name==='CA' || this.atoms[i].name==='O4*'|| this.atoms[i].name==='O4\'') && this.atoms[i].chain == current_chain) {
             fasta += Molecule.threeToOne[this.atoms[i].group];
             count++;
             if ( (count % 80) == 0) {
@@ -3546,7 +4578,7 @@ Molecule.prototype.fasta = function () {
         }
     }
     return fasta;
-}
+};
 
 /**
  * Return the secondary structures in FASTA format -- if available.
@@ -3564,7 +4596,7 @@ Molecule.prototype.secondary = function () {
             current_chain = this.atoms[i].chainID;
             count = 0;
         }
-        if (this.atoms[i].name==="CA" && this.atoms[i].chainID == current_chain) {
+        if (this.atoms[i].name==='CA' && this.atoms[i].chainID == current_chain) {
             fasta += this.atoms[i].struct[0];
             count++;
             if ( (count % 80) == 0) {
@@ -3573,7 +4605,7 @@ Molecule.prototype.secondary = function () {
             }
         }
     }
-}
+};
 
 
 /**
@@ -3583,18 +4615,18 @@ Molecule.prototype.secondary = function () {
  * @example
  * // Compute phi and psi dihedral angles from mystructure
  * mystructure.calcPhiPsi();
- * console.log(mystructure.getAtomByLabel("A.(1).CA").phi);  // 
+ * console.log(mystructure.getAtomByLabel('[10].CA').phi);  //
  *
  **/
 Molecule.prototype.calcPhiPsi = function () {
-      var ca      = 0;
-      var ca_next = 0;
-      var points  = [];
-      var names   = { 'N': 0, 'CA': 1, 'C': 2};
-      var count   = 0;
-      var gp      = 0; // current group index
-      var ch      = ' '; // Current chain ID
-      var oldPhi  = undefined;
+    var ca      = 0;
+    var ca_next = 0;
+    var points  = [];
+    var names   = { 'N': 0, 'CA': 1, 'C': 2};
+    var count   = 0;
+    var gp      = 0; // current group index
+    var ch      = ' '; // Current chain ID
+    var oldPhi  = undefined;
 
     // Assume that the atoms are sorted by ascending index
     for (var i in this.atoms) {
@@ -3611,11 +4643,11 @@ Molecule.prototype.calcPhiPsi = function () {
             ch = this.atoms[i].chain;
             count = 0;
         }
-        
+
         // sort N, CA, C, N', CA', C' of the same chain
-        if (this.atoms[i].chain == ch 
-        &&  this.atoms[i].groupID >= gp 
-        &&  this.atoms[i].groupID <= gp+1 
+        if (this.atoms[i].chain == ch
+        &&  this.atoms[i].groupID >= gp
+        &&  this.atoms[i].groupID <= gp+1
         && (this.atoms[i].name === 'N' || this.atoms[i].name === 'CA' || this.atoms[i].name === 'C' ) ) {
             var ii = (this.atoms[i].groupID - gp ) * 3 + names[this.atoms[i].name];
             if (ii == 1) {
@@ -3656,11 +4688,11 @@ Molecule.prototype.calcPhiPsi = function () {
 
     // Private
     function calcDihedralAngle(point0,point1,point2,point3) {
-        // UA = (A2−A1) × (A3−A1) is orthogonal to plane A and UB = (B2−B1) × (B3−B1)  
+        // UA = (A2−A1) × (A3−A1) is orthogonal to plane A and UB = (B2−B1) × (B3−B1)
 
-        var v1 = vec3.fromValues(point1.x-point0.x,point1.y-point0.y, point1.z-point0.z); 
-        var v2 = vec3.fromValues(point2.x-point1.x,point2.y-point1.y, point2.z-point1.z); 
-        var v3 = vec3.fromValues(point3.x-point2.x,point3.y-point2.y, point3.z-point2.z); 
+        var v1 = vec3.fromValues(point1.x-point0.x,point1.y-point0.y, point1.z-point0.z);
+        var v2 = vec3.fromValues(point2.x-point1.x,point2.y-point1.y, point2.z-point1.z);
+        var v3 = vec3.fromValues(point3.x-point2.x,point3.y-point2.y, point3.z-point2.z);
         var na=vec3.create();
         var nb=vec3.create();
         vec3.cross(na,v1,v2);
@@ -3669,33 +4701,32 @@ Molecule.prototype.calcPhiPsi = function () {
         var cosAngle=vec3.dot(na,nb);
         return Math.atan2(sinAngle,cosAngle)/Math.PI*180.0;
     }
-}
+};
 
 Molecule.prototype.calcBonds = function () {
-  var bondCalc = new BondCalculator(this);
-}
+    var bondCalc = new BondCalculator(this);
+};
 
 Molecule.prototype.toString = function () {
-  var quote='';
-  var out='{\n';
+    var quote='';
+    var out='{\n';
 
-  for (var i in this.atoms)
-  {
-    out+="{";
-    out+="type: '"  + this.atoms[i].type + "', " +
-     "serial: " + this.atoms[i].serial + ", " +
-     "name: '"  + this.atoms[i].name + "', " +
-     "struct:'" + this.atoms[i].struct + "', " +
-     "x :"    + this.atoms[i].x + ", " + 
-     "y :"    + this.atoms[i].y + ", " + 
-     "z :"    + this.atoms[i].z + ", " + 
-     "symbol:'" + this.atoms[i].symbol + "'},\n ";
-  }
-  out+= 'center: {' + this.cg.x + ',y: '+ this.cg.y + ',z: '+ this.cg.z + '} } ';
-  out+=("}\n");
-  return out;
-}
-
+    for (var i in this.atoms)
+    {
+        out+='{';
+        out+='type: \''  + this.atoms[i].type + '\', ' +
+         'serial: ' + this.atoms[i].serial + ', ' +
+         'name: \''  + this.atoms[i].name + '\', ' +
+         'struct:\'' + this.atoms[i].struct + '\', ' +
+         'x :'    + this.atoms[i].x + ', ' +
+         'y :'    + this.atoms[i].y + ', ' +
+         'z :'    + this.atoms[i].z + ', ' +
+         'symbol:\'' + this.atoms[i].symbol + '\'},\n ';
+    }
+    out+= 'center: {' + this.cg.x + ',y: '+ this.cg.y + ',z: '+ this.cg.z + '} } ';
+    out+=('}\n');
+    return out;
+};
 
 /*
  *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
@@ -3703,14 +4734,14 @@ Molecule.prototype.toString = function () {
  *
  *  This file is part of mowgli
  *
- * This program is free software: you can redistribute it and/or modify it 
- * under the terms of the GNU General Public License as published by 
- * the Free Software Foundation, either version 3 of the License, or 
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
@@ -3721,8 +4752,8 @@ Molecule.prototype.toString = function () {
  * Jean-Christophe Taveau
  */
 
- 
-"use strict";
+
+'use strict';
 
 /**
  * Voxels maps
@@ -3732,20 +4763,59 @@ Molecule.prototype.toString = function () {
  * @extends module:structure.Structure
  * @author Jean-Christophe Taveau
  **/
-function Raster() {
+function Raster(other) {
     // super()
-    Structure.call(this);
+    Structure.call(this,other);
 
    /**
-    * RGB Colors
+    * Pixels/Voxels
     *
     * @type {Array(RGBColor)}
     *
     **/
-    this.voxels = [];
+    this.data = other.data || new Uint8ClampedArray();
 
+    // mode 8-bit, 16-bit, 32-bit, rgb, rgba
+    this.information.mode = other.mode || '8-bit';
+    this.information.width = other.width;
+    this.information.height = other.height;
+    this.information.depth = other.depth || 1;
+
+    this.width = this.information.width;
+    this.height = this.information.height;
+    this.depth = this.information.depth;
+
+    this.bbox = {
+        'min': {'x': 0,'y': 0,'z': 0},
+        'max': {'x': this.width,'y': this.height,'z': this.depth},
+        'center':  {'x': this.width/2.0,'y': this.height/2.0,'z': this.depth/2.0},
+        'radius': Math.sqrt(this.width * this.width + this.height * this.height + this.depth * this.depth)/2.0
+    };
+
+    this.centroid = {'x': this.width/2.0,'y': this.height/2.0,'z': this.depth/2.0};
+
+    this.bins;
 }
 
+Raster.prototype = Object.create(Structure.prototype);
+
+Raster.prototype.getPixel = function(x,y) {
+    return this.data(x + this.width * y);
+};
+
+Raster.prototype.getVoxel = function(x,y,z) {
+    return this.data(x + this.width * y + this.width * this.height * z);
+};
+
+Raster.prototype.histogram = function() {
+    if (this.bins === undefined) {
+        this.bins = [];
+        for (var i=0; i < this.data.length; i++) {
+            this.bins[this.data[i]]++;
+        }
+    }
+    return this.bins;
+};
 
 /*
  *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
@@ -3753,14 +4823,14 @@ function Raster() {
  *
  *  This file is part of mowgli
  *
- * This program is free software: you can redistribute it and/or modify it 
- * under the terms of the GNU General Public License as published by 
- * the Free Software Foundation, either version 3 of the License, or 
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
@@ -3774,9 +4844,9 @@ function Raster() {
 /**
  * @module structure
  **/
- 
- 
-"use strict";
+
+
+'use strict';
 
 /**
  * Root class for 3D objects: atomic ({@link module:structure.Molecule}), map, or any 3D graphics vectorial object
@@ -3788,50 +4858,50 @@ function Raster() {
  **/
 function Structure(other) {
 
-  /**
-   * Identifier
-   *
-   * @type {string}
-   *
-   **/
-  this.ID               = other.ID || '0UNK';
+    /**
+    * Identifier
+    *
+    * @type {string}
+    *
+    **/
+    this.ID               = other.ID || '0UNK';
 
 
-  /**
-   * Information
-   *
-   * @type {object}
-   *
-   **/
-  this.information          =  {};
-  this.information.ID       = this.ID;
-  
-  this.information.title    = other.title || 'No Title';
-  
-  /**
-   * Deposit Date DD-MMM-YY
-   *
-   * @type {string}
-   **/
-  this.information.date     =  other.date || '00-UNK-00';
+    /**
+    * Information
+    *
+    * @type {object}
+    *
+    **/
+    this.information          =  {};
+    this.information.ID       = this.ID;
 
-  /**
-   * Center of Gravity - Centroid
-   *
-   * @type {vec3}
-   *
-   * @property {vec3} centroid - Center of gravity or centroid of this structure
-   * @property {number} centroid.x - X-coordinate
-   * @property {number} centroid.y - Y-coordinate
-   * @property {number} centroid.y - Z-coordinate
+    this.information.title    = other.title || 'No Title';
 
-   **/
-  this.centroid             =  other.centroid || {'x': 0.0,'y': 0.0,'z': 0.0};
+    /**
+    * Deposit Date DD-MMM-YY
+    *
+    * @type {string}
+    **/
+    this.information.date     =  other.date || '00-UNK-00';
 
-  /**
-   *  Matrix for rotation(s) and translation(s)
-   * @type {mat4}
-   **/
+    /**
+    * Center of Gravity - Centroid
+    *
+    * @type {vec3}
+    *
+    * @property {vec3} centroid - Center of gravity or centroid of this structure
+    * @property {number} centroid.x - X-coordinate
+    * @property {number} centroid.y - Y-coordinate
+    * @property {number} centroid.y - Z-coordinate
+
+    **/
+    this.centroid             =  other.centroid || {'x': 0.0,'y': 0.0,'z': 0.0};
+
+    /**
+    *  Matrix for rotation(s) and translation(s)
+    * @type {mat4}
+    **/
     if (other.matrix !== undefined) {
         this.matrix = other.matrix;
     }
@@ -3841,24 +4911,24 @@ function Structure(other) {
     }
 
 
-  /**
-   * Bounding Box
-   *
-   * @property {vec3} min - Top-left-front corner of the bounding box
-   * @property {number} min.x - X-coordinate of the 'min' corner
-   * @property {number} min.y - Y-coordinate of the 'min' corner
-   * @property {number} min.y - Z-coordinate of the 'min' corner
-   * @property {vec3} max - Bottom-right-back corner of the bounding box
-   * @property {number} max.x - X-coordinate of the 'max' corner
-   * @property {number} max.y - Y-coordinate of the 'max' corner
-   * @property {number} max.z - Z-coordinate of the 'max' corner
-   **/
-  this.bbox= other.bbox || {
-    'min': {'x': Number.MAX_VALUE,'y': Number.MAX_VALUE,'z': Number.MAX_VALUE},
-    'max': {'x': Number.MIN_VALUE,'y': Number.MIN_VALUE,'z': Number.MIN_VALUE},
-    'center':  {'x': 0.0,'y': 0.0,'z': 0.0},
-    'radius': 0.0
-  };
+    /**
+    * Bounding Box
+    *
+    * @property {vec3} min - Top-left-front corner of the bounding box
+    * @property {number} min.x - X-coordinate of the 'min' corner
+    * @property {number} min.y - Y-coordinate of the 'min' corner
+    * @property {number} min.y - Z-coordinate of the 'min' corner
+    * @property {vec3} max - Bottom-right-back corner of the bounding box
+    * @property {number} max.x - X-coordinate of the 'max' corner
+    * @property {number} max.y - Y-coordinate of the 'max' corner
+    * @property {number} max.z - Z-coordinate of the 'max' corner
+    **/
+    this.bbox= other.bbox || {
+        'min': {'x': Number.MAX_VALUE,'y': Number.MAX_VALUE,'z': Number.MAX_VALUE},
+        'max': {'x': Number.MIN_VALUE,'y': Number.MIN_VALUE,'z': Number.MIN_VALUE},
+        'center':  {'x': 0.0,'y': 0.0,'z': 0.0},
+        'radius': 0.0
+    };
 
 }
 
@@ -3871,9 +4941,9 @@ function Structure(other) {
  **/
 Structure.prototype.isMolecule = function() {
     return (this instanceof Molecule);
-}
- 
- 
+};
+
+
 /**
  * Is this structure a 2D/3D-raster? (instance of class Raster)
  *
@@ -3882,9 +4952,9 @@ Structure.prototype.isMolecule = function() {
  **/
 Structure.prototype.isRaster = function() {
     return (this instanceof Raster);
-}
- 
- 
+};
+
+
  /**
  * Set Title
  *
@@ -3893,7 +4963,7 @@ Structure.prototype.isRaster = function() {
  **/
 Structure.prototype.setTitle = function (str) {
     this.information.title = str;
-}
+};
 
 /*
  *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL

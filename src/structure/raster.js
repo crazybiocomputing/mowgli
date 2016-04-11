@@ -23,7 +23,7 @@
  */
 
 
-"use strict";
+'use strict';
 
 /**
  * Voxels maps
@@ -56,10 +56,10 @@ function Raster(other) {
     this.depth = this.information.depth;
 
     this.bbox = {
-      'min': {'x': 0,'y': 0,'z': 0},
-      'max': {'x': this.width,'y': this.height,'z': this.depth},
-      'center':  {'x': this.width/2.0,'y': this.height/2.0,'z': this.depth/2.0},
-      'radius': Math.sqrt(this.width * this.width + this.height * this.height + this.depth * this.depth)/2.0
+        'min': {'x': 0,'y': 0,'z': 0},
+        'max': {'x': this.width,'y': this.height,'z': this.depth},
+        'center':  {'x': this.width/2.0,'y': this.height/2.0,'z': this.depth/2.0},
+        'radius': Math.sqrt(this.width * this.width + this.height * this.height + this.depth * this.depth)/2.0
     };
 
     this.centroid = {'x': this.width/2.0,'y': this.height/2.0,'z': this.depth/2.0};
@@ -67,15 +67,17 @@ function Raster(other) {
     this.bins;
 }
 
+Raster.prototype = Object.create(Structure.prototype);
+
 Raster.prototype.getPixel = function(x,y) {
     return this.data(x + this.width * y);
-}
+};
 
 Raster.prototype.getVoxel = function(x,y,z) {
     return this.data(x + this.width * y + this.width * this.height * z);
-}
+};
 
-Raster.prototype.histogram() {
+Raster.prototype.histogram = function() {
     if (this.bins === undefined) {
         this.bins = [];
         for (var i=0; i < this.data.length; i++) {
@@ -83,4 +85,4 @@ Raster.prototype.histogram() {
         }
     }
     return this.bins;
-}
+};

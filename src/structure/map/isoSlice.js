@@ -22,7 +22,7 @@
  * Jean-Christophe Taveau
  */
 
-"use strict";
+'use strict';
 
 
 /**
@@ -33,28 +33,28 @@
  * @author Jean-Christophe Taveau
  */
 function IsoSlice(cubes_per_row, cubes_per_column) {
-  this.cubes = [];
-  this.count = 0;
-  this.w = cubes_per_row;
-  this.h = cubes_per_column;
+    this.cubes = [];
+    this.count = 0;
+    this.w = cubes_per_row;
+    this.h = cubes_per_column;
 }
 
 IsoSlice.prototype.reset_count = function () {
-  this.count=0;
-}
+    this.count=0;
+};
 
 IsoSlice.prototype.push = function (a_cube) {
-  this.cubes[this.count++] = a_cube;
-}
+    this.cubes[this.count++] = a_cube;
+};
 
 IsoSlice.prototype.previous = function () {
-  return this.cubes[this.count - 1];
-}
+    return this.cubes[this.count - 1];
+};
 
 IsoSlice.prototype.above = function () {
-  return this.cubes[this.count - this.w];
-}
+    return this.cubes[this.count - this.w];
+};
 
 IsoSlice.prototype.back = function () {
-  return this.cubes[this.count];
-}
+    return this.cubes[this.count];
+};

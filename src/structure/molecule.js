@@ -4,14 +4,14 @@
  *
  *  This file is part of mowgli
  *
- * This program is free software: you can redistribute it and/or modify it 
- * under the terms of the GNU General Public License as published by 
- * the Free Software Foundation, either version 3 of the License, or 
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
@@ -22,8 +22,8 @@
  * Jean-Christophe Taveau
  */
 
- 
-"use strict";
+
+'use strict';
 
 
 /**
@@ -32,13 +32,13 @@
  * @memberof module:structure
  * @constructor
  * @extends module:structure.Structure
- * 
+ *
  * @author Jean-Christophe Taveau
  **/
 function Molecule(other) {
     // super()
     Structure.call(this, other);
-    
+
    /**
     * Molecule Classification
     *
@@ -46,12 +46,12 @@ function Molecule(other) {
     **/
     this.information.classification = other.classification || 'Unknown';
 
-   /** 
+   /**
     * Atoms - Array of {@link module:mol.Atom}
-    * 
+    *
     * @see {@link module:mol.Atom}
-    * @type {Array(Atom)} 
-    * 
+    * @type {Array(Atom)}
+    *
     * @property {Atom} atom
     * @property {string} atom.type - ATOM or HETATM
     * @property {number} atom.serial - ID of the atom in the file
@@ -59,10 +59,10 @@ function Molecule(other) {
     * @property {char} atom.altLoc - Alternate Location of the atom
     * @property {string} atom.group - Group name the atom belongs (three-chars code)
     * @property {string} atom.groupID  - Location of the group (residue or nucleotide) in the chain.
-    * @property {char} atom.chain -Chain ID 
-    * @property {number} atom.x - X-coordinate 
-    * @property {number} atom.y - Y-coordinate 
-    * @property {number} atom.z - Z-coordinate 
+    * @property {char} atom.chain -Chain ID
+    * @property {number} atom.x - X-coordinate
+    * @property {number} atom.y - Y-coordinate
+    * @property {number} atom.z - Z-coordinate
     * @property {string} atom.symbol - Chemical symbol
     *
     **/
@@ -111,48 +111,48 @@ Molecule.POLYPROLINE        = 10;
  * @type {string}
  *
  * @example
- * var aa   = Structure.threeToOne("GLN"); // returns 'Q' in uppercase
- * var nucl = Structure.threeToOne("DA"); // returns 'a' in lowercase 
+ * var aa   = Structure.threeToOne('GLN'); // returns 'Q' in uppercase
+ * var nucl = Structure.threeToOne('DA'); // returns 'a' in lowercase
  *
  **/
 Molecule.threeToOne = {
-    "ALA" : "A", // Alanine
-    "ARG" : "R", // Arginine
-    "ASN" : "N", // Asparagine
-    "ASP" : "D", // Aspartic_acid
-    "CYS" : "C", // Cysteine
-    "GLU" : "E", // Glutamic_acid
-    "GLN" : "Q", // Glutamine
-    "GLY" : "G", // Glycine
-    "HIS" : "H", // Histidine
-    "ILE" : "I", // Isoleucine
-    "LEU" : "L", // Leucine
-    "LYS" : "K", // Lysine
-    "MET" : "M", // Methionine
-    "PHE" : "F", // Phenylalanine
-    "PRO" : "P", // Proline
-    "SER" : "S", // Serine
-    "THR" : "T", // Threonine
-    "TRP" : "W", // Tryptophan
-    "TYR" : "Y", // Tyrosine
-    "VAL" : "V", // Valine
-    "SEC" : "U", // Selenocysteine
-    "PYL" : "O", // Pyrrolysine
-    "ASX" : "B", // Asparagine_or_aspartic_acid
-    "GLX" : "Z", // Glutamine_or_glutamic_acid
-    "XLE" : "J", // Leucine_or_Isoleucine
-    "XAA" : "X", // Unspecified_or_unknown_amino_acid
-    "XXX" : "X", // Unspecified_or_unknown_amino_acid
-    "A"   : "a", // Adenosine (nucleic)
-    "T"   : "t", // Thymine (nucleic)
-    "G"   : "g", // Guanosine (nucleic)
-    "C"   : "c", // Guanosine (nucleic)
-    "U"   : "u", // Uracyl (nucleic)
-    "DA"  : "a", // Adenosine (nucleic)
-    "DT"  : "t", // Thymine (nucleic)
-    "DG"  : "g", // Guanosine (nucleic)
-    "DC"  : "c"  // Guanosine (nucleic)
-}
+    'ALA' : 'A', // Alanine
+    'ARG' : 'R', // Arginine
+    'ASN' : 'N', // Asparagine
+    'ASP' : 'D', // Aspartic_acid
+    'CYS' : 'C', // Cysteine
+    'GLU' : 'E', // Glutamic_acid
+    'GLN' : 'Q', // Glutamine
+    'GLY' : 'G', // Glycine
+    'HIS' : 'H', // Histidine
+    'ILE' : 'I', // Isoleucine
+    'LEU' : 'L', // Leucine
+    'LYS' : 'K', // Lysine
+    'MET' : 'M', // Methionine
+    'PHE' : 'F', // Phenylalanine
+    'PRO' : 'P', // Proline
+    'SER' : 'S', // Serine
+    'THR' : 'T', // Threonine
+    'TRP' : 'W', // Tryptophan
+    'TYR' : 'Y', // Tyrosine
+    'VAL' : 'V', // Valine
+    'SEC' : 'U', // Selenocysteine
+    'PYL' : 'O', // Pyrrolysine
+    'ASX' : 'B', // Asparagine_or_aspartic_acid
+    'GLX' : 'Z', // Glutamine_or_glutamic_acid
+    'XLE' : 'J', // Leucine_or_Isoleucine
+    'XAA' : 'X', // Unspecified_or_unknown_amino_acid
+    'XXX' : 'X', // Unspecified_or_unknown_amino_acid
+    'A'   : 'a', // Adenosine (nucleic)
+    'T'   : 't', // Thymine (nucleic)
+    'G'   : 'g', // Guanosine (nucleic)
+    'C'   : 'c', // Guanosine (nucleic)
+    'U'   : 'u', // Uracyl (nucleic)
+    'DA'  : 'a', // Adenosine (nucleic)
+    'DT'  : 't', // Thymine (nucleic)
+    'DG'  : 'g', // Guanosine (nucleic)
+    'DC'  : 'c'  // Guanosine (nucleic)
+};
 
 
 /**
@@ -167,16 +167,16 @@ Molecule.threeToOne = {
  *
  * @example
  *
- * // Get the first atom carbon alpha (CA) found in chain B 
- * var atom = mystructure.getAtomByLabel("B*.CA");
+ * // Get the first atom carbon alpha (CA) found in chain B
+ * var atom = mystructure.getAtomByLabel('B*.CA');
  *
  *
  **/
 Molecule.prototype.getAtomByLabel = function(pattern) {
     var atom;
     // Escape characters
-    var motif = pattern.replace(/([.\[\]])/g,"\\$1");
-    motif = motif.replace(/\*/g,".+");
+    var motif = pattern.replace(/([.\[\]])/g,'\\$1');
+    motif = motif.replace(/\*/g,'.+');
     console.log(motif);
     var regexp = new RegExp(motif,'i');
     var i= 0;
@@ -189,7 +189,7 @@ Molecule.prototype.getAtomByLabel = function(pattern) {
         i++;
     }
     return atom;
-}
+};
 
 /**
  * Filter the atoms or bonds in function of their properties
@@ -202,24 +202,24 @@ Molecule.prototype.getAtomByLabel = function(pattern) {
  * @example
  * // Extract CA atoms from mystructure
  * var selA = mystructure.finder(
- *     'ATOM', 
+ *     'ATOM',
  *     function (atom) {
  *         if ( atom.name === 'CA') {
  *              return true;
- *         } 
+ *         }
  *     }
  * );
  *
  *
  **/
 Molecule.prototype.finder = function (src,callback) {
-  if (src === 'ATOM') {
-    return this.atoms.filter(callback);
-  }
-  else {
-    return this.bonds.filter(callback);
-  }
-}
+    if (src === 'ATOM') {
+        return this.atoms.filter(callback);
+    }
+    else {
+        return this.bonds.filter(callback);
+    }
+};
 
 /**
  * Filter the atoms in function of their properties
@@ -234,19 +234,19 @@ Molecule.prototype.finder = function (src,callback) {
  *     function (atom) {
  *         if ( atom.name === 'CA') {
  *              return true;
- *         } 
+ *         }
  *     }
  * );
  *
  *
  **/
 Molecule.prototype.atomFinder = function (callback) {
-  return this.atoms.filter(callback);
-}
+    return this.atoms.filter(callback);
+};
 
 Molecule.prototype.bondFinder = function (callback) {
-  return this.bonds.filter(callback);
-}
+    return this.bonds.filter(callback);
+};
 
 /**
  * Return the primary sequence in FASTA format
@@ -259,13 +259,13 @@ Molecule.prototype.fasta = function () {
     var current_chain = this.atoms[0].chain;
     var count = 0;
     for (var i= 0; i < this.atoms.length; i++) {
-        console.log(this.atoms[i].chain+" "+current_chain);
-        if (this.atoms[i].chain != current_chain && this.atoms[i].type=== "ATOM") {
+        // console.log(this.atoms[i].chain+' '+current_chain);
+        if (this.atoms[i].chain != current_chain && this.atoms[i].type=== 'ATOM') {
             fasta += '\n> ' + this.ID + ':' + this.atoms[i].chain + ' | ' + this.information.title + '\n';
             current_chain = this.atoms[i].chain;
             count = 0;
         }
-        if ( (this.atoms[i].name==="CA" || this.atoms[i].name==="O4*"|| this.atoms[i].name==="O4'") && this.atoms[i].chain == current_chain) {
+        if ( (this.atoms[i].name==='CA' || this.atoms[i].name==='O4*'|| this.atoms[i].name==='O4\'') && this.atoms[i].chain == current_chain) {
             fasta += Molecule.threeToOne[this.atoms[i].group];
             count++;
             if ( (count % 80) == 0) {
@@ -275,7 +275,7 @@ Molecule.prototype.fasta = function () {
         }
     }
     return fasta;
-}
+};
 
 /**
  * Return the secondary structures in FASTA format -- if available.
@@ -293,7 +293,7 @@ Molecule.prototype.secondary = function () {
             current_chain = this.atoms[i].chainID;
             count = 0;
         }
-        if (this.atoms[i].name==="CA" && this.atoms[i].chainID == current_chain) {
+        if (this.atoms[i].name==='CA' && this.atoms[i].chainID == current_chain) {
             fasta += this.atoms[i].struct[0];
             count++;
             if ( (count % 80) == 0) {
@@ -302,7 +302,7 @@ Molecule.prototype.secondary = function () {
             }
         }
     }
-}
+};
 
 
 /**
@@ -312,18 +312,18 @@ Molecule.prototype.secondary = function () {
  * @example
  * // Compute phi and psi dihedral angles from mystructure
  * mystructure.calcPhiPsi();
- * console.log(mystructure.getAtomByLabel("[10].CA").phi);  // 
+ * console.log(mystructure.getAtomByLabel('[10].CA').phi);  //
  *
  **/
 Molecule.prototype.calcPhiPsi = function () {
-      var ca      = 0;
-      var ca_next = 0;
-      var points  = [];
-      var names   = { 'N': 0, 'CA': 1, 'C': 2};
-      var count   = 0;
-      var gp      = 0; // current group index
-      var ch      = ' '; // Current chain ID
-      var oldPhi  = undefined;
+    var ca      = 0;
+    var ca_next = 0;
+    var points  = [];
+    var names   = { 'N': 0, 'CA': 1, 'C': 2};
+    var count   = 0;
+    var gp      = 0; // current group index
+    var ch      = ' '; // Current chain ID
+    var oldPhi  = undefined;
 
     // Assume that the atoms are sorted by ascending index
     for (var i in this.atoms) {
@@ -340,11 +340,11 @@ Molecule.prototype.calcPhiPsi = function () {
             ch = this.atoms[i].chain;
             count = 0;
         }
-        
+
         // sort N, CA, C, N', CA', C' of the same chain
-        if (this.atoms[i].chain == ch 
-        &&  this.atoms[i].groupID >= gp 
-        &&  this.atoms[i].groupID <= gp+1 
+        if (this.atoms[i].chain == ch
+        &&  this.atoms[i].groupID >= gp
+        &&  this.atoms[i].groupID <= gp+1
         && (this.atoms[i].name === 'N' || this.atoms[i].name === 'CA' || this.atoms[i].name === 'C' ) ) {
             var ii = (this.atoms[i].groupID - gp ) * 3 + names[this.atoms[i].name];
             if (ii == 1) {
@@ -385,11 +385,11 @@ Molecule.prototype.calcPhiPsi = function () {
 
     // Private
     function calcDihedralAngle(point0,point1,point2,point3) {
-        // UA = (A2−A1) × (A3−A1) is orthogonal to plane A and UB = (B2−B1) × (B3−B1)  
+        // UA = (A2−A1) × (A3−A1) is orthogonal to plane A and UB = (B2−B1) × (B3−B1)
 
-        var v1 = vec3.fromValues(point1.x-point0.x,point1.y-point0.y, point1.z-point0.z); 
-        var v2 = vec3.fromValues(point2.x-point1.x,point2.y-point1.y, point2.z-point1.z); 
-        var v3 = vec3.fromValues(point3.x-point2.x,point3.y-point2.y, point3.z-point2.z); 
+        var v1 = vec3.fromValues(point1.x-point0.x,point1.y-point0.y, point1.z-point0.z);
+        var v2 = vec3.fromValues(point2.x-point1.x,point2.y-point1.y, point2.z-point1.z);
+        var v3 = vec3.fromValues(point3.x-point2.x,point3.y-point2.y, point3.z-point2.z);
         var na=vec3.create();
         var nb=vec3.create();
         vec3.cross(na,v1,v2);
@@ -398,30 +398,29 @@ Molecule.prototype.calcPhiPsi = function () {
         var cosAngle=vec3.dot(na,nb);
         return Math.atan2(sinAngle,cosAngle)/Math.PI*180.0;
     }
-}
+};
 
 Molecule.prototype.calcBonds = function () {
-  var bondCalc = new BondCalculator(this);
-}
+    var bondCalc = new BondCalculator(this);
+};
 
 Molecule.prototype.toString = function () {
-  var quote='';
-  var out='{\n';
+    var quote='';
+    var out='{\n';
 
-  for (var i in this.atoms)
-  {
-    out+="{";
-    out+="type: '"  + this.atoms[i].type + "', " +
-     "serial: " + this.atoms[i].serial + ", " +
-     "name: '"  + this.atoms[i].name + "', " +
-     "struct:'" + this.atoms[i].struct + "', " +
-     "x :"    + this.atoms[i].x + ", " + 
-     "y :"    + this.atoms[i].y + ", " + 
-     "z :"    + this.atoms[i].z + ", " + 
-     "symbol:'" + this.atoms[i].symbol + "'},\n ";
-  }
-  out+= 'center: {' + this.cg.x + ',y: '+ this.cg.y + ',z: '+ this.cg.z + '} } ';
-  out+=("}\n");
-  return out;
-}
-
+    for (var i in this.atoms)
+    {
+        out+='{';
+        out+='type: \''  + this.atoms[i].type + '\', ' +
+         'serial: ' + this.atoms[i].serial + ', ' +
+         'name: \''  + this.atoms[i].name + '\', ' +
+         'struct:\'' + this.atoms[i].struct + '\', ' +
+         'x :'    + this.atoms[i].x + ', ' +
+         'y :'    + this.atoms[i].y + ', ' +
+         'z :'    + this.atoms[i].z + ', ' +
+         'symbol:\'' + this.atoms[i].symbol + '\'},\n ';
+    }
+    out+= 'center: {' + this.cg.x + ',y: '+ this.cg.y + ',z: '+ this.cg.z + '} } ';
+    out+=('}\n');
+    return out;
+};
