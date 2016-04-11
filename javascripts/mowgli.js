@@ -1167,18 +1167,24 @@ window.onload = function() {
                     }
                 );
                 console.log(selection);
-                var Secondary_content=function(array){
-                    var str='Secondary structures without sequence \n';
+                 var Secondary_content=function(array){
+                   var str="Sequence and secondary sructure for "+MOWGLI.structure.ID;
+                    var seq="";
+                    var sec="";
                     for (var i=0; i < selection.length; i++) {
-                        if (i%10 == 0) str+=" ";
-                        if (i%50 == 0) str+="\n";
-                        str+=(selection[i].secondary[0]=='X') ?'.' : selection[i].secondary[0] ;
-
+                        if (i%10 == 0) seq+=" ", sec+=" ";
+                        if (i%50 == 0) str+=seq+"\n"+sec+"\n"+"\n",sec="",seq="";
+                        sec+=(selection[i].secondary[0]=='X') ?'.' : selection[i].secondary[0] ;
+                        seq+=Molecule.threeToOne[selection[i].group];
                     }
-                    return str
+                    str+=seq+"\n"+sec;
+                    return str 
+
+
                 };
-                
+
                 var content=Secondary_content(selection);
+                
                 
                 // Display modal window
                 var popup = new Modal({
