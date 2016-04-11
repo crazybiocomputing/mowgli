@@ -122,57 +122,6 @@ function Alert(msg) {
 
 "use strict";
 
-/**
- * Constructor
- * @class CheckBox
- * @memberof module:mwGUI
- * @constructor
- *
- * @author Jean-Christophe Taveau
- **/
- function CheckBox(options) {
-     // Do nothing?
-}
-
-CheckBox.prototype.update = function(el,value) {
-    // Needs the parent <ul>
-    var list = el.parentNode;
-    for (var i=0; i < list.children.length; i++) {
-        if (list.children[i].children[0].dataset.value === value) {
-            list.children[i].className = "checked";
-        }
-        else {
-            list.children[i].className = "checkbox_item";
-        }
-    }
-}
-
-/*
- *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
- *  Copyright (C) 2015  Jean-Christophe Taveau.
- *
- *  This file is part of mowgli
- *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
- *
- *
- * Authors:
- * Jean-Christophe Taveau
- */
-
-"use strict";
-
 
 window.onload = function() {
 
@@ -1174,48 +1123,19 @@ window.onload = function() {
             console.log(the_id); // 'Something Good', as this is the Something object
             switch(event.type) {
             case 'click':
-            if( MOWGLI.structure.isMolecule() ) {
-                 MOWGLI.structure.secondary();
-                var selection=MOWGLI.structure.finder(
-                    'ATOM', 
-                    function (atom) {
-                        if ( atom.name === 'CA') {
-                            return true;
-                         } 
-                    }
-                );
-                console.log(selection);
-                 var Secondary_content=function(array){
-                   var str="Sequence and secondary sructure for "+MOWGLI.structure.ID;
-                    var seq="";
-                    var sec="";
-                    for (var i=0; i < selection.length; i++) {
-                        if (i%10 == 0) seq+=" ", sec+=" ";
-                        if (i%50 == 0) str+=seq+"\n"+sec+"\n"+"\n",sec="",seq="";
-                        sec+=(selection[i].secondary[0]=='X') ?'.' : selection[i].secondary[0] ;
-                        seq+=Molecule.threeToOne[selection[i].group];
-                    }
-                    str+=seq+"\n"+sec;
-                    return str 
-
-
-                };
-
-                var content=Secondary_content(selection);
-                
-                
-                // Display modal window
-                var popup = new Modal({
-                    headerTitle : "Secondary structure...",
-                    headerImage : "url('images/headprot.jpg')",
-                    body  :"<pre>"+content+"</pre>"
-                            
-                        
-                });
+            var second_content;
+                if( MOWGLI.structure.isMolecule() ) {
+                    second_content = MOWGLI.structure.secondary();
+                    console.log(second_content);
+                    // Display modal window
+                    var popup = new Modal({
+                        headerTitle : "Secondary Structure",
+                        headerImage : "url('images/headprot.jpg')",
+                        body  : '<pre>'+ second_content +'</pre>'
+                    });
                 }
-                
                 else {
-                    MOWGLI.alert("No Secondary Structure are available for this structure");
+                    MOWGLI.alert("No Secondary structure sequence is available for this structure");
                 }
                 break;
             case 'dblclick':
