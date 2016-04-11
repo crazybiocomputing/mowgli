@@ -62,56 +62,103 @@
          * @param event - The DOM event
         **/
         this.handleEvent = function(event) {
-            console.log(the_id); // 'Something Good', as this is the Something object
             switch(event.type) {
                 case 'click':
                     // Load JSON file
-                    console.log('Load Sample...');
-                    var xhr = new XMLHttpRequest();
-                    // We need a asynchronous request (3rd argument true) - Wait until completion
+                    console.log('Load Sample...'+the_id);
                     var url = "samples/1ZNI.json";
                     switch (the_id) {
                     case '1zni':
                         url = "samples/1ZNI.json";
+                        loadJSON(url);
                         break;
                     case '1hho':
                         url = "samples/1HHO.json";
+                        loadJSON(url);
                         break;
                     case '3cro':
                         url = "samples/3CRO.json";
+                        loadJSON(url);
                         break;
                     case 'toricSolenoid.png':
-                        url = "samples/toricSolenoid.png";
+                        url = "samples/toricSolenoid_vertical_128x128x86.png";
+                        loadRaster(url,'8-bit','toricSolenoid');
                         break;
                     }
-                    xhr.open('GET', url, true);
-                    xhr.responseType = 'json';
-                    xhr.onreadystatechange = function (aEvt) {
-                        if (xhr.readyState == 4) {
-                            if(xhr.status == 200) {
-                                var json = xhr.response; // JSON.parse(xhr.responseText);
-                                MOWGLI.structure = new Molecule(json);
-                                MOWGLI.alert(the_id.toUpperCase() + " successfully loaded...");
-                                console.log(MOWGLI.structure instanceof Molecule);
-                                MOWGLI.structure.calcPhiPsi();
-                            }
+            }
 
-                            else {
-                                console.log("ERROR:: Can't download sample." + aEvt.description+"\n");
-                            }
+            function loadJSON(url) {
+                var xhr = new XMLHttpRequest();
+                // We need a asynchronous request (3rd argument true) - Wait until completion
+                xhr.open('GET', url, true);
+                xhr.responseType = 'json';
+                xhr.onreadystatechange = function (aEvt) {
+                    if (xhr.readyState == 4) {
+                        if(xhr.status == 200) {
+                            var json = xhr.response; // JSON.parse(xhr.responseText);
+                            MOWGLI.structure = new Molecule(json);
+                            MOWGLI.alert(the_id.toUpperCase() + " successfully loaded...");
+                            console.log(MOWGLI.structure instanceof Molecule);
+                            MOWGLI.structure.calcPhiPsi();
                         }
-                    };
-                    xhr.send(null);
-                    break;
-            case 'dblclick':
-                // some code here...
-                break;
+
+                        else {
+                            console.log("ERROR:: Can't load sample." + aEvt.description+"\n");
+                        }
+                    }
+                };
+                xhr.send(null);
+            }
+
+            function loadRaster(url,mode,title) {
+                console.log("Load Raster...");
+                var canvas = document.createElement('canvas');
+                var ctx = canvas.getContext('2d');
+
+                var img = new Image();
+                img.src = url;
+                img.crossOrigin = '*'; // no credentials flag. Same as img.crossOrigin=''
+                img.onload = function() {
+                    canvas.style.display = 'none';
+                    canvas.width = this.width;
+                    canvas.height = this.height;
+                    ctx.drawImage(img, 0, 0, this.width, this.height);
+                    var pix = ctx.getImageData(0, 0, this.width, this.height).data;
+                    // Typed array? Uint8ClampedArray or Uint32Array
+                    var data;
+                    if (mode === '8-bit') {
+                        data = new Uint8ClampedArray(pix.length/4);
+                        for (var i=0, count=0; i<pix.length; i+=4,count++) {
+                            data[count] = pix[i];
+                        }
+                    }
+                    else {
+                        // Pack RGBA colors
+                        data = new Uint32Array(pix.length/4);
+                        for (var i=0, count=0; i<pix.length; i+=4,count++) {
+                            data[count] = pix[i]<< 24 | pix[i+1]<< 16 | pix[i+2]<<8 | pix[i+3];
+                        }
+                    }
+
+                    MOWGLI.structure = new Raster(
+                        {
+                            "ID"    : title,
+                            "title" : title,
+                            "mode"  : mode,
+                            "width" : this.width,
+                            "height": this.width,
+                            "depth" : this.height/this.width,
+                            "data"  : data
+                        }
+                    );
+                    MOWGLI.alert(the_id.toUpperCase() + " successfully loaded...");
+                };
+
             }
         };
 
         // Note that the listeners in this case are this, not this.handleEvent
         this.element.addEventListener('click', this, false);
-        this.element.addEventListener('dblclick', this, false);
 
         // You can properly remove the listeners
         // this.element.removeEventListener('click', this, false);

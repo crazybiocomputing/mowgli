@@ -35,6 +35,7 @@ window.onload = function() {
     // 1-3 Open...Samples
     var sample_1ZNI = new mwGUI.Sample("1zni");
     var sample_3CRO = new mwGUI.Sample("3cro");
+    var sample_Toric = new mwGUI.Sample("toricSolenoid.png");
     // 1-4 Export
     var export_menuitem = new mwGUI.SaveAs("export");
 

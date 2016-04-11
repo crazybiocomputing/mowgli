@@ -5,20 +5,49 @@
  * Author: Lisa Catalano
  **/
 
+html, body {
+    height: 100%;
+    margin: 0; padding: 0;
+}
 
 body {
+  display : table;
+  width: 100%;
   margin: 0;
   padding: 0;
   background: #000; /* #ccc; */
 }
 
+header,.inner,footer {
+  display : table-row;
+}
 footer {
+  height: 20px;
   background-color: #444;
   font-family: 'Oswald', sans-serif;
-  font-size: 1.2em;
-  line-height: 40px;
+  font-size: 0.8em;
   text-align: left;
   color: #fff;
+  padding: 2px 10px 2px 10px;
+}
+
+input[type="range"] {
+    position: relative;
+    margin-left: 1em;
+}
+input[type="range"]:after,
+input[type="range"]:before {
+    position: absolute;
+    top: 1em;
+    color: #aaa;
+}
+input[type="range"]:before {
+    left:0em;
+    content: attr(min);
+}
+input[type="range"]:after {
+    right: 0em;
+    content: attr(max);
 }
 
 nav {
