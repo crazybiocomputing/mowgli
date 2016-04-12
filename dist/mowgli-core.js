@@ -4,6 +4,226 @@
  *
  *  This file is part of mowgli
  *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * Authors:
+ * Jean-Christophe Taveau
+ */
+
+'use strict';
+
+var ColorFactory = (function () {
+
+    // Storage for our various styles types
+    var colorers = {};
+    return {
+        /**
+         * Get shape
+         *
+         * @example
+         * var shape = ShapeFactory.get(name);
+         */
+        get: function ( name ) {
+            switch (name) {
+            case 'CPK':
+                if (colorers.CPK === undefined) {
+                    colorers.CPK = new CPKColorer();
+                }
+                return colorers.CPK;
+            case 'mono':
+                // TODO
+                break;
+            case 'structure':
+                // TODO
+                break;
+            case 'rainbow':
+                // TODO
+                break;
+            default:
+                if (colorers.CPK === undefined) {
+                    colorers.CPK = new CPKColorer();
+                }
+                return colorers.CPK;
+            }
+        }
+    };
+})();
+
+/*
+ *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
+ *  Copyright (C) 2015  Jean-Christophe Taveau.
+ *
+ *  This file is part of mowgli
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * Authors:
+ * Jean-Christophe Taveau
+ */
+
+'use strict';
+
+
+/**
+ * CPK Colorer generates given RGB color depending an atom
+ *
+ * @class CPKColorer
+ * @memberof module:graphics
+ * @constructor
+ * @author Jean-Christophe Taveau
+ **/
+function CPKColorer() {
+    this.name = "CPK";
+}
+
+CPKColorer.prototype.get = function(atom) {
+    var rgb = [];
+    switch (atom.symbol) {
+    case 'C':
+        rgb.push(0.78); //red
+        rgb.push(0.78); //green
+        rgb.push(0.78); //blue
+        break;
+    case 'N':
+        rgb.push(0.56); //red
+        rgb.push(0.56); //green
+        rgb.push(1.00); //blue
+        break;
+    case 'O':
+        rgb.push(0.94); //red
+        rgb.push(0.00); //green
+        rgb.push(0.00); //blue
+        break;
+    case 'P':
+        rgb.push(1.00); //red
+        rgb.push(0.5); //green
+        rgb.push(0.00); //blue
+        break;
+    case 'S':
+        rgb.push(1.00); //red
+        rgb.push(0.98); //green
+        rgb.push(0.19); //blue
+        break;
+    default:
+        rgb.push(1.00); //red
+        rgb.push(0.1); //green
+        rgb.push(0.50); //blue
+    }
+
+    return rgb;
+};
+
+/*
+ *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
+ *  Copyright (C) 2015  Jean-Christophe Taveau.
+ *
+ *  This file is part of mowgli
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * Authors:
+ * Jean-Christophe Taveau
+ */
+
+'use strict';
+
+
+/**
+ * Point Geometer generates coordinates
+ *
+ * @class PointGeometer
+ * @memberof module:graphics
+ * @constructor
+ * @author Jean-Christophe Taveau
+ **/
+function PointGeometer(mol,colorer) {
+    this.mol = mol;
+    this.colorer = colorer || CPKColorer;
+    this.shape;
+
+    // TODO: Check if already calculated and stored in database
+}
+
+/**
+ * Get shape corresponding to this geometry style
+ *
+ * @return {shape}
+ * @author Jean-Christophe Taveau
+ */
+PointGeometer.prototype.getShape = function () {
+    this.shape = new Shape();
+    var vertices = [];
+    // Only one array is used to define the vertices and corresponding colors
+    // Interleaved array of (vertices + colors)
+    // X Y Z R G B X Y Z R G B
+    for (var i=0; i < this.mol.atoms.length; i++) {
+        vertices.push(this.mol.atoms[i].x);
+        vertices.push(this.mol.atoms[i].y);
+        vertices.push(this.mol.atoms[i].z);
+        // get RGB color
+        var rgb = this.colorer.get(this.mol.atoms[i]);
+        vertices.push(rgb[0]);
+        vertices.push(rgb[1]);
+        vertices.push(rgb[2]);
+    }
+    // Set geometry and colors of this shape
+    this.shape.type = 'POINTS';
+    this.shape.addVertexData(
+        {
+            'content': Shape.XYZ | Shape.RGB,
+            'data':vertices,
+            'attributes': [new Attribute("aVertexPosition",0,6), new Attribute("aVertexColor",3,6)]
+        }
+    );
+
+    this.shape.setProgram(shaderProgram);
+
+    this.shape.translate(-this.mol.centroid.x, -this.mol.centroid.cg.y, -this.mol.centroid.cg.z);
+
+};
+
+/*
+ *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
+ *  Copyright (C) 2015  Jean-Christophe Taveau.
+ *
+ *  This file is part of mowgli
+ *
  * This program is free software: you can redistribute it and/or modify it 
  * under the terms of the GNU General Public License as published by 
  * the Free Software Foundation, either version 3 of the License, or 
@@ -154,14 +374,73 @@ Camera.prototype.setFovy = function (angle_in_degrees) {
  *
  *  This file is part of mowgli
  *
- * This program is free software: you can redistribute it and/or modify it 
- * under the terms of the GNU General Public License as published by 
- * the Free Software Foundation, either version 3 of the License, or 
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * Authors:
+ * Jean-Christophe Taveau
+ */
+
+'use strict';
+
+/**
+ * All the classes related to the rendering, scene graph and OpenGL.
+ * @module graphics
+ */
+
+
+/**
+ * CameraGroup: A collection of shapes
+ *
+ * @class CameraGroup
+ * @constructor
+ * @memberof module:graphics
+ * @augments Composite
+ **/
+function CameraGroup() {
+    Composite.call(this);
+
+    this.ID = 'group[camera]';
+    this.nodeGL = new NodeGL(this);
+
+}
+
+CameraGroup.prototype = Object.create(Composite.prototype);
+
+CameraGroup.prototype.add = function(an_object) {
+    if (an_object instanceof Camera) {
+        Composite.add.call(this,an_object);
+    }
+    else {
+        // ERROR: Do nothing
+    }
+};
+
+/*
+ *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
+ *  Copyright (C) 2015  Jean-Christophe Taveau.
+ *
+ *  This file is part of mowgli
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
@@ -173,7 +452,7 @@ Camera.prototype.setFovy = function (angle_in_degrees) {
  */
 
 
-"use strict"
+'use strict';
 
 
 /**
@@ -188,10 +467,10 @@ function Composite(node) {
     this._isDirty = true;
     this.parent   = null;
     this.renderer = null;
-    
-    // 
+
+    //
     this.nodeGL   = null;
-    
+
     // Matrix for rotation(s) and translation(s)
     this.matrix=mat4.create();
     mat4.identity(this.matrix);
@@ -200,7 +479,7 @@ function Composite(node) {
 Composite.prototype.add = function(an_object) {
     this.children[an_object.ID+'_' + size(this.children)] = an_object;
     an_object.parent = this;
-    
+
     function size(obj) {
         var size = 0, key;
         for (key in obj) {
@@ -208,11 +487,11 @@ Composite.prototype.add = function(an_object) {
         }
         return size;
     }
-}
+};
 
 Composite.prototype.getNodeGL = function() {
     return this.nodeGL;
-}
+};
 
 Composite.prototype.getRenderer = function() {
     console.log(this);
@@ -224,11 +503,11 @@ Composite.prototype.getRenderer = function() {
         return this.renderer;
     }
     return this.parent.getRenderer();
-}
+};
 
 Composite.prototype.isDirty = function() {
     return _isDirty;
-}
+};
 
 /**
  * Init the OpenGL config of this object in the scene graph
@@ -245,14 +524,14 @@ Composite.prototype.init = function(context) {
         traverse(context,this.children[i]);
     }
     this.isDirty = false;
-    
+
     function traverse(context,a_node) {
         a_node.init(context);
         for (var i in a_node.children) {
             traverse(context,a_node.children[i]);
         }
     }
-}
+};
 
 /**
  * Render this object and traverse its children
@@ -274,7 +553,7 @@ Composite.prototype.render = function(context) {
     for (var i in this.children) {
         traverse(context,this.children[i]);
     }
-    
+
     function traverse(context,a_node) {
         a_node.render(context);
         for (var i in a_node.children) {
@@ -282,17 +561,17 @@ Composite.prototype.render = function(context) {
         }
     }
 
-}
+};
 
 Composite.prototype.graph = function(level) {
     var lvl = level || 0;
-    var spaces = Array(lvl+1).join(".");
+    var spaces = Array(lvl+1).join('.');
     var str = (this.ID || 'unknown') +'\n';
     for (var i in this.children) {
         str += spaces + '+-'+this.children[i].graph(lvl++)+'\n';
     }
     return str;
-}
+};
 
 /***
 Composite.prototype._updateAttributes = function(context) {
@@ -301,7 +580,7 @@ Composite.prototype._updateAttributes = function(context) {
   if (this.shaderProgram.attributes.length != this.geometry.attributes.length) {
     console.log(this.shaderProgram.attributes);
     console.log(this.shaderProgram.attributes.length + ' != ' + this.geometry.attributesLength() );
-    console.log("MOWGLI: Attributes are not correctly defined");
+    console.log('MOWGLI: Attributes are not correctly defined');
   }
 
     for (var i=0; i < this.geometry.VBO.length;i++) {
@@ -1395,11 +1674,11 @@ Program.prototype._createAttributesAndUniforms=function(text) {
  */
 
 
-"use strict"
+'use strict';
 
 /**
  * Core class for rendering in the canvas
- * 
+ *
  * @todo must be a singleton ??
  *
  * @class Renderer
@@ -1416,38 +1695,40 @@ Program.prototype._createAttributesAndUniforms=function(text) {
  * renderer.drawScene();
  */
 function Renderer(canvas_id) {
-  this.scene = null;
+    this.scene = null;
 
-  // Get A WebGL context
-  function createWebGLContext(canvas, opt_attribs) {
-    var names = ["webgl", "experimental-webgl"];
-    var context = null;
-    for (var ii in names) {
-      try {
-        context = canvas.getContext(names[ii], opt_attribs);
-      } catch(e) {}
-      if (context) {
-        break;
-      }
+    // Get A WebGL context
+    function createWebGLContext(canvas, opt_attribs) {
+        var names = ['webgl', 'experimental-webgl'];
+        var context = null;
+        for (var ii in names) {
+            try {
+                context = canvas.getContext(names[ii], opt_attribs);
+            } catch(e) {
+                // TODO
+            }
+            if (context) {
+                break;
+            }
+        }
+        return context;
     }
-    return context;
-  }
 
-  var canvas = document.getElementById(canvas_id);
-  this.context = createWebGLContext(canvas);
+    var canvas = document.getElementById(canvas_id);
+    this.context = createWebGLContext(canvas);
 
-  if (!this.context) {
-    return;
-  }
+    if (!this.context) {
+        return;
+    }
 
-  // Properties
-  this.context.viewportWidth  = canvas.width;
-  this.context.viewportHeight = canvas.height;
-  this.shaders=[];
-  this.shaderProgram=null; //Active program ID
+    // Properties
+    this.context.viewportWidth  = canvas.width;
+    this.context.viewportHeight = canvas.height;
+    this.shaders=[];
+    this.shaderProgram=null; //Active program ID
 
-  // Init GL
-  this._initGL();
+    // Init GL
+    this._initGL();
 }
 
 /**
@@ -1457,8 +1738,8 @@ function Renderer(canvas_id) {
  *
  **/
 Renderer.prototype.getContext = function () {
-  return this.context;
-}
+    return this.context;
+};
 
 /**
  * Add scene
@@ -1467,36 +1748,36 @@ Renderer.prototype.getContext = function () {
  *
  **/
 Renderer.prototype.addScene = function (a_scene) {
-  this.scene = a_scene;
-  a_scene.parent = this;
-}
+    this.scene = a_scene;
+    a_scene.parent = this;
+};
 
 
 Renderer.prototype.addShader = function (a_shaderprogram) {
     this.shaders.push(a_shaderprogram);
-}
+};
 
 /**
- * Add sensor 
+ * Add sensor
  *
  * @param {Sensor} - Add a sensor or an object interacting with the scene graph
  *
  **/
 Renderer.prototype.addSensor = function (a_sensor) {
-  this.sensor = a_sensor;
-  this.sensor.setRenderer(this);
-}
+    this.sensor = a_sensor;
+    this.sensor.setRenderer(this);
+};
 
 Renderer.prototype.setUniform = function (name,value) {
     for (var i in this.shaders) {
         var shader = this.shaders[i];
         shader.uniforms[name].value = value;
     }
-}
+};
 
 
 /**
- * Initialize the renderer. 
+ * Initialize the renderer.
  *
  *
  **/
@@ -1504,16 +1785,16 @@ Renderer.prototype.init = function () {
     var gl = this.context;
     this.scene.init(gl);
   // TODO
-}
+};
 
 /**
- * Draw the scene. This function triggers the OpenGL rendering in an infinite loop. 
+ * Draw the scene. This function triggers the OpenGL rendering in an infinite loop.
  *
  *
  **/
 Renderer.prototype.drawScene = function () {
     var gl = this.context;
-    
+
     // Clear Screen And Depth Buffer
     gl.viewport(0.0, 0.0, gl.viewportWidth, gl.viewportHeight);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -1521,7 +1802,7 @@ Renderer.prototype.drawScene = function () {
     // Traverse scene graph
     console.log('*************** RENDER ***************');
     this.scene.render(gl);
-}
+};
 /*
  * Private
  */
@@ -1529,24 +1810,23 @@ Renderer.prototype.drawScene = function () {
 Renderer.FLOAT_IN_BYTES = 4;
 
 Renderer.prototype._initGL = function() {
-  // Init GL stuff
-  var gl = this.context;
-  // TODO
-  // Default clearColor
-  gl.clearColor(0.1,0.1,0.1,1.0);
+    // Init GL stuff
+    var gl = this.context;
+    // TODO
+    // Default clearColor
+    gl.clearColor(0.1,0.1,0.1,1.0);
 
-  gl.enable(gl.DEPTH_TEST);
+    gl.enable(gl.DEPTH_TEST);
 
-  // Check extension...
-  gl.getExtension("EXT_frag_depth");
-  if (gl.getSupportedExtensions().indexOf("EXT_frag_depth") < 0 ) {
-    alert('Extension frag_depth not supported');
-  }
+    // Check extension...
+    gl.getExtension('EXT_frag_depth');
+    if (gl.getSupportedExtensions().indexOf('EXT_frag_depth') < 0 ) {
+        alert('Extension frag_depth not supported');
+    }
 
-
-  // Default shader program
-  this.program = new Program();
-}
+    // Default shader program
+    this.program = new Program();
+};
 
 /*
  *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
@@ -1554,14 +1834,14 @@ Renderer.prototype._initGL = function() {
  *
  *  This file is part of mowgli
  *
- * This program is free software: you can redistribute it and/or modify it 
- * under the terms of the GNU General Public License as published by 
- * the Free Software Foundation, either version 3 of the License, or 
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
@@ -1572,7 +1852,7 @@ Renderer.prototype._initGL = function() {
  * Jean-Christophe Taveau
  */
 
-"use strict"
+'use strict';
 
 
 /**
@@ -1583,13 +1863,10 @@ Renderer.prototype._initGL = function() {
  * @constructor
  * @augments Composite
  **/
-var Scene = function () {
+function Scene() {
     Composite.call(this);
-    
+
     this.ID = 'scene';
-    this.add(new Camera() );
-    this.add(new Light()  );
-    
     this.nodeGL = new NodeGL();
 
 }
@@ -1597,13 +1874,26 @@ var Scene = function () {
 Scene.prototype = Object.create(Composite.prototype);
 
 /**
+ * Set default scene with a camera and a light
+ *
+ **/
+Scene.prototype.setDefault = function() {
+    this.ID = 'scene_default';
+    // Add a camera
+    this.add(new Camera() );
+    // Add a light
+    this.add(new Light()  );
+};
+
+/**
  * Get Camera in the scene
  *
  * @return {Camera} Returns the current camera
  **/
 Scene.prototype.getCamera = function() {
+    // TODO: must be improved if CameraGroup exists for stereo
     return this.children['camera_0'];
-}
+};
 
 Scene.prototype.toString = function() {
     var str = this.ID+'\n';
@@ -1611,10 +1901,7 @@ Scene.prototype.toString = function() {
         str += '+-'+this.children[i].ID+'\n';
     }
     return str;
-}
-
-
-
+};
 
 /*
  *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
@@ -1822,14 +2109,14 @@ Shape.prototype.updateUniforms = function (context) {
  *
  *  This file is part of mowgli
  *
- * This program is free software: you can redistribute it and/or modify it 
- * under the terms of the GNU General Public License as published by 
- * the Free Software Foundation, either version 3 of the License, or 
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
@@ -1840,63 +2127,32 @@ Shape.prototype.updateUniforms = function (context) {
  * Jean-Christophe Taveau
  */
 
-"use strict"
+'use strict';
 
-var ShapeFactory = (function () {
- 
-  // Storage for our various styles types
-  var styles = {};
- 
-  return {
-    get: function ( options ) {
-      switch (options.style) {
-      case "points":
-        // Already computed for the given structure?
-        // var style = types['atoms'] ????
-        // if (style === undefined) then 
-        // Basic shape - only for debug
-        var style = new PointStyle(options);
-        return style.getShape();
-        break;
-      case "backbone":
-        // TODO
-        break;
-      case "ball_sticks":
-        // TODO
-        break;
-      case "cartoon":
-        // TODO
-        break;
-      case "dots":
-        // TODO
-        break;
-      case "spacefill":
-        // TODO
-        break;
-      case "ribbons":
-        // TODO
-        break;
-      case "sticks":
-        // TODO
-        break;
-      case "strands":
-        // TODO
-        break;
-      case "trace":
-        // TODO
-        break;
-      case "wireframe":
-        // TODO
-        break;
-      default:
-        // Do nothing ??
-        return null;
-      }
-    }
-  };
-})();
- 
- 
+/**
+ * All the classes related to the rendering, scene graph and OpenGL.
+ * @module graphics
+ */
+
+
+/**
+ * ShapeGroup: A collection of shapes
+ *
+ * @class ShapeGroup
+ * @constructor
+ * @memberof module:graphics
+ * @augments Composite
+ **/
+var ShapeGroup = function () {
+    Composite.call(this);
+
+    this.ID = 'group[shape]';
+
+    this.nodeGL = new NodeGL(this);
+
+}
+
+ShapeGroup.prototype = Object.create(Composite.prototype);
 
 /*
  *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
@@ -1922,34 +2178,106 @@ var ShapeFactory = (function () {
  * Jean-Christophe Taveau
  */
 
+
 "use strict"
 
-/** 
- * All the classes related to the rendering, scene graph and OpenGL.
- * @module graphics
+/*
+ * Constructor
  */
- 
-  
-/**
- * ShapeGroup: A collection of shapes
- *
- * @class ShapeGroup
- * @constructor
- * @memberof module:graphics
- * @augments Composite
- **/
-var ShapeGroup = function () {
-    Composite.call(this);
-    
-    this.ID = 'group';
-    
-    this.nodeGL = new NodeGL(this);
+function Uniform (options) {
+    this.name = options.name;
 
 }
 
-ShapeGroup.prototype = Object.create(Composite.prototype);
 
 
+
+/*
+ *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
+ *  Copyright (C) 2015  Jean-Christophe Taveau.
+ *
+ *  This file is part of mowgli
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * Authors:
+ * Jean-Christophe Taveau
+ */
+
+'use strict';
+
+var ShapeFactory = (function () {
+
+    // Storage for our various styles types
+    var styles = {};
+    var shape = new Shape();
+    return {
+        /**
+         * Get shape
+         *
+         * @example
+         * var shape = ShapeFactory.get({'molecule': myStruct, 'displayType': 'wireframe', 'color': 'cpk'});
+         */
+        get: function ( options ) {
+            switch (options.displayType) {
+            case 'points':
+                // Already computed for the given structure?
+                // var style = types['atoms'] ????
+                // if (style === undefined) then
+                // Basic shape - only for debug
+                var style = new PointGeometer(options.molecule,ColorFactory.get(options.color) );
+                return style.getShape();
+                break;
+            case 'backbone':
+                // TODO
+                break;
+            case 'ball_sticks':
+                // TODO
+                break;
+            case 'cartoon':
+                // TODO
+                break;
+            case 'dots':
+                // TODO
+                break;
+            case 'spacefill':
+                // TODO
+                break;
+            case 'ribbons':
+                // TODO
+                break;
+            case 'sticks':
+                // TODO
+                break;
+            case 'strands':
+                // TODO
+                break;
+            case 'trace':
+                // TODO
+                break;
+            case 'wireframe':
+                // TODO
+                style = new WireGeometer(options.molecule,ColorFactory.get(options.color) );
+                return style.getShape();
+            default:
+                // Do nothing ??
+                return null;
+            }
+        }
+    };
+})();
 
 /*
  *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
@@ -2124,44 +2452,6 @@ Cube.indices = [
 
 
  
-
-/*
- *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
- *  Copyright (C) 2015  Jean-Christophe Taveau.
- *
- *  This file is part of mowgli
- *
- * This program is free software: you can redistribute it and/or modify it 
- * under the terms of the GNU General Public License as published by 
- * the Free Software Foundation, either version 3 of the License, or 
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
- * GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
- *
- *
- * Authors:
- * Jean-Christophe Taveau
- */
-
-
-"use strict"
-
-/*
- * Constructor
- */
-function Uniform (options) {
-    this.name = options.name;
-
-}
-
-
-
 
 function EMDBInfoParser() {
 
@@ -3304,7 +3594,7 @@ IsoSlice.prototype.back = function () {
  * Jean-Christophe Taveau
  */
 
-"use strict";
+'use strict';
 
 /**
  * IsoSurface Generator based on the Marching Cubes algorithm
@@ -3315,9 +3605,9 @@ IsoSlice.prototype.back = function () {
  *
  * @author Jean-Christophe Taveau
  */
-function IsoSurfacer(maps) {
-    if (maps instanceof Raster) {
-        this.voxels = maps.data;
+function IsoSurfacer(map) {
+    if (map instanceof Raster) {
+        this.map = map;
         this.mesh = {};
         this.mesh.vertices = [];
         this.mesh.faces = [];
@@ -3329,11 +3619,11 @@ function IsoSurfacer(maps) {
             var x = ( v0.x + v1.x )/2.0;
             var y = ( v0.y + v1.y )/2.0;
             var z = ( v0.z + v1.z )/2.0;
-            return {"x":x,"y":y,"z":z};
+            return {'x':x,'y':y,'z':z};
         };
     }
     else {
-        MOWGLI.alert("This structure is not a raster/map");
+        MOWGLI.alert('This structure is not a raster/map');
     }
 }
 
@@ -3342,7 +3632,7 @@ IsoSurfacer.prototype.setInterpolation = function(mode) {
         var x = ( v0.x + v1.x )/2.0;
         var y = ( v0.y + v1.y )/2.0;
         var z = ( v0.z + v1.z )/2.0;
-        return {"x":x,"y":y,"z":z};
+        return {'x':x,'y':y,'z':z};
     }
 
     function interpolateBilinear(v0,v1) {
@@ -3350,7 +3640,7 @@ IsoSurfacer.prototype.setInterpolation = function(mode) {
         var x = v0.x + (v1.x - v0.x) * k;
         var y = v0.y + (v1.y - v0.y) * k;
         var z = v0.z + (v1.z - v0.z) * k;
-        return {x:x, y:y, z:z};
+        return {'x':x, 'y':y, 'z':z};
     }
     if (mode === 'None') {
         this.interpolate = interpolateNone;
@@ -3358,22 +3648,29 @@ IsoSurfacer.prototype.setInterpolation = function(mode) {
     else if (mode === 'Bilinear') {
         this.interpolate = interpolateBilinear;
     }
-}
+};
+
+IsoSurfacer.prototype.getMesh = function() {
+    return this.mesh;
+};
 
 IsoSurfacer.prototype.compute = function(threshold) {
 
     var slice= new IsoSlice(Math.floor( (nx -1)/this.cubeSize ),Math.floor( (ny-1)/this.cubeSize ) );
 
     // M a i n   L o o p
-    console.log("Start of the main loop... Please wait.");
+    var nx = this.map.width;
+    var ny = this.map.height;
+    var nz = this.map.depth;
+    console.log('Start of the main loop... Please wait.');
     for (var z=0; z < nz-this.cubeSize; z+=this.cubeSize) {
         slice.reset_count();
-        for (var y=0; y < ny-this.cubeSize; y+=this.cubeSize) {
-            for (var x=0; x < nx-this.cubeSize; x+=this.cubeSize) {
+        for (var y=0; y < ny-this.cubeSize; y += this.cubeSize) {
+            for (var x=0; x < nx-this.cubeSize; x += this.cubeSize) {
                 // 1- Create a new marching cube
                 var cube = new IsoCube(x,y,z,this.cubeSize);
                 // 2- Set voxels in the cube
-                cube.setVoxels(stack);
+                cube.setVoxels(this.map.data);
                 // 3- Calc configuration
                 cube.calcKey(threshold);
                 // 4- Create vertices and triangles
@@ -3384,250 +3681,157 @@ IsoSurfacer.prototype.compute = function(threshold) {
                 slice.push(cube);
             }
         }
-        if ( (z%10) == 0) IJ.log("z="+z);
+        if ( (z%10) == 0) console.log('z=' + z);
     }
 
     function createTriangles(probe) {
-      //console.log("key "+probe.key+" "+ probe.x +" "+probe.y+" "+probe.z);
-      var vertices=[];
-      var vertex = null;
-      var edges=triangles[probe.key];
-      for (var i=0;i<edges.length;i++) {
-        var index=-1;
-        var edge = edges[i];
-        //IJ.log("edge "+edge);
-        if (probe.edges[edge] != -1) {
-          // Edge already calculated
-          index = probe.edges[edge];
+        //console.log('key '+probe.key+' '+ probe.x +' '+probe.y+' '+probe.z);
+        var vertex = null;
+        var edges = IsoSurfacer.triangles[probe.key];
+        for (var i=0;i<edges.length;i++) {
+            var index=-1;
+            var edge = edges[i];
+            //IJ.log('edge '+edge);
+            if (probe.edges[edge] != -1) {
+                // Edge already calculated
+                index = probe.edges[edge];
+            }
+            else {
+                switch (edge) {
+                case 0:
+                    if (probe.y != 0) {
+                        probe.edges[edge] = slice.above().edges[2];
+                        index = probe.edges[edge];
+                    }
+                    else {
+                        vertex=this.interpolate(probe.getVertex(0),probe.getVertex(1) );
+                        this.mesh.vertices.push(vertex);
+                        index = this.mesh.vertices.length-1;
+                        probe.edges[edge]= index;
+                    }
+                    break;
+                case 1:
+                    if (probe.z != 0) {
+                        probe.edges[edge] = slice.back().edges[5];
+                        index = probe.edges[edge];
+                    }
+                    else {
+                        vertex= this.interpolate(probe.getVertex(1),probe.getVertex(2) );
+                        this.mesh.vertices.push(vertex);
+                        index = this.mesh.vertices.length-1;
+                        probe.edges[edge]= index;
+                    }
+                    break;
+                case 2:
+                    if (probe.z != 0) {
+                        probe.edges[edge] = slice.back().edges[6];
+                        index = probe.edges[edge];
+                    }
+                    else {
+                        vertex=this.interpolate(probe.getVertex(2),probe.getVertex(3) );
+                        this.mesh.vertices.push(vertex);
+                        index = this.mesh.vertices.length-1;
+                        probe.edges[edge]= index;
+                    }
+                    break;
+                case 3:
+                    if (probe.x != 0) {
+                        probe.edges[edge] = slice.previous().edges[1];
+                        index = probe.edges[edge];
+                    }
+                    else {
+                        vertex=this.interpolate(probe.getVertex(0),probe.getVertex(3) );
+                        this.mesh.vertices.push(vertex);
+                        index = this.mesh.vertices.length-1;
+                        probe.edges[edge]= index;
+                    }
+                    break;
+                case 4:
+                    if (probe.y != 0) {
+                        probe.edges[edge] = slice.above().edges[6];
+                        index = probe.edges[edge];
+                    }
+                    else {
+                        vertex=this.interpolate(probe.getVertex(4),probe.getVertex(5) );
+                        this.mesh.vertices.push(vertex);
+                        index = this.mesh.vertices.length-1;
+                        probe.edges[edge]= index;
+                    }
+                    break;
+                case 5:
+                    vertex=this.interpolate(probe.getVertex(5),probe.getVertex(6) );
+                    this.mesh.vertices.push(vertex);
+                    index = this.mesh.vertices.length-1;
+                    probe.edges[edge]= index;
+                    break;
+                case 6:
+                    vertex=this.interpolate(probe.getVertex(6),probe.getVertex(7) );
+                    this.mesh.vertices.push(vertex);
+                    index = this.mesh.vertices.length-1;
+                    probe.edges[edge]= index;
+                    break;
+                case 7:
+                    if (probe.x != 0) {
+                        probe.edges[edge] = slice.previous().edges[5];
+                        index = probe.edges[edge];
+                    }
+                    else {
+                        vertex = this.interpolate(probe.getVertex(4),probe.getVertex(7) );
+                        this.mesh.vertices.push(vertex);
+                        index = this.mesh.vertices.length-1;
+                        probe.edges[edge]= index;
+                    }
+                    break;
+                case 8:
+                    if (probe.x != 0) {
+                        probe.edges[edge] = slice.previous().edges[9];
+                        index = probe.edges[edge];
+                    }
+                    else {
+                        vertex = this.interpolate(probe.getVertex(0),probe.getvertex(4) );
+                        this.mesh.vertices.push(vertex);
+                        index = this.mesh.vertices.length-1;
+                        probe.edges[edge]= index;
+                    }
+                    break;
+                case 9:
+                    if (probe.y != 0) {
+                        probe.edges[edge] = slice.above().edges[11];
+                        index = probe.edges[edge];
+                    }
+                    else {
+                        vertex = this.interpolate(probe.getVertex(1),probe.getVertex(5) );
+                        this.mesh.vertices.push(vertex);
+                        index = this.mesh.vertices.length-1;
+                        probe.edges[edge]= index;
+                    }
+                    break;
+                case 10:
+                    if (probe.x != 0) {
+                        probe.edges[edge] = slice.previous().edges[11];
+                        index = probe.edges[edge];
+                    }
+                    else {
+                        vertex  = this.interpolate(probe.getVertex(3),probe.getVertex(7) );
+                        this.mesh.vertices.push(vertex);
+                        index = this.mesh.vertices.length-1;
+                        probe.edges[edge]= index;
+                    }
+                    break;
+                case 11:
+                    vertex = this.interpolate(probe.getVertex(2),probe.getVertex(6) );
+                    this.mesh.vertices.push(vertex);
+                    index = this.mesh.vertices.length-1;
+                    probe.edges[edge]= index;
+                    break;
+                }
+            //IJ.log ('faces['+(mesh.faces.length-1)+']= '+index);
+            }
+            this.mesh.faces.push(index);
         }
-        else {
-          switch (edge) {
-          case 0:
-            if (probe.y != 0) {
-              probe.edges[edge] = slice.above().edges[2];
-              index = probe.edges[edge];
-            }
-            else {
-              vertex=interpolate(probe.getVertex(0),probe.getVertex(1) );
-              this.mesh.vertices.push(vertex);
-              index = this.mesh.vertices.length-1;
-              probe.edges[edge]= index;
-            }
-            break;
-          case 1:
-            if (probe.z != 0) {
-              probe.edges[edge] = slice.back().edges[5];
-              index = probe.edges[edge];
-            }
-            else {
-              vertex=interpolate(probe.getVertex(1),probe.getVertex(2) );
-              this.mesh.vertices.push(vertex);
-              index = this.mesh.vertices.length-1;
-              probe.edges[edge]= index;
-            }
-            break;
-          case 2:
-            if (probe.z != 0) {
-              probe.edges[edge] = slice.back().edges[6];
-              index = probe.edges[edge];
-            }
-            else {
-              vertex=interpolate(probe.getVertex(2),probe.getVertex(3) );
-              this.mesh.vertices.push(vertex);
-              index = this.mesh.vertices.length-1;
-              probe.edges[edge]= index;
-            }
-            break;
-          case 3:
-            if (probe.x != 0) {
-              probe.edges[edge] = slice.previous().edges[1];
-              index = probe.edges[edge];
-            }
-            else {
-              vertex=interpolate(probe.getVertex(0),probe.getVertex(3) );
-              this.mesh.vertices.push(vertex);
-              index = this.mesh.vertices.length-1;
-              probe.edges[edge]= index;
-            }
-            break;
-          case 4:
-            if (probe.y != 0) {
-              probe.edges[edge] = slice.above().edges[6];
-              index = probe.edges[edge];
-            }
-            else {
-              vertex=interpolate(probe.getVertex(4),probe.getVertex(5) );
-              this.mesh.vertices.push(vertex);
-              index = this.mesh.vertices.length-1;
-              probe.edges[edge]= index;
-            }
-            break;
-          case 5:
-            vertex=interpolate(probe.getVertex(5),probe.getVertex(6) );
-            this.mesh.vertices.push(vertex);
-            index = this.mesh.vertices.length-1;
-            probe.edges[edge]= index;
-            break;
-          case 6:
-            vertex=interpolate(probe.getVertex(6),probe.getVertex(7) );
-            this.mesh.vertices.push(vertex);
-            index = this.mesh.vertices.length-1;
-            probe.edges[edge]= index;
-            break;
-          case 7:
-            if (probe.x != 0) {
-              probe.edges[edge] = slice.previous().edges[5];
-              index = probe.edges[edge];
-            }
-            else {
-              vertex=interpolate(probe.getVertex(4),probe.getVertex(7) );
-              this.mesh.vertices.push(vertex);
-              index = this.mesh.vertices.length-1;
-              probe.edges[edge]= index;
-            }
-            break;
-          case 8:
-            if (probe.x != 0) {
-              probe.edges[edge] = slice.previous().edges[9];
-              index = probe.edges[edge];
-            }
-            else {
-              vertex=interpolate(probe.getVertex(0),probe.getvertex(4) );
-              this.mesh.vertices.push(vertex);
-              index = this.mesh.vertices.length-1;
-              probe.edges[edge]= index;
-            }
-            break;
-          case 9:
-            if (probe.y != 0) {
-              probe.edges[edge] = slice.above().edges[11];
-              index = probe.edges[edge];
-            }
-            else {
-              vertex=interpolate(probe.getVertex(1),probe.getVertex(5) );
-              this.mesh.vertices.push(vertex);
-              index = this.mesh.vertices.length-1;
-              probe.edges[edge]= index;
-            }
-            break;
-          case 10:
-            if (probe.x != 0) {
-              probe.edges[edge] = slice.previous().edges[11];
-              index = probe.edges[edge];
-            }
-            else {
-              vertex = interpolate(probe.getVertex(3),probe.getVertex(7) );
-              this.mesh.vertices.push(vertex);
-              index = this.mesh.vertices.length-1;
-              probe.edges[edge]= index;
-            }
-            break;
-          case 11:
-            vertex=interpolate(probe.getVertex(2),probe.getVertex(6) );
-            this.mesh.vertices.push(vertex);
-            index = this.mesh.vertices.length-1;
-            probe.edges[edge]= index;
-            break;
-          }
-        //IJ.log ("faces["+(mesh.faces.length-1)+"]= "+index);
-        }
-        this.mesh.faces.push(index);
-      }
     }
 
-}
-
-
-
-/*
-
-// F U N C T I O N S
-
-function dialog() {
-  var gd = new GenericDialog("Marching Cubes");
-  gd.addNumericField("Threshold: ", threshold, 0);
-  gd.addNumericField("Cube Size: ", this.cubeSize, 0);
-  gd.addChoice("Interpolation: ", ["None","Bilinear"], 0);
-  gd.showDialog();
-  if (gd.wasCanceled()) {
-    return;
-  }
-  threshold = gd.getNextNumber();
-  this.cubeSize = gd.getNextNumber();
-  mode = gd.getNextChoiceIndex();
-
-  if (mode ==0) {
-    interpolate = function (v0,v1) {
-      return interpolateNone(v0,v1);
-    }
-  }
-  else {
-    interpolate = function (v0,v1) {
-      return interpolateBilinear(v0,v1);
-    }
-  }
-
-  var saveDialog = new SaveDialog("Save OBJ File As ...","Untitled",".obj");
-  filename=saveDialog.getDirectory()+saveDialog.getFileName();
-
-  IJ.log(filename);
-
-}
-
-
-
-
-
-function interpolateBilinear(v0,v1) {
-  var k = (threshold - v0)/(v1 - v0);
-  var x = x0 + (x1 - x0) * k;
-  var y = y0 + (y1 - y0) * k;
-  var z = z0 + (z1 - z0) * k;
-  return {"x":x,"y":y,"z":z};
-}
-
-
-function saveAsOBJ() {
-  IJ.log("Preparing file ...");
-  var text='';
-  // Header
-  text+="# Marching Cubes\n";
-  text+="# Jean-Christophe Taveau\n";
-  text+="# CrazyBioComputing\n";
-  text+="# WaveFront OBJ File Format\n";
-  text+="# Vertices: "+mesh.vertices.length+"\n";
-  text+="\n";
-  text+="o "+imp.getTitle()+"\n";
-  text+="\n";
-
-  // Write output text in file
-  var file = new java.io.File(filename);
-  var  printWriter = new java.io.PrintWriter (filename);
-
-  IJ.log("Writing header...");
-  printWriter.println (text);
-
-  // Vertices
-  for (var i=0;i<mesh.vertices.length;i++) {
-    printWriter.println ("v "+ (mesh.vertices[i].x - center.x)+" "+ (mesh.vertices[i].y - center.y) + " " + (mesh.vertices[i].z - center.z) );
-  }
-  IJ.log("Writing vertices...");
-  printWriter.println (" ");
-
-  // Faces (aka lines)
-  // *Note*: The first vertex in OBJ format has the index 1 (and not 0).
-  for (var i=0;i<mesh.faces.length;i+=3)
-    printWriter.println ("f "+(mesh.faces[i]+1) +" "+ (mesh.faces[i+1]+1) +" "+ (mesh.faces[i+2]+1) );
-
-  IJ.log("Writing faces...");
-
-  // Close file
-  printWriter.close ();
-}
-
-
-}
-*/
+};
 
 
 // triangles to be drawn in each case
@@ -3889,6 +4093,99 @@ IsoSurfacer.triangles = [
     [0,3,8],
     []
 ];
+
+
+
+
+/*
+
+// F U N C T I O N S
+
+function dialog() {
+  var gd = new GenericDialog('Marching Cubes');
+  gd.addNumericField('Threshold: ', threshold, 0);
+  gd.addNumericField('Cube Size: ', this.cubeSize, 0);
+  gd.addChoice('Interpolation: ', ['None','Bilinear'], 0);
+  gd.showDialog();
+  if (gd.wasCanceled()) {
+    return;
+  }
+  threshold = gd.getNextNumber();
+  this.cubeSize = gd.getNextNumber();
+  mode = gd.getNextChoiceIndex();
+
+  if (mode ==0) {
+    interpolate = function (v0,v1) {
+      return interpolateNone(v0,v1);
+    }
+  }
+  else {
+    interpolate = function (v0,v1) {
+      return interpolateBilinear(v0,v1);
+    }
+  }
+
+  var saveDialog = new SaveDialog('Save OBJ File As ...','Untitled','.obj');
+  filename=saveDialog.getDirectory()+saveDialog.getFileName();
+
+  IJ.log(filename);
+
+}
+
+
+
+
+
+function interpolateBilinear(v0,v1) {
+  var k = (threshold - v0)/(v1 - v0);
+  var x = x0 + (x1 - x0) * k;
+  var y = y0 + (y1 - y0) * k;
+  var z = z0 + (z1 - z0) * k;
+  return {'x':x,'y':y,'z':z};
+}
+
+
+function saveAsOBJ() {
+  IJ.log('Preparing file ...');
+  var text='';
+  // Header
+  text+='# Marching Cubes\n';
+  text+='# Jean-Christophe Taveau\n';
+  text+='# CrazyBioComputing\n';
+  text+='# WaveFront OBJ File Format\n';
+  text+='# Vertices: '+mesh.vertices.length+'\n';
+  text+='\n';
+  text+='o '+imp.getTitle()+'\n';
+  text+='\n';
+
+  // Write output text in file
+  var file = new java.io.File(filename);
+  var  printWriter = new java.io.PrintWriter (filename);
+
+  IJ.log('Writing header...');
+  printWriter.println (text);
+
+  // Vertices
+  for (var i=0;i<mesh.vertices.length;i++) {
+    printWriter.println ('v '+ (mesh.vertices[i].x - center.x)+' '+ (mesh.vertices[i].y - center.y) + ' ' + (mesh.vertices[i].z - center.z) );
+  }
+  IJ.log('Writing vertices...');
+  printWriter.println (' ');
+
+  // Faces (aka lines)
+  // *Note*: The first vertex in OBJ format has the index 1 (and not 0).
+  for (var i=0;i<mesh.faces.length;i+=3)
+    printWriter.println ('f '+(mesh.faces[i]+1) +' '+ (mesh.faces[i+1]+1) +' '+ (mesh.faces[i+2]+1) );
+
+  IJ.log('Writing faces...');
+
+  // Close file
+  printWriter.close ();
+}
+
+
+}
+*/
 
 /*
  *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
@@ -4971,14 +5268,14 @@ Structure.prototype.setTitle = function (str) {
  *
  *  This file is part of mowgli
  *
- * This program is free software: you can redistribute it and/or modify it 
- * under the terms of the GNU General Public License as published by 
- * the Free Software Foundation, either version 3 of the License, or 
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
@@ -4989,8 +5286,7 @@ Structure.prototype.setTitle = function (str) {
  * Jean-Christophe Taveau
  */
 
- 
-"use strict";
+'use strict';
 
 /**
  * 3D Vectorial Object
@@ -5007,6 +5303,7 @@ function VecObj() {
     // TODO Is it redundant with the Shape class?????
 }
 
+VecObj.prototype = Object.create(Structure.prototype);
 
 /*
  *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
