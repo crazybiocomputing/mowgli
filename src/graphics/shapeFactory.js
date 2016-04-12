@@ -28,15 +28,15 @@ var ShapeFactory = (function () {
 
     // Storage for our various styles types
     var styles = {};
-    var shape = new Shape();
     return {
         /**
          * Get shape
          *
          * @example
-         * var shape = ShapeFactory.get({'molecule': myStruct, 'displayType': 'wireframe', 'color': 'cpk'});
+         * var shape = ShapeFactory.get({'molecule': myStruct, 'displayType': 'wireframe', 'color': 'cpk','glContext': ctx});
          */
         get: function ( options ) {
+            console.log(options);
             switch (options.displayType) {
             case 'points':
                 // Already computed for the given structure?
@@ -44,8 +44,15 @@ var ShapeFactory = (function () {
                 // if (style === undefined) then
                 // Basic shape - only for debug
                 var style = new PointGeometer(options.molecule,ColorFactory.get(options.color) );
+                style.getShape().setProgram(
+                    ShaderFactory.get(
+                        {
+                            'displayType': 'points',
+                            'glContext': options.glContext
+                        }
+                    )
+                );
                 return style.getShape();
-                break;
             case 'backbone':
                 // TODO
                 break;

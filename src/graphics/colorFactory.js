@@ -37,18 +37,18 @@ var ColorFactory = (function () {
          */
         get: function ( name ) {
             switch (name) {
-            case 'CPK':
+            case 'color_cpk':
                 if (colorers.CPK === undefined) {
                     colorers.CPK = new CPKColorer();
                 }
                 return colorers.CPK;
-            case 'mono':
+            case 'color_mono':
                 // TODO
                 break;
-            case 'structure':
+            case 'color_struct':
                 // TODO
                 break;
-            case 'rainbow':
+            case 'color_rainbow':
                 // TODO
                 break;
             default:
