@@ -22,6 +22,14 @@ module.exports = function(grunt) {
         dest: 'doc/README.md'
       }
     },
+    copy: {
+      main: {
+        files: [
+          // includes files within path and its sub-directories
+          {expand: true, src: 'dist/*.js', dest: '../gh-pages/javascripts/'},
+        ],
+      },
+    },
     jsdoc : {
         dist : {
             src: ['src/**/*.js','doc/README.md'],
@@ -35,12 +43,13 @@ module.exports = function(grunt) {
 
   // Load the plugin that provides the "uglify" task.
   grunt.loadNpmTasks('grunt-contrib-concat');
+  grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-jsdoc');
-  
+
 
   // Default task(s).
-  grunt.registerTask('default', ['concat','uglify']);
+  grunt.registerTask('default', ['concat','uglify','copy']);
 
   // this would be run by typing "grunt doc" on the command line
   grunt.registerTask('doc', ['jsdoc']);
