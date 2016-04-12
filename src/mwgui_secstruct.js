@@ -65,48 +65,19 @@
             console.log(the_id); // 'Something Good', as this is the Something object
             switch(event.type) {
             case 'click':
-            if( MOWGLI.structure.isMolecule() ) {
-                 MOWGLI.structure.secondary();
-                var selection=MOWGLI.structure.finder(
-                    'ATOM', 
-                    function (atom) {
-                        if ( atom.name === 'CA') {
-                            return true;
-                         } 
-                    }
-                );
-                console.log(selection);
-                 var Secondary_content=function(array){
-                   var str="Sequence and secondary sructure for "+MOWGLI.structure.ID;
-                    var seq="";
-                    var sec="";
-                    for (var i=0; i < selection.length; i++) {
-                        if (i%10 == 0) seq+=" ", sec+=" ";
-                        if (i%50 == 0) str+=seq+"\n"+sec+"\n"+"\n",sec="",seq="";
-                        sec+=(selection[i].secondary[0]=='X') ?'.' : selection[i].secondary[0] ;
-                        seq+=Molecule.threeToOne[selection[i].group];
-                    }
-                    str+=seq+"\n"+sec;
-                    return str 
-
-
-                };
-
-                var content=Secondary_content(selection);
-                
-                
-                // Display modal window
-                var popup = new Modal({
-                    headerTitle : "Secondary structure...",
-                    headerImage : "url('images/headprot.jpg')",
-                    body  :"<pre>"+content+"</pre>"
-                            
-                        
-                });
+            var second_content;
+                if( MOWGLI.structure.isMolecule() ) {
+                    second_content = MOWGLI.structure.secondary();
+                    console.log(second_content);
+                    // Display modal window
+                    var popup = new Modal({
+                        headerTitle : "Secondary Structure",
+                        headerImage : "url('images/headprot.jpg')",
+                        body  : '<pre>'+ second_content +'</pre>'
+                    });
                 }
-                
                 else {
-                    MOWGLI.alert("No Secondary Structure are available for this structure");
+                    MOWGLI.alert("No Secondary structure sequence is available for this structure");
                 }
                 break;
             case 'dblclick':

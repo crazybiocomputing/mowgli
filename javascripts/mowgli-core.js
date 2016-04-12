@@ -4,6 +4,586 @@
  *
  *  This file is part of mowgli
  *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * Authors:
+ * Jean-Christophe Taveau
+ */
+
+'use strict';
+
+var ColorFactory = (function () {
+
+    // Storage for our various styles types
+    var colorers = {};
+    return {
+        /**
+         * Get shape
+         *
+         * @example
+         * var shape = ShapeFactory.get(name);
+         */
+        get: function ( name ) {
+            switch (name) {
+            case 'CPK':
+                if (colorers.CPK === undefined) {
+                    colorers.CPK = new CPKColorer();
+                }
+                return colorers.CPK;
+            case 'mono':
+                // TODO
+                break;
+            case 'structure':
+                // TODO
+                break;
+            case 'rainbow':
+                // TODO
+                break;
+            default:
+                if (colorers.CPK === undefined) {
+                    colorers.CPK = new CPKColorer();
+                }
+                return colorers.CPK;
+            }
+        }
+    };
+})();
+
+/*
+ *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
+ *  Copyright (C) 2015  Jean-Christophe Taveau.
+ *
+ *  This file is part of mowgli
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * Authors:
+ * Jean-Christophe Taveau
+ */
+
+'use strict';
+
+
+/**
+ * CPK Colorer generates given RGB color depending an atom
+ *
+ * @class CPKColorer
+ * @memberof module:graphics
+ * @constructor
+ * @author Jean-Christophe Taveau
+ **/
+function CPKColorer() {
+    this.name = "CPK";
+}
+
+CPKColorer.prototype.get = function(atom) {
+    var rgb = [];
+    switch (atom.symbol) {
+    case 'C':
+        rgb.push(0.78); //red
+        rgb.push(0.78); //green
+        rgb.push(0.78); //blue
+        break;
+    case 'N':
+        rgb.push(0.56); //red
+        rgb.push(0.56); //green
+        rgb.push(1.00); //blue
+        break;
+    case 'O':
+        rgb.push(0.94); //red
+        rgb.push(0.00); //green
+        rgb.push(0.00); //blue
+        break;
+    case 'P':
+        rgb.push(1.00); //red
+        rgb.push(0.5); //green
+        rgb.push(0.00); //blue
+        break;
+    case 'S':
+        rgb.push(1.00); //red
+        rgb.push(0.98); //green
+        rgb.push(0.19); //blue
+        break;
+    default:
+        rgb.push(1.00); //red
+        rgb.push(0.1); //green
+        rgb.push(0.50); //blue
+    }
+
+    return rgb;
+};
+
+/*
+ *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
+ *  Copyright (C) 2015  Jean-Christophe Taveau.
+ *
+ *  This file is part of mowgli
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * Authors:
+ * Jean-Christophe Taveau
+ */
+
+'use strict';
+
+
+/**
+ * Point Geometer generates coordinates
+ *
+ * @class PointGeometer
+ * @memberof module:graphics
+ * @constructor
+ * @author Jean-Christophe Taveau
+ **/
+function PointGeometer(mol,colorer) {
+    this.mol = mol;
+    this.colorer = colorer || CPKColorer;
+    this.shape;
+
+    // TODO: Check if already calculated and stored in database
+}
+
+/**
+ * Get shape corresponding to this geometry style
+ *
+ * @return {shape}
+ * @author Jean-Christophe Taveau
+ */
+PointGeometer.prototype.getShape = function () {
+    this.shape = new Shape();
+    var vertices = [];
+    // Only one array is used to define the vertices and corresponding colors
+    // Interleaved array of (vertices + colors)
+    // X Y Z R G B X Y Z R G B
+    for (var i=0; i < this.mol.atoms.length; i++) {
+        vertices.push(this.mol.atoms[i].x);
+        vertices.push(this.mol.atoms[i].y);
+        vertices.push(this.mol.atoms[i].z);
+        // get RGB color
+        var rgb = this.colorer.get(this.mol.atoms[i]);
+        vertices.push(rgb[0]);
+        vertices.push(rgb[1]);
+        vertices.push(rgb[2]);
+    }
+    // Set geometry and colors of this shape
+    this.shape.type = 'POINTS';
+    this.shape.addVertexData(
+        {
+            'content': Shape.XYZ | Shape.RGB,
+            'data':vertices,
+            'attributes': [new Attribute("aVertexPosition",0,6), new Attribute("aVertexColor",3,6)]
+        }
+    );
+
+    this.shape.setProgram(shaderProgram);
+
+    this.shape.translate(-this.mol.centroid.x, -this.mol.centroid.cg.y, -this.mol.centroid.cg.z);
+
+};
+
+/*
+ *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
+ *  Copyright (C) 2015  Jean-Christophe Taveau.
+ *
+ *  This file is part of mowgli
+ *
+ * This program is free software: you can redistribute it and/or modify it 
+ * under the terms of the GNU General Public License as published by 
+ * the Free Software Foundation, either version 3 of the License, or 
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, 
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+ * GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * Authors:
+ * Jean-Christophe Taveau
+ */
+
+
+"use strict"
+
+/** 
+ * @module graphics/gl
+ */
+
+/**
+ * OpenGL node of the scene graph
+ *
+ * @class NodeGL
+ * @constructor
+ **/
+function NodeGL(node) {
+    this.sgnode = node;
+    this.glType = -1;
+    this._isDirty = true;
+    
+    // Matrix for rotation(s) and translation(s)
+    this.workmatrix= mat4.create();
+    mat4.identity(this.workmatrix);
+}
+
+NodeGL.prototype.isDirty = function() {
+    return _isDirty;
+}
+
+NodeGL.prototype.init = function(context) {
+    // Do nothing
+    this.isDirty = false;
+}
+
+NodeGL.prototype.render = function(context) {
+    // Do nothing
+}
+
+
+
+
+
+/*
+ *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
+ *  Copyright (C) 2015  Jean-Christophe Taveau.
+ *
+ *  This file is part of mowgli
+ *
+ * This program is free software: you can redistribute it and/or modify it 
+ * under the terms of the GNU General Public License as published by 
+ * the Free Software Foundation, either version 3 of the License, or 
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, 
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+ * GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * Authors:
+ * Jean-Christophe Taveau
+ */
+
+
+"use strict"
+
+/** 
+ * @module graphics/gl
+ */
+ 
+/**
+ * OpenGL part of Shape
+ *
+ * @class ShapeGL
+ * @constructor
+ **/
+function ShapeGL(node) {
+    NodeGL.call(this,node);
+
+    this.numIndices = 0;
+    this.numItems = 0;
+    this.VBOs = [];
+    this.GLTextures = [];
+    this.shaderProgram = null;
+}
+
+/**
+ * Flag indicating if the OpenGL state of this shape is correct
+ *
+ **/
+ShapeGL.prototype.isDirty = function() {
+    return _isDirty;
+}
+
+/**
+ * Init of the OpenGL part: VBO creation
+ *
+ * @param {number} context - Graphics context
+ **/
+ShapeGL.prototype.init = function(context) {
+
+    // Get the corresponding node of the scene graph
+    var shape = this.sgnode;
+    console.log(shape);
+    // Add shader(s) to the renderer for uniform management
+    this.sgnode.getRenderer().addShader(this.shaderProgram);
+    
+    // For each buffer, create corresponding VBO
+    for (var i in shape.geometries) {
+        console.log(shape.geometries[i]);
+        this.VBOs[i] = this._createVBO(context,shape.geometries[i]);
+    }
+    
+    // For each textured image, create corresponding Texture
+    console.log('INIT TEXTURE TOTAL:' + shape.textures.length);
+    console.log(shape.textures);
+    for (var i=0; i < shape.textures.length; i++) {
+        console.log('INIT TEXTURE '+shape.textures[i]);
+        // TODO
+        this.GLTextures.push(this._createTexture(context,shape.textures[i]) );
+    }
+    
+    // All is fine (I hope ?)
+    this.isDirty = false;
+}
+
+/**
+ * Render this shape; Called by the renderer
+ *
+ **/
+ShapeGL.prototype.render = function(context) {
+    var gl = context;
+    // Update matrix
+    mat4.multiply(this.workmatrix,this.sgnode.parent.getNodeGL().workmatrix,this.sgnode.matrix);
+    this.sgnode.getRenderer().setUniform("uMMatrix", this.workmatrix);
+    
+    // Choose shader
+    console.log(this.shaderProgram);
+    this.shaderProgram.use();
+
+    console.log('coordSize '+ this.numItems );
+    
+    
+    // For this geometry, activate VBO
+    for (var j in this.VBOs) {
+        var vbo = this.VBOs[j];
+        if (vbo.type === 'indexed') {
+            console.log('bind buffer '+ vbo.type + ' ' + vbo.ID+ ' ' + vbo.data);
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, vbo.IndxID);
+        }
+        else {
+            console.log('bind buffer '+ vbo.type + ' ' + vbo.ID);
+            gl.bindBuffer(gl.ARRAY_BUFFER, vbo.ID);
+        }
+        for (var k in vbo.attributes) {
+            var attribute = vbo.attributes[k];
+            console.log('enable ' + attribute.name+' '+attribute.location+' '+attribute.size+' '+attribute.stride+' '+attribute.offset);
+            gl.enableVertexAttribArray(attribute.location );
+            gl.vertexAttribPointer(
+                attribute.location,
+                attribute.size,
+                gl.FLOAT,
+                false,
+                attribute.stride * Renderer.FLOAT_IN_BYTES,
+                attribute.offset * Renderer.FLOAT_IN_BYTES
+            );
+        }
+    }
+    
+    // For this geometry, activate Texture
+    for (var i=0; i < this.GLTextures.length; i++) {
+        // HACK: TODO
+        if (this.GLTextures[i] !== undefined) {
+            console.log('Activate tex ' + this.GLTextures[i]);
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, this.GLTextures[i]);
+            this.sgnode.getRenderer().setUniform("uTexture", 0);
+        }
+    }
+    if (this.GLTextures.length > 0) {
+        // gl.enable ( gl.TEXTURE_2D );
+    }
+
+
+    // TODO Update uniforms
+    this.shaderProgram.updateUniforms();
+    
+
+    // Draw ...
+    console.log(this.sgnode.type + ' '+ this.glType +' '+ this.numIndices+' '+ this.numItems);
+    if (this.numIndices != 0 ) {
+        gl.drawElements(this.glType, this.numIndices, gl.UNSIGNED_SHORT, 0);
+    }
+    else {
+        console.log('drawArrays');
+        gl.drawArrays(this.glType, 0, this.numItems);
+    }
+}
+
+
+// Private
+ShapeGL.prototype._createVBO = function(context,geom) {
+    var gl = context;
+    console.log('SHAPE TYPE ' + this.sgnode.type);
+    switch (this.sgnode.type) {
+    case 'POINTS':
+    case 'POINTS_RADIUS': 
+        this.glType = gl.POINTS;
+        break;
+    case 'LINES':
+        this.glType = gl.LINES;
+        break;
+    case 'LINE_STRIP':
+        this.glType = gl.LINE_STRIP;
+        break;
+    case 'LINE_LOOP':
+        this.glType = gl.LINE_LOOP;
+        break;
+    case 'TRIANGLES':
+        this.glType = gl.TRIANGLES;
+        break;
+    case 'TRIANGLE_STRIP':
+        this.glType = gl.TRIANGLE_STRIP;
+        break;
+    }
+    // Init VBO
+    var vbo = {};
+    vbo.attributes = [];
+    vbo.type = geom.type;
+    
+    // Create VBO
+    vbo.ID = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, vbo.ID);
+    gl.bufferData(gl.ARRAY_BUFFER, geom.data, gl.STATIC_DRAW);
+
+    // Update attribute(s) associated to this VBO
+    console.log('VBO attributes');
+    console.log(geom.attributes);
+    for (var j=0; j < geom.attributes.length; j++) {
+        if ( (geom.content & Shape.XYZ) == Shape.XYZ) {
+            var n = 32 // Highest value of Shape type(s)
+            var nItems = 0;
+            while (n != 0) {
+                if ( (geom.content & n) == n) {
+                    nItems += Shape.itemLength[n];
+                }
+                n/=2;
+            }
+            this.numItems = geom.data.length / nItems;
+        }
+        vbo.attributes[j] = {};
+        vbo.attributes[j].name     = geom.attributes[j].name;
+        vbo.attributes[j].location = this.shaderProgram.getAttribLocation(geom.attributes[j].name);
+        vbo.attributes[j].size     = this.shaderProgram.attributes[vbo.attributes[j].name].size;
+        vbo.attributes[j].stride   = geom.attributes[j].stride;
+        vbo.attributes[j].offset   = geom.attributes[j].offset;
+        console.log('location [' + vbo.attributes[j].name + ']= '+ vbo.attributes[j].location + ' '+vbo.attributes[j].size);
+    }
+
+    if (vbo.type === 'indexed') {
+        vbo.IndxID = gl.createBuffer();
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, vbo.IndxID);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, geom.indices, gl.STATIC_DRAW);
+        this.numIndices = geom.indices.length;
+    }
+    console.log('VBO ID: ' + JSON.stringify(vbo) );
+    return vbo;
+
+}
+
+// Private
+ShapeGL.prototype._createTexture = function(context, img) {
+    var gl = context;
+    var glTex = gl.createTexture();
+    this.GLTextures.push(glTex);
+    
+    console.log('Create Texture from '+img.src + ' ' + img.complete);
+
+    img.onload = function() {
+        newTexture(img,glTex);
+    }
+    
+    
+    
+    function newTexture(img,glTex) {
+        // Image now asynchronously loaded
+        // Check dimension
+        if (!powerOfTwo(img.width) || !powerOfTwo(img.height) ) {
+            // Alert
+            var msg = "ERR: The texture "+img.src+" has non power-of-two dimension"
+            alert(msg);
+        }
+        else {
+            gl.bindTexture(gl.TEXTURE_2D, glTex);
+            // Set parameters
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); //_MIPMAP_NEAREST);
+            
+            //gl.generateMipmap(gl.TEXTURE_2D);
+            
+            // Fill texture with image data
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+
+            // Free texture binding
+            gl.bindTexture(gl.TEXTURE_2D, null);
+        }
+        
+        function powerOfTwo(n) {
+            return ( (n & (n - 1)) == 0);
+        }
+    }
+
+}
+
+
+ShapeGL.prototype._updateAttributes = function(context) {
+    var gl = context;
+/***
+  if (this.shaderProgram.attributes.length != this.geometry.attributes.length) {
+    console.log(this.shaderProgram.attributes);
+    console.log(this.shaderProgram.attributes.length + ' != ' + this.geometry.attributesLength() );
+    console.log("MOWGLI: Attributes are not correctly defined");
+  }
+*****/
+    for (var i=0; i < this.geometry.VBO.length;i++) {
+        var vbo = this.geometry.VBO[i];
+        for (var j=0; j < vbo.attributes.length; j++) {
+            vbo.attributes[j].location = this.shaderProgram.getAttribLocation(vbo.attributes[j].name);
+            vbo.attributes[j].size = this.shaderProgram.attributes[vbo.attributes[j].name].size;
+            console.log('location [' + vbo.attributes[j].name + ']= '+ vbo.attributes[j].location + ' '+vbo.attributes[j].size);
+        }
+    }
+}
+
+
+/*
+ *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
+ *  Copyright (C) 2015  Jean-Christophe Taveau.
+ *
+ *  This file is part of mowgli
+ *
  * This program is free software: you can redistribute it and/or modify it 
  * under the terms of the GNU General Public License as published by 
  * the Free Software Foundation, either version 3 of the License, or 
@@ -154,14 +734,73 @@ Camera.prototype.setFovy = function (angle_in_degrees) {
  *
  *  This file is part of mowgli
  *
- * This program is free software: you can redistribute it and/or modify it 
- * under the terms of the GNU General Public License as published by 
- * the Free Software Foundation, either version 3 of the License, or 
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * Authors:
+ * Jean-Christophe Taveau
+ */
+
+'use strict';
+
+/**
+ * All the classes related to the rendering, scene graph and OpenGL.
+ * @module graphics
+ */
+
+
+/**
+ * CameraGroup: A collection of shapes
+ *
+ * @class CameraGroup
+ * @constructor
+ * @memberof module:graphics
+ * @augments Composite
+ **/
+function CameraGroup() {
+    Composite.call(this);
+
+    this.ID = 'group[camera]';
+    this.nodeGL = new NodeGL(this);
+
+}
+
+CameraGroup.prototype = Object.create(Composite.prototype);
+
+CameraGroup.prototype.add = function(an_object) {
+    if (an_object instanceof Camera) {
+        Composite.add.call(this,an_object);
+    }
+    else {
+        // ERROR: Do nothing
+    }
+};
+
+/*
+ *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
+ *  Copyright (C) 2015  Jean-Christophe Taveau.
+ *
+ *  This file is part of mowgli
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
@@ -173,7 +812,7 @@ Camera.prototype.setFovy = function (angle_in_degrees) {
  */
 
 
-"use strict"
+'use strict';
 
 
 /**
@@ -188,10 +827,10 @@ function Composite(node) {
     this._isDirty = true;
     this.parent   = null;
     this.renderer = null;
-    
-    // 
+
+    //
     this.nodeGL   = null;
-    
+
     // Matrix for rotation(s) and translation(s)
     this.matrix=mat4.create();
     mat4.identity(this.matrix);
@@ -200,7 +839,7 @@ function Composite(node) {
 Composite.prototype.add = function(an_object) {
     this.children[an_object.ID+'_' + size(this.children)] = an_object;
     an_object.parent = this;
-    
+
     function size(obj) {
         var size = 0, key;
         for (key in obj) {
@@ -208,11 +847,11 @@ Composite.prototype.add = function(an_object) {
         }
         return size;
     }
-}
+};
 
 Composite.prototype.getNodeGL = function() {
     return this.nodeGL;
-}
+};
 
 Composite.prototype.getRenderer = function() {
     console.log(this);
@@ -224,11 +863,11 @@ Composite.prototype.getRenderer = function() {
         return this.renderer;
     }
     return this.parent.getRenderer();
-}
+};
 
 Composite.prototype.isDirty = function() {
     return _isDirty;
-}
+};
 
 /**
  * Init the OpenGL config of this object in the scene graph
@@ -245,14 +884,14 @@ Composite.prototype.init = function(context) {
         traverse(context,this.children[i]);
     }
     this.isDirty = false;
-    
+
     function traverse(context,a_node) {
         a_node.init(context);
         for (var i in a_node.children) {
             traverse(context,a_node.children[i]);
         }
     }
-}
+};
 
 /**
  * Render this object and traverse its children
@@ -274,7 +913,7 @@ Composite.prototype.render = function(context) {
     for (var i in this.children) {
         traverse(context,this.children[i]);
     }
-    
+
     function traverse(context,a_node) {
         a_node.render(context);
         for (var i in a_node.children) {
@@ -282,17 +921,17 @@ Composite.prototype.render = function(context) {
         }
     }
 
-}
+};
 
 Composite.prototype.graph = function(level) {
     var lvl = level || 0;
-    var spaces = Array(lvl+1).join(".");
+    var spaces = Array(lvl+1).join('.');
     var str = (this.ID || 'unknown') +'\n';
     for (var i in this.children) {
         str += spaces + '+-'+this.children[i].graph(lvl++)+'\n';
     }
     return str;
-}
+};
 
 /***
 Composite.prototype._updateAttributes = function(context) {
@@ -301,7 +940,7 @@ Composite.prototype._updateAttributes = function(context) {
   if (this.shaderProgram.attributes.length != this.geometry.attributes.length) {
     console.log(this.shaderProgram.attributes);
     console.log(this.shaderProgram.attributes.length + ' != ' + this.geometry.attributesLength() );
-    console.log("MOWGLI: Attributes are not correctly defined");
+    console.log('MOWGLI: Attributes are not correctly defined');
   }
 
     for (var i=0; i < this.geometry.VBO.length;i++) {
@@ -1395,11 +2034,11 @@ Program.prototype._createAttributesAndUniforms=function(text) {
  */
 
 
-"use strict"
+'use strict';
 
 /**
  * Core class for rendering in the canvas
- * 
+ *
  * @todo must be a singleton ??
  *
  * @class Renderer
@@ -1416,38 +2055,40 @@ Program.prototype._createAttributesAndUniforms=function(text) {
  * renderer.drawScene();
  */
 function Renderer(canvas_id) {
-  this.scene = null;
+    this.scene = null;
 
-  // Get A WebGL context
-  function createWebGLContext(canvas, opt_attribs) {
-    var names = ["webgl", "experimental-webgl"];
-    var context = null;
-    for (var ii in names) {
-      try {
-        context = canvas.getContext(names[ii], opt_attribs);
-      } catch(e) {}
-      if (context) {
-        break;
-      }
+    // Get A WebGL context
+    function createWebGLContext(canvas, opt_attribs) {
+        var names = ['webgl', 'experimental-webgl'];
+        var context = null;
+        for (var ii in names) {
+            try {
+                context = canvas.getContext(names[ii], opt_attribs);
+            } catch(e) {
+                // TODO
+            }
+            if (context) {
+                break;
+            }
+        }
+        return context;
     }
-    return context;
-  }
 
-  var canvas = document.getElementById(canvas_id);
-  this.context = createWebGLContext(canvas);
+    var canvas = document.getElementById(canvas_id);
+    this.context = createWebGLContext(canvas);
 
-  if (!this.context) {
-    return;
-  }
+    if (!this.context) {
+        return;
+    }
 
-  // Properties
-  this.context.viewportWidth  = canvas.width;
-  this.context.viewportHeight = canvas.height;
-  this.shaders=[];
-  this.shaderProgram=null; //Active program ID
+    // Properties
+    this.context.viewportWidth  = canvas.width;
+    this.context.viewportHeight = canvas.height;
+    this.shaders=[];
+    this.shaderProgram=null; //Active program ID
 
-  // Init GL
-  this._initGL();
+    // Init GL
+    this._initGL();
 }
 
 /**
@@ -1457,8 +2098,8 @@ function Renderer(canvas_id) {
  *
  **/
 Renderer.prototype.getContext = function () {
-  return this.context;
-}
+    return this.context;
+};
 
 /**
  * Add scene
@@ -1467,36 +2108,36 @@ Renderer.prototype.getContext = function () {
  *
  **/
 Renderer.prototype.addScene = function (a_scene) {
-  this.scene = a_scene;
-  a_scene.parent = this;
-}
+    this.scene = a_scene;
+    a_scene.parent = this;
+};
 
 
 Renderer.prototype.addShader = function (a_shaderprogram) {
     this.shaders.push(a_shaderprogram);
-}
+};
 
 /**
- * Add sensor 
+ * Add sensor
  *
  * @param {Sensor} - Add a sensor or an object interacting with the scene graph
  *
  **/
 Renderer.prototype.addSensor = function (a_sensor) {
-  this.sensor = a_sensor;
-  this.sensor.setRenderer(this);
-}
+    this.sensor = a_sensor;
+    this.sensor.setRenderer(this);
+};
 
 Renderer.prototype.setUniform = function (name,value) {
     for (var i in this.shaders) {
         var shader = this.shaders[i];
         shader.uniforms[name].value = value;
     }
-}
+};
 
 
 /**
- * Initialize the renderer. 
+ * Initialize the renderer.
  *
  *
  **/
@@ -1504,16 +2145,16 @@ Renderer.prototype.init = function () {
     var gl = this.context;
     this.scene.init(gl);
   // TODO
-}
+};
 
 /**
- * Draw the scene. This function triggers the OpenGL rendering in an infinite loop. 
+ * Draw the scene. This function triggers the OpenGL rendering in an infinite loop.
  *
  *
  **/
 Renderer.prototype.drawScene = function () {
     var gl = this.context;
-    
+
     // Clear Screen And Depth Buffer
     gl.viewport(0.0, 0.0, gl.viewportWidth, gl.viewportHeight);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -1521,7 +2162,7 @@ Renderer.prototype.drawScene = function () {
     // Traverse scene graph
     console.log('*************** RENDER ***************');
     this.scene.render(gl);
-}
+};
 /*
  * Private
  */
@@ -1529,24 +2170,23 @@ Renderer.prototype.drawScene = function () {
 Renderer.FLOAT_IN_BYTES = 4;
 
 Renderer.prototype._initGL = function() {
-  // Init GL stuff
-  var gl = this.context;
-  // TODO
-  // Default clearColor
-  gl.clearColor(0.1,0.1,0.1,1.0);
+    // Init GL stuff
+    var gl = this.context;
+    // TODO
+    // Default clearColor
+    gl.clearColor(0.1,0.1,0.1,1.0);
 
-  gl.enable(gl.DEPTH_TEST);
+    gl.enable(gl.DEPTH_TEST);
 
-  // Check extension...
-  gl.getExtension("EXT_frag_depth");
-  if (gl.getSupportedExtensions().indexOf("EXT_frag_depth") < 0 ) {
-    alert('Extension frag_depth not supported');
-  }
+    // Check extension...
+    gl.getExtension('EXT_frag_depth');
+    if (gl.getSupportedExtensions().indexOf('EXT_frag_depth') < 0 ) {
+        alert('Extension frag_depth not supported');
+    }
 
-
-  // Default shader program
-  this.program = new Program();
-}
+    // Default shader program
+    this.program = new Program();
+};
 
 /*
  *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
@@ -1554,14 +2194,14 @@ Renderer.prototype._initGL = function() {
  *
  *  This file is part of mowgli
  *
- * This program is free software: you can redistribute it and/or modify it 
- * under the terms of the GNU General Public License as published by 
- * the Free Software Foundation, either version 3 of the License, or 
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
@@ -1572,7 +2212,7 @@ Renderer.prototype._initGL = function() {
  * Jean-Christophe Taveau
  */
 
-"use strict"
+'use strict';
 
 
 /**
@@ -1583,13 +2223,10 @@ Renderer.prototype._initGL = function() {
  * @constructor
  * @augments Composite
  **/
-var Scene = function () {
+function Scene() {
     Composite.call(this);
-    
+
     this.ID = 'scene';
-    this.add(new Camera() );
-    this.add(new Light()  );
-    
     this.nodeGL = new NodeGL();
 
 }
@@ -1597,13 +2234,26 @@ var Scene = function () {
 Scene.prototype = Object.create(Composite.prototype);
 
 /**
+ * Set default scene with a camera and a light
+ *
+ **/
+Scene.prototype.setDefault = function() {
+    this.ID = 'scene_default';
+    // Add a camera
+    this.add(new Camera() );
+    // Add a light
+    this.add(new Light()  );
+};
+
+/**
  * Get Camera in the scene
  *
  * @return {Camera} Returns the current camera
  **/
 Scene.prototype.getCamera = function() {
+    // TODO: must be improved if CameraGroup exists for stereo
     return this.children['camera_0'];
-}
+};
 
 Scene.prototype.toString = function() {
     var str = this.ID+'\n';
@@ -1611,10 +2261,7 @@ Scene.prototype.toString = function() {
         str += '+-'+this.children[i].ID+'\n';
     }
     return str;
-}
-
-
-
+};
 
 /*
  *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
@@ -1822,6 +2469,57 @@ Shape.prototype.updateUniforms = function (context) {
  *
  *  This file is part of mowgli
  *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * Authors:
+ * Jean-Christophe Taveau
+ */
+
+'use strict';
+
+/**
+ * All the classes related to the rendering, scene graph and OpenGL.
+ * @module graphics
+ */
+
+
+/**
+ * ShapeGroup: A collection of shapes
+ *
+ * @class ShapeGroup
+ * @constructor
+ * @memberof module:graphics
+ * @augments Composite
+ **/
+var ShapeGroup = function () {
+    Composite.call(this);
+
+    this.ID = 'group[shape]';
+
+    this.nodeGL = new NodeGL(this);
+
+}
+
+ShapeGroup.prototype = Object.create(Composite.prototype);
+
+/*
+ *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
+ *  Copyright (C) 2015  Jean-Christophe Taveau.
+ *
+ *  This file is part of mowgli
+ *
  * This program is free software: you can redistribute it and/or modify it 
  * under the terms of the GNU General Public License as published by 
  * the Free Software Foundation, either version 3 of the License, or 
@@ -1840,63 +2538,106 @@ Shape.prototype.updateUniforms = function (context) {
  * Jean-Christophe Taveau
  */
 
+
 "use strict"
 
+/*
+ * Constructor
+ */
+function Uniform (options) {
+    this.name = options.name;
+
+}
+
+
+
+
+/*
+ *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
+ *  Copyright (C) 2015  Jean-Christophe Taveau.
+ *
+ *  This file is part of mowgli
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * Authors:
+ * Jean-Christophe Taveau
+ */
+
+'use strict';
+
 var ShapeFactory = (function () {
- 
-  // Storage for our various styles types
-  var styles = {};
- 
-  return {
-    get: function ( options ) {
-      switch (options.style) {
-      case "points":
-        // Already computed for the given structure?
-        // var style = types['atoms'] ????
-        // if (style === undefined) then 
-        // Basic shape - only for debug
-        var style = new PointStyle(options);
-        return style.getShape();
-        break;
-      case "backbone":
-        // TODO
-        break;
-      case "ball_sticks":
-        // TODO
-        break;
-      case "cartoon":
-        // TODO
-        break;
-      case "dots":
-        // TODO
-        break;
-      case "spacefill":
-        // TODO
-        break;
-      case "ribbons":
-        // TODO
-        break;
-      case "sticks":
-        // TODO
-        break;
-      case "strands":
-        // TODO
-        break;
-      case "trace":
-        // TODO
-        break;
-      case "wireframe":
-        // TODO
-        break;
-      default:
-        // Do nothing ??
-        return null;
-      }
-    }
-  };
+
+    // Storage for our various styles types
+    var styles = {};
+    var shape = new Shape();
+    return {
+        /**
+         * Get shape
+         *
+         * @example
+         * var shape = ShapeFactory.get({'molecule': myStruct, 'displayType': 'wireframe', 'color': 'cpk'});
+         */
+        get: function ( options ) {
+            switch (options.displayType) {
+            case 'points':
+                // Already computed for the given structure?
+                // var style = types['atoms'] ????
+                // if (style === undefined) then
+                // Basic shape - only for debug
+                var style = new PointGeometer(options.molecule,ColorFactory.get(options.color) );
+                return style.getShape();
+                break;
+            case 'backbone':
+                // TODO
+                break;
+            case 'ball_sticks':
+                // TODO
+                break;
+            case 'cartoon':
+                // TODO
+                break;
+            case 'dots':
+                // TODO
+                break;
+            case 'spacefill':
+                // TODO
+                break;
+            case 'ribbons':
+                // TODO
+                break;
+            case 'sticks':
+                // TODO
+                break;
+            case 'strands':
+                // TODO
+                break;
+            case 'trace':
+                // TODO
+                break;
+            case 'wireframe':
+                // TODO
+                style = new WireGeometer(options.molecule,ColorFactory.get(options.color) );
+                return style.getShape();
+            default:
+                // Do nothing ??
+                return null;
+            }
+        }
+    };
 })();
- 
- 
 
 /*
  *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
@@ -2124,44 +2865,6 @@ Cube.indices = [
 
 
  
-
-/*
- *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
- *  Copyright (C) 2015  Jean-Christophe Taveau.
- *
- *  This file is part of mowgli
- *
- * This program is free software: you can redistribute it and/or modify it 
- * under the terms of the GNU General Public License as published by 
- * the Free Software Foundation, either version 3 of the License, or 
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
- * GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
- *
- *
- * Authors:
- * Jean-Christophe Taveau
- */
-
-
-"use strict"
-
-/*
- * Constructor
- */
-function Uniform (options) {
-    this.name = options.name;
-
-}
-
-
-
 
 function EMDBInfoParser() {
 
@@ -4587,17 +5290,21 @@ Molecule.prototype.fasta = function () {
  *
  **/
 Molecule.prototype.secondary = function () {
-    var fasta = '> ' + this.ID + ':' + this.atoms[0].chain + ' | ' + this.title + '\n';
-    var current_chain = this.atoms[0].chainID;
+    var fasta_sec = '> ' + this.ID + ':' + this.atoms[0].chain + ' | ' + this.information.title + '\n';
+    var current_chain = this.atoms[0].chain;
     var count = 0;
     for (var i= 0; i < this.atoms.length; i++) {
-        if (this.atoms[i].chainID != current_chain) {
-            fasta += '\n> ' + this.ID + ':' + this.atoms[i].chain + ' | ' + this.title + '\n';
-            current_chain = this.atoms[i].chainID;
+        if (this.atoms[i].secondary ==='X') {
+            this.atoms[i].secondary = '.';
+
+        }
+        if (this.atoms[i].chain != current_chain && this.atoms[i].type=== 'ATOM') {
+            fasta_sec+= '\n> ' + this.ID + ':' + this.atoms[i].chain + ' | ' + this.information.title + '\n';
+            current_chain = this.atoms[i].chain;
             count = 0;
         }
-        if (this.atoms[i].name==='CA' && this.atoms[i].chainID == current_chain) {
-            fasta += this.atoms[i].struct[0];
+        if ( (this.atoms[i].name==='CA' || this.atoms[i].name==='O4*'|| this.atoms[i].name==='O4\'') && this.atoms[i].chain == current_chain) {
+            fasta_sec += this.atoms[i].secondary[0];
             count++;
             if ( (count % 80) == 0) {
                 fasta += '\n';
@@ -4605,6 +5312,7 @@ Molecule.prototype.secondary = function () {
             }
         }
     }
+    return fasta_sec;
 };
 
 
@@ -5032,234 +5740,6 @@ function VecObj() {
  * Jean-Christophe Taveau
  */
 
-
-"use strict"
-
-
-/*****
-Code 	colour Name 	Sample 	RGB Values 	Hexadecimal
-LG 	Light Grey 	[200,200,200] 	C8C8C8
-SB 	Sky Blue 	[143,143,255] 	8F8FFF
-R 	Red 	  	[240, 0, 0] 	F00000
-Y 	Yellow 	  	[255,200, 50] 	FFC832
-W 	White 	  	[255,255,255] 	FFFFFF
-Pk 	Pink 	  	[255,192,203] 	FFC0CB
-Go 	Golden Rod 	[218,165, 32] 	DAA520
-Bl 	Blue 	  	[ 0, 0,255] 	0000FF
-Or 	Orange 	  	[255,165, 0] 	FFA500
-DG 	Dark Grey 	[128,128,144] 	808090
-Br 	Brown 	  	[165, 42, 42] 	A52A2A
-P 	Purple 	  	[160, 32,240] 	A020F0
-DP 	Deep Pink 	[255, 20,147] 	FF1493
-G 	Green 	  	[ 0,255, 0] 	00FF00
-FB 	Fire Brick 	[178, 34, 34] 	B22222
-FG 	Forest Green 	[ 34,139, 34] 	228B22
-****/
-
-var symbols = { 
-  '_' : { 'symbol':''  ,'unknown': 180, 'vdwRadius': 360, 'value2': 12, 'name': ""            ,'color':[255, 20,147]},  /*   0 */
-  'H' : { 'symbol':'H' ,'unknown':  80, 'vdwRadius': 275, 'value2':  4, 'name': "HYDROGEN"    ,'color':[255, 20,147]},  /*   1 */
-  'HE': { 'symbol':'He','unknown': 400, 'vdwRadius': 550, 'value2':  5, 'name': "HELIUM"      ,'color':[255,192,203]},  /*   2 */
-  'LI': { 'symbol':'Li','unknown': 170, 'vdwRadius': 305, 'value2': 14, 'name': "LITHIUM"     ,'color':[255, 20,147]},  /*   3 */
-  'BE': { 'symbol':'Be','unknown':  88, 'vdwRadius': 157, 'value2': 12, 'name': "BERYLLIUM"   ,'color':[255, 20,147]},  /*   4 */
-  'B' : { 'symbol':'B' ,'unknown': 208, 'vdwRadius': 387, 'value2': 13, 'name': "BORON"       ,'color':[  0,255,  0]},  /*   5 */
-  'C' : { 'symbol':'C' ,'unknown': 180, 'vdwRadius': 387, 'value2':  0, 'name': "CARBON"      ,'color':[255, 20,147]},  /*   6 */
-  'N' : { 'symbol':'N' ,'unknown': 170, 'vdwRadius': 350, 'value2':  1, 'name': "NITROGEN"    ,'color':[255, 20,147]},  /*   7 */
-  'O' : { 'symbol':'O' ,'unknown': 170, 'vdwRadius': 337, 'value2':  2, 'name': "OXYGEN"      ,'color':[255, 20,147]},  /*   8 */
-  'F' : { 'symbol':'F' ,'unknown': 160, 'vdwRadius': 325, 'value2':  6, 'name': "FLUORINE"    ,'color':[255, 20,147]},  /*   9 */
-  'N' : { 'symbol':'N' ,'unknown': 280, 'vdwRadius': 505, 'value2': 12, 'name': "NEON"        ,'color':[255, 20,147]},  /*  10 */
-  'NA': { 'symbol':'Na','unknown': 243, 'vdwRadius': 550, 'value2':  7, 'name': "SODIUM"      ,'color':[255, 20,147]},  /*  11 */
-  'MG': { 'symbol':'Mg','unknown': 275, 'vdwRadius': 375, 'value2': 15, 'name': "MAGNESIUM"   ,'color':[255, 20,147]},  /*  12 */
-  'AL': { 'symbol':'Al','unknown': 338, 'vdwRadius': 375, 'value2':  9, 'name': "ALUMINIUM"   ,'color':[255, 20,147]},  /*  13 */
-  'SI': { 'symbol':'Si','unknown': 300, 'vdwRadius': 550, 'value2':  6, 'name': "SILICON"     ,'color':[255, 20,147]},  /*  14 */
-  'P' : { 'symbol':'P' ,'unknown': 259, 'vdwRadius': 470, 'value2':  8, 'name': "PHOSPHORUS"  ,'color':[255,165,  0]},  /*  15 */  /* 262? */
-  'S' : { 'symbol':'S' ,'unknown': 255, 'vdwRadius': 452, 'value2':  3, 'name': "SULPHUR"     ,'color':[255,200, 50]},  /*  16 */
-  'CL': { 'symbol':'Cl','unknown': 250, 'vdwRadius': 437, 'value2': 13, 'name': "CHLORINE"    ,'color':[  0,255,  0]},  /*  17 */
-  'AR': { 'symbol':'Ar','unknown': 392, 'vdwRadius': 692, 'value2': 12, 'name': "ARGON"       ,'color':[255, 20,147]},  /*  18 */
-  'K' : { 'symbol':'K' ,'unknown': 332, 'vdwRadius': 597, 'value2': 12, 'name': "POTASSIUM"   ,'color':[255, 20,147]},  /*  19 */
-  'CA': { 'symbol':'Ca','unknown': 248, 'vdwRadius': 487, 'value2':  9, 'name': "CALCIUM"     ,'color':[255, 20,147]},  /*  20 */
-  'SC': { 'symbol':'Sc','unknown': 360, 'vdwRadius': 330, 'value2': 12, 'name': "SCANDIUM"    ,'color':[255, 20,147]},  /*  21 */
-  'TI': { 'symbol':'Ti','unknown': 368, 'vdwRadius': 487, 'value2':  9, 'name': "TITANIUM"    ,'color':[255, 20,147]},  /*  22 */
-  'V' : { 'symbol':'V' ,'unknown': 332, 'vdwRadius': 265, 'value2': 12, 'name': "VANADIUM"    ,'color':[255, 20,147]},  /*  23 */
-  'CR': { 'symbol':'Cr','unknown': 338, 'vdwRadius': 282, 'value2':  9, 'name': "CHROMIUM"    ,'color':[255, 20,147]},  /*  24 */
-  'MN': { 'symbol':'Mn','unknown': 338, 'vdwRadius': 297, 'value2':  9, 'name': "MANGANESE"   ,'color':[255, 20,147]},  /*  25 */
-  'FE': { 'symbol':'Fe','unknown': 335, 'vdwRadius': 487, 'value2':  8, 'name': "IRON"        ,'color':[255, 20,147]},  /*  26 */
-  'CO': { 'symbol':'Co','unknown': 332, 'vdwRadius': 282, 'value2': 12, 'name': "COBALT"      ,'color':[255, 20,147]},  /*  27 */
-  'NI': { 'symbol':'Ni','unknown': 405, 'vdwRadius': 310, 'value2': 10, 'name': "NICKEL"      ,'color':[255, 20,147]},  /*  28 */  /* >375! */
-  'CU': { 'symbol':'Cu','unknown': 380, 'vdwRadius': 287, 'value2': 10, 'name': "COPPER"      ,'color':[255, 20,147]},  /*  29 */
-  'ZN': { 'symbol':'Zn','unknown': 362, 'vdwRadius': 287, 'value2': 10, 'name': "ZINC"        ,'color':[255, 20,147]},  /*  30 */
-  'GA': { 'symbol':'Ga','unknown': 305, 'vdwRadius': 387, 'value2': 12, 'name': "GALLIUM"     ,'color':[255, 20,147]},  /*  31 */
-  'GE': { 'symbol':'Ge','unknown': 292, 'vdwRadius': 999, 'value2': 12, 'name': "GERMANIUM"   ,'color':[255, 20,147]},  /*  32 */  /* 1225? */
-  'AS': { 'symbol':'As','unknown': 302, 'vdwRadius': 207, 'value2': 12, 'name': "ARSENIC"     ,'color':[255, 20,147]},  /*  33 */
-  'SE': { 'symbol':'Se','unknown': 305, 'vdwRadius': 225, 'value2': 12, 'name': "SELENIUM"    ,'color':[255, 20,147]},  /*  34 */
-  'BR': { 'symbol':'Br','unknown': 302, 'vdwRadius': 437, 'value2': 10, 'name': "BROMINE"     ,'color':[255, 20,147]},  /*  35 */
-  'KR': { 'symbol':'Kr','unknown': 400, 'vdwRadius': 475, 'value2': 12, 'name': "KRYPTON"     ,'color':[255, 20,147]},  /*  36 */
-  'RB': { 'symbol':'Rb','unknown': 368, 'vdwRadius': 662, 'value2': 12, 'name': "RUBIDIUM"    ,'color':[255, 20,147]},  /*  37 */
-  'SR': { 'symbol':'Sr','unknown': 280, 'vdwRadius': 505, 'value2': 12, 'name': "STRONTIUM"   ,'color':[255, 20,147]},  /*  38 */
-  'Y' : { 'symbol':'Y' ,'unknown': 445, 'vdwRadius': 402, 'value2': 12, 'name': "YTTRIUM"     ,'color':[255, 20,147]},  /*  39 */
-  'ZR': { 'symbol':'Zr','unknown': 390, 'vdwRadius': 355, 'value2': 12, 'name': "ZIRCONIUM"   ,'color':[255, 20,147]},  /*  40 */
-  'NB': { 'symbol':'Nb','unknown': 370, 'vdwRadius': 332, 'value2': 12, 'name': "NIOBIUM"     ,'color':[255, 20,147]},  /*  41 */
-  'MO': { 'symbol':'Mo','unknown': 368, 'vdwRadius': 437, 'value2': 12, 'name': "MOLYBDENUM"  ,'color':[255, 20,147]},  /*  42 */
-  'TC': { 'symbol':'Tc','unknown': 338, 'vdwRadius': 450, 'value2': 12, 'name': "TECHNETIUM"  ,'color':[255, 20,147]},  /*  43 */
-  'RU': { 'symbol':'Ru','unknown': 350, 'vdwRadius': 300, 'value2': 12, 'name': "RUTHENIUM"   ,'color':[255, 20,147]},  /*  44 */
-  'RH': { 'symbol':'Rh','unknown': 362, 'vdwRadius': 305, 'value2': 12, 'name': "RHODIUM"     ,'color':[255, 20,147]},  /*  45 */
-  'PD': { 'symbol':'Pd','unknown': 375, 'vdwRadius': 360, 'value2': 12, 'name': "PALLADIUM"   ,'color':[255, 20,147]},  /*  46 */
-  'AG': { 'symbol':'Ag','unknown': 398, 'vdwRadius': 387, 'value2':  9, 'name': "SILVER"      ,'color':[255, 20,147]},  /*  47 */
-  'CD': { 'symbol':'Cd','unknown': 422, 'vdwRadius': 437, 'value2': 12, 'name': "CADMIUM"     ,'color':[255, 20,147]},  /*  48 */
-  'IN': { 'symbol':'In','unknown': 408, 'vdwRadius': 362, 'value2': 12, 'name': "INDIUM"      ,'color':[255, 20,147]},  /*  49 */
-  'SN': { 'symbol':'Sn','unknown': 365, 'vdwRadius': 417, 'value2': 12, 'name': "TIN"         ,'color':[255, 20,147]},  /*  50 */
-  'SB': { 'symbol':'Sb','unknown': 365, 'vdwRadius': 280, 'value2': 12, 'name': "ANTIMONY"    ,'color':[255, 20,147]},  /*  51 */
-  'TE': { 'symbol':'Te','unknown': 368, 'vdwRadius': 315, 'value2': 12, 'name': "TELLURIUM"   ,'color':[255, 20,147]},  /*  52 */
-  'I' : { 'symbol':'I' ,'unknown': 350, 'vdwRadius': 437, 'value2': 11, 'name': "IODINE"      ,'color':[255, 20,147]},  /*  53 */
-  'XE': { 'symbol':'Xe','unknown': 425, 'vdwRadius': 525, 'value2': 12, 'name': "XENON"       ,'color':[255, 20,147]},  /*  54 */
-  'CS': { 'symbol':'Cs','unknown': 418, 'vdwRadius': 752, 'value2': 12, 'name': "CAESIUM"     ,'color':[255, 20,147]},  /*  55 */
-  'BA': { 'symbol':'Ba','unknown': 335, 'vdwRadius': 602, 'value2':  8, 'name': "BARIUM"      ,'color':[255, 20,147]},  /*  56 */
-  'LA': { 'symbol':'La','unknown': 468, 'vdwRadius': 457, 'value2': 12, 'name': "LANTHANUM"   ,'color':[255, 20,147]},  /*  57 */
-  'CE': { 'symbol':'Ce','unknown': 458, 'vdwRadius': 465, 'value2': 12, 'name': "CERIUM"      ,'color':[255, 20,147]},  /*  58 */
-  'PR': { 'symbol':'Pr','unknown': 455, 'vdwRadius': 405, 'value2': 12, 'name': "PRASEODYMIUM",'color':[255, 20,147]},  /*  59 */
-  'ND': { 'symbol':'Nd','unknown': 452, 'vdwRadius': 447, 'value2': 12, 'name': "NEODYMIUM"   ,'color':[255, 20,147]},  /*  60 */
-  'PM': { 'symbol':'Pm','unknown': 450, 'vdwRadius': 440, 'value2': 12, 'name': "PROMETHIUM"  ,'color':[255, 20,147]},  /*  61 */
-  'SM': { 'symbol':'Sm','unknown': 450, 'vdwRadius': 435, 'value2': 12, 'name': "SAMARIUM"    ,'color':[255, 20,147]},  /*  62 */
-  'EU': { 'symbol':'Eu','unknown': 498, 'vdwRadius': 490, 'value2': 12, 'name': "EUROPIUM"    ,'color':[255, 20,147]},  /*  63 */
-  'GD': { 'symbol':'Gd','unknown': 448, 'vdwRadius': 422, 'value2': 12, 'name': "GADOLINIUM"  ,'color':[255, 20,147]},  /*  64 */
-  'TD': { 'symbol':'Tb','unknown': 440, 'vdwRadius': 415, 'value2': 12, 'name': "TERBIUM"     ,'color':[255, 20,147]},  /*  65 */
-  'DY': { 'symbol':'Dy','unknown': 438, 'vdwRadius': 407, 'value2': 12, 'name': "DYSPROSIUM"  ,'color':[255, 20,147]},  /*  66 */
-  'HO': { 'symbol':'Ho','unknown': 435, 'vdwRadius': 402, 'value2': 12, 'name': "HOLMIUM"     ,'color':[255, 20,147]},  /*  67 */
-  'ER': { 'symbol':'Er','unknown': 432, 'vdwRadius': 397, 'value2': 12, 'name': "ERBIUM"      ,'color':[255, 20,147]},  /*  68 */
-  'TM': { 'symbol':'Tm','unknown': 430, 'vdwRadius': 392, 'value2': 12, 'name': "THULIUM"     ,'color':[255, 20,147]},  /*  69 */
-  'YB': { 'symbol':'Yb','unknown': 485, 'vdwRadius': 385, 'value2': 12, 'name': "YTTERBIUM"   ,'color':[255, 20,147]},  /*  70 */
-  'LU': { 'symbol':'Lu','unknown': 430, 'vdwRadius': 382, 'value2': 12, 'name': "LUTETIUM"    ,'color':[255, 20,147]},  /*  71 */
-  'HF': { 'symbol':'Hf','unknown': 392, 'vdwRadius': 350, 'value2': 12, 'name': "HAFNIUM"     ,'color':[255, 20,147]},  /*  72 */
-  'TA': { 'symbol':'Ta','unknown': 358, 'vdwRadius': 305, 'value2': 12, 'name': "TANTALUM"    ,'color':[255, 20,147]},  /*  73 */
-  'W' : { 'symbol':'W' ,'unknown': 342, 'vdwRadius': 315, 'value2': 12, 'name': "TUNGSTEN"    ,'color':[255, 20,147]},  /*  74 */
-  'RE': { 'symbol':'Re','unknown': 338, 'vdwRadius': 325, 'value2': 12, 'name': "RHENIUM"     ,'color':[255, 20,147]},  /*  75 */
-  'OS': { 'symbol':'Os','unknown': 342, 'vdwRadius': 395, 'value2': 12, 'name': "OSMIUM"      ,'color':[255, 20,147]},  /*  76 */
-  'IR': { 'symbol':'Ir','unknown': 330, 'vdwRadius': 305, 'value2': 12, 'name': "IRIDIUM"     ,'color':[255, 20,147]},  /*  77 */
-  'PT': { 'symbol':'Pt','unknown': 375, 'vdwRadius': 387, 'value2': 12, 'name': "PLATINUM"    ,'color':[255, 20,147]},  /*  78 */
-  'AU': { 'symbol':'Au','unknown': 375, 'vdwRadius': 362, 'value2':  6, 'name': "GOLD"        ,'color':[255, 20,147]},  /*  79 */
-  'HG': { 'symbol':'Hg','unknown': 425, 'vdwRadius': 495, 'value2': 12, 'name': "MERCURY"     ,'color':[255, 20,147]},  /*  80 */
-  'TL': { 'symbol':'Tl','unknown': 388, 'vdwRadius': 427, 'value2': 12, 'name': "THALLIUM"    ,'color':[255, 20,147]},  /*  81 */
-  'PB': { 'symbol':'Pb','unknown': 385, 'vdwRadius': 540, 'value2': 12, 'name': "LEAD"        ,'color':[255, 20,147]},  /*  82 */
-  'BI': { 'symbol':'Bi','unknown': 385, 'vdwRadius': 432, 'value2': 12, 'name': "BISMUTH"     ,'color':[255, 20,147]},  /*  83 */
-  'PO': { 'symbol':'Po','unknown': 420, 'vdwRadius': 302, 'value2': 12, 'name': "POLONIUM"    ,'color':[255, 20,147]},  /*  84 */
-  'AT': { 'symbol':'At','unknown': 302, 'vdwRadius': 280, 'value2': 12, 'name': "ASTATINE"    ,'color':[255, 20,147]},  /*  85 */
-  'RN': { 'symbol':'Rn','unknown': 475, 'vdwRadius': 575, 'value2': 12, 'name': "RADON"       ,'color':[255, 20,147]},  /*  86 */
-  'FR': { 'symbol':'Fr','unknown': 450, 'vdwRadius': 810, 'value2': 12, 'name': "FRANCIUM"    ,'color':[255, 20,147]},  /*  87 */
-  'RA': { 'symbol':'Ra','unknown': 358, 'vdwRadius': 642, 'value2': 12, 'name': "RADIUM"      ,'color':[255, 20,147]},  /*  88 */
-  'AC': { 'symbol':'Ac','unknown': 295, 'vdwRadius': 530, 'value2': 12, 'name': "ACTINIUM"    ,'color':[255, 20,147]},  /*  89 */
-  'TH': { 'symbol':'Th','unknown': 255, 'vdwRadius': 460, 'value2': 12, 'name': "THORIUM"     ,'color':[255, 20,147]},  /*  90 */
-  'PA': { 'symbol':'Pa','unknown': 222, 'vdwRadius': 400, 'value2': 12, 'name': "PROTACTINIUM",'color':[255, 20,147]},  /*  91 */
-  'U' : { 'symbol':'U' ,'unknown': 242, 'vdwRadius': 437, 'value2': 12, 'name': "URANIUM"     ,'color':[255, 20,147]},  /*  92 */
-  'NP': { 'symbol':'Np','unknown': 238, 'vdwRadius': 427, 'value2': 12, 'name': "NEPTUNIUM"   ,'color':[255, 20,147]},  /*  93 */
-  'PU': { 'symbol':'Pu','unknown': 232, 'vdwRadius': 417, 'value2': 12, 'name': "PLUTONIUM"   ,'color':[255, 20,147]},  /*  94 */
-  'AM': { 'symbol':'Am','unknown': 230, 'vdwRadius': 415, 'value2': 12, 'name': "AMERICIUM"   ,'color':[255, 20,147]},  /*  95 */
-  'CM': { 'symbol':'Cm','unknown': 228, 'vdwRadius': 412, 'value2': 12, 'name': "CURIUM"      ,'color':[255, 20,147]},  /*  96 */
-  'BK': { 'symbol':'Bk','unknown': 225, 'vdwRadius': 410, 'value2': 12, 'name': "BERKELIUM"   ,'color':[255, 20,147]},  /*  97 */
-  'CF': { 'symbol':'Cf','unknown': 222, 'vdwRadius': 407, 'value2': 12, 'name': "CALIFORNIUM" ,'color':[255, 20,147]},  /*  98 */
-  'ES': { 'symbol':'Es','unknown': 220, 'vdwRadius': 405, 'value2': 12, 'name': "EINSTEINIUM" ,'color':[255, 20,147]},  /*  99 */
-  'FM': { 'symbol':'Fm','unknown': 218, 'vdwRadius': 402, 'value2': 12, 'name': "FERMIUM"     ,'color':[255, 20,147]},  /* 100 */
-  'MD': { 'symbol':'Md','unknown': 215, 'vdwRadius': 400, 'value2': 12, 'name': "MENDELEVIUM" ,'color':[255, 20,147]},  /* 101 */
-  'NO': { 'symbol':'No','unknown': 212, 'vdwRadius': 397, 'value2': 12, 'name': "NOBELIUM"    ,'color':[255, 20,147]},  /* 102 */
-  'LR': { 'symbol':'Lr','unknown': 210, 'vdwRadius': 395, 'value2': 12, 'name': "LAWRENCIUM"  ,'color':[255, 20,147]}  /* 103 */ /* Lw? */
-}; 
-
-
-/******
-Nucleic
-Backbone (the atoms of the sugar phosphate backbone)
-AT
-CG
-Purine
-Pyrimidine
-
-Protein
-Alpha (carbon = *.CA)
-Amino (atoms present in aminoacids == Protein)
-Backbone (atoms N-CA-C-O or the atoms of the sugar phosphate backbone)
- 
-Hydrogen
-
-Bonded
-Cystine
-Helix
-Sheet
-Turn
-
-Hetero
-Ions
-Ligand
-Water
-
-Selected
-
-Sidechain
-Solvent
-
-****************/
-
-//props
-// protein/nucleic,acidic, acyclic, aliphatic, aromatic, basic, buried, charged, cyclic, hydrophobic, large, medium, negative, neutral, polar, positive, small, surface,AT,CG,purine,pyrimidine
-var groups = {
-'ALA': {'3code': 'ALA','1code':'A','props':"01100100100010010"},
-'ARG': {'3code': 'ARG','1code':'R','props':"01001010010001101"},
-'ASN': {'3code': 'ASN','1code':'N','props':"01000000001011001"},
-'ASP': {'3code': 'ASP','1code':'D','props':"11000010001101001"},
-'CYS': {'3code': 'CYS','1code':'C','props':"01000100001011000"},
-
-
-'DA ': {'3code': 'DA ','1code':'1','props':"000000000000000001010"},
-};
-
-/**************************************
-Residues:	ala	arg	asn	asp	cys	glu	gln	gly	his	ile	leu	lys	met	phe	pro	ser	thr	trp	tyr	val
-	A	R	N	D	C	E	Q	G	H	I	L	K	M	F	P	S	T	W	Y	V
-Predefined Set	
-	A	R	N	D	C	E	Q	G	H	I	L	K	M	F	P	S	T	W	Y	V
-acidic 				*		*														
-acyclic 	*	*	* 	*	*	*	* 	*		*	* 	*	*			*	*			*
-aliphatic 	*							*		*	* 									*
-aromatic 									*					*				*	* 	
-basic 		*							*			*								
-buried 	*				*					*	* 		*	*				*		*
-charged 		*		*		*			*			*								
-cyclic 									*					*	* 			*	* 	
-hydrophobic	*							*		*	* 		*	*	* 			*	* 	*
-large 		*				*	* 		*	*	* 	*	*	*				*	* 	
-medium 			* 	*	*										* 		*			*
-negative 				*		*														
-neutral 	*		* 		*		* 	*	*	*	* 		*	*	* 	*	*	*	* 	*
-polar 		*	* 	*	*	*	* 		*			*				*	*			
-positive 		*							*			*								
-small 	*							*								*				
-surface 		*	* 	*		*	* 	*	*			*			* 	*	*		* 	
-
-
-***************************************/
-
-/*
- *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
- *  Copyright (C) 2015  Jean-Christophe Taveau.
- *
- *  This file is part of mowgli
- *
- * This program is free software: you can redistribute it and/or modify it 
- * under the terms of the GNU General Public License as published by 
- * the Free Software Foundation, either version 3 of the License, or 
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
- * GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
- *
- *
- * Authors:
- * Jean-Christophe Taveau
- */
-
 "use strict"
 
 /*
@@ -5344,77 +5824,11 @@ PointStyle.prototype.createVBO = function() {
  }
  
 
-/*
- *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
- *  Copyright (C) 2015  Jean-Christophe Taveau.
- *
- *  This file is part of mowgli
- *
- * This program is free software: you can redistribute it and/or modify it 
- * under the terms of the GNU General Public License as published by 
- * the Free Software Foundation, either version 3 of the License, or 
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
- * GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
- *
- *
- * Authors:
- * Jean-Christophe Taveau
- */
 
-"use strict"
-
-/*
- * Constructor
- */
 
 function Console() {
 
 }
-
-/*
- *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
- *  Copyright (C) 2015  Jean-Christophe Taveau.
- *
- *  This file is part of mowgli
- *
- * This program is free software: you can redistribute it and/or modify it 
- * under the terms of the GNU General Public License as published by 
- * the Free Software Foundation, either version 3 of the License, or 
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
- * GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
- *
- *
- * Authors:
- * Jean-Christophe Taveau
- */
- 
-"use strict"
-
-function EventManager() {
-
-}
-
-
-EventManager.prototype.add = function(type, a_callback) {
-
-
-}
-
-
 
 /*
  *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
