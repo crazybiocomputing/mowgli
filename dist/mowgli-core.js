@@ -4884,17 +4884,21 @@ Molecule.prototype.fasta = function () {
  *
  **/
 Molecule.prototype.secondary = function () {
-    var fasta = '> ' + this.ID + ':' + this.atoms[0].chain + ' | ' + this.title + '\n';
-    var current_chain = this.atoms[0].chainID;
+    var fasta_sec = '> ' + this.ID + ':' + this.atoms[0].chain + ' | ' + this.information.title + '\n';
+    var current_chain = this.atoms[0].chain;
     var count = 0;
     for (var i= 0; i < this.atoms.length; i++) {
-        if (this.atoms[i].chainID != current_chain) {
-            fasta += '\n> ' + this.ID + ':' + this.atoms[i].chain + ' | ' + this.title + '\n';
-            current_chain = this.atoms[i].chainID;
+        if (this.atoms[i].secondary ==='X') {
+            this.atoms[i].secondary = '.';
+
+        }
+        if (this.atoms[i].chain != current_chain && this.atoms[i].type=== 'ATOM') {
+            fasta_sec+= '\n> ' + this.ID + ':' + this.atoms[i].chain + ' | ' + this.information.title + '\n';
+            current_chain = this.atoms[i].chain;
             count = 0;
         }
-        if (this.atoms[i].name==='CA' && this.atoms[i].chainID == current_chain) {
-            fasta += this.atoms[i].struct[0];
+        if ( (this.atoms[i].name==='CA' || this.atoms[i].name==='O4*'|| this.atoms[i].name==='O4\'') && this.atoms[i].chain == current_chain) {
+            fasta_sec += this.atoms[i].secondary[0];
             count++;
             if ( (count % 80) == 0) {
                 fasta += '\n';
@@ -4902,6 +4906,7 @@ Molecule.prototype.secondary = function () {
             }
         }
     }
+    return fasta_sec;
 };
 
 
