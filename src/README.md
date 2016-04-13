@@ -1,7 +1,12 @@
 This folder **src** contains all the codes required for mowgli-core.
+
 - graphics
-  - shaders
-  - shapes
+  - colorers
+  - geometers
+  - scenegraph
+    - gl
+ -  shaders
+ -  shapes
 - mol
 - parser
 - styles
@@ -42,7 +47,7 @@ Various objects required to build the scene graph.
     shape.setStyle('wireframe');
     console.log(shape);
 
-  // 2ter- Define shader program by hand 
+  // 2ter- Define shader program by hand
   var shaderProgram = new Program(renderer.getContext(),'wireframe-cpk');
   shaderProgram.loadDOM("vertex"  ,"wireframe-vs");
   shaderProgram.loadDOM("fragment","wireframe-fs");
@@ -55,7 +60,7 @@ Various objects required to build the scene graph.
   shape.setProgram(shaderProgram);
 
   scene.add(shape);
-  
+
   // Move camera to see the structure in its entirety
   mat4.translate(scene.getCamera().viewMatrix,scene.getCamera().viewMatrix,[0.0,0.0,-5.0]);
 
@@ -67,12 +72,9 @@ Various objects required to build the scene graph.
 
   // 4- Init renderer
   renderer.init();
-  
+
   // 5- Draw Scene
   renderer.drawScene();
 }
 
 ```
-
-
-
