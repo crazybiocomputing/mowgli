@@ -8,6 +8,6 @@ Color schemes:
 - structure based on the secondary structures
 - monochrome (user-defined color)
 - amino or nucleic
-- rainbow (a gradient from N-term &larr; C-term peptidic or 5' &rarr; 3' nucleic chains)
+- rainbow: a gradient from N-term &rarr; C-term peptidic or 5' &rarr; 3' nucleic chains.
 
 -
