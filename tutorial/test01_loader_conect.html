@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Load PDB File</title>
+
+<script  type="text/javascript" src="../dist/gl-matrix-min.js"></script> 
+<script  type="text/javascript" src="../src/parser/PDBParser.js"></script> 
+<script  type="text/javascript" src="../src/PDBLoader.js"></script> 
+<script  type="text/javascript" src="../src/structure.js"></script> 
+
+<script type="text/javascript">
+
+var structure = {
+
+}
+
+
+function main() {
+  // 0- Create a renderer for this canvas
+  var renderer = new Renderer('canvas');
+
+  // 1- Create a scene with a default light and camera
+  var scene = new Scene();
+  renderer.addScene(scene);
+
+  // 2- Compute a style/color for this structure
+  var shape = ShapeFactory.get(structure,'points');
+  shape.setColorMode('CPK');
+  scene.add(shape);
+  
+  // 3- Update renderer
+  renderer.update();
+
+  // 4- Draw Scene
+  renderer.drawScene();
+}
+
+</script>
+
+</head>
+<body onload="main()">
+<center>
+<canvas id="canvas" width="640" height="480"> </canvas>
+</center>
+</body>
+</html>

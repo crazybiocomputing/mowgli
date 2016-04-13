@@ -5,23 +5,83 @@
 <title>Load PDB File</title>
 
 <script  type="text/javascript" src="../dist/gl-matrix-min.js"></script>
-<script  type="text/javascript" src="../dist/mowgli.js"></script>
+<script  type="text/javascript" src="../dist/mowgli-core.js"></script>
 
 <script type="text/javascript">
+// Global variables
+var mol;
+
+function loadRaster(type,id) {
+    var canvas = document.createElement('canvas');
+    var ctx = canvas.getContext('2d');
+
+    if (type === "png") {
+        var img = document.getElementById(id);
+
+        img.crossOrigin = 'Anonymous'; // no credentials flag. Same as img.crossOrigin=''
+
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0, img.width, img.height);
+
+        var pix = ctx.getImageData(0, 0, img.width, img.height).data;
+        console.log("PIXELS " + img.width +" "+ img.height + " "+ pix.length);
+        console.log("PIX[0] " + pix[0] +" "+ pix[1] + " "+ pix[2] + " "+ pix[3]);
+    }
+    else if (type === "png_url") {
+        var vol = new Image();
+        vol.src = './img/toricSolenoid_vertical_RGB_128x128x86.png';
+        vol.onload = function() {
+            canvas.style.display = 'none';
+            canvas.width = this.width;
+            canvas.height = this.height;
+            ctx.drawImage(vol, 0, 0, this.width, this.height);
+            var pix = ctx.getImageData(0, 0, this.width, this.height).data;
+            console.log("VOXELS " + this.width +" "+ this.height + " "+ pix.length);
+            console.log("VOX[0] " + pix[0] +" "+ pix[1] + " "+ pix[2] + " "+ pix[3]);
+        };
+        if (vol.complete) {
+            canvas.width = vol.width;
+            canvas.height = vol.height;
+            canvas.getContext('2d').drawImage(vol, 0, 0, vol.width, vol.height);
+            var pix = ctx.getImageData(0, 0, vol.width, vol.height).data;
+            console.log("COMPLETE - VOXELS " + vol.width +" "+ vol.height + " "+ pix.length);
+            console.log("COMPLETE - VOX[0] " + pix[0] +" "+ pix[1] + " "+ pix[2] + " "+ pix[3]);
+        }
+    }
+}
+
 
 function loadFile(type,id) {
-  var mol = null;
-  var reader = new StructureReader();
-  if (type === 'pdb') {
-    mol = reader.getFromDOM(id,'pdb');
-  }
-  else if (type === 'xyz'){
-    mol = reader.getFromDOM(id,'xyz');
-  }
-  else {
-    console.log('NOT IMPLEMENTED. Sorry');
-  }
-  console.log('MOLECULE :\n'+JSON.stringify(mol) );
+    var reader = new StructureReader();
+    if (type === 'pdb') {
+        mol = reader.getFromDOM(id,'pdb');
+        console.log((mol instanceof Raster) +' MOLECULE :\n'+JSON.stringify(mol,"&nbsp;") );
+    }
+    else if (type === 'xyz'){
+        mol = reader.getFromDOM(id,'xyz');
+        console.log(mol.className+' MOLECULE :\n'+JSON.stringify(mol) );
+    }
+    else if (type === 'rcsb'){
+        // Asynchronous
+        reader.getFromID(id, function(myMol) {
+            var str = JSON.stringify(myMol).replace(/[{,]/g, "$&\n");
+            console.log(myMol.constructor.name);
+            mol = myMol;
+            document.getElementById('output').innerHTML='<pre>'+str+'</pre>';
+        });
+    }
+    else {
+        console.log('NOT IMPLEMENTED. Sorry');
+    }
+}
+
+function atomByLabel() {
+    mol.calcPhiPsi();
+    var motif = document.getElementById('atombylabel').value;
+    console.log(motif);
+    console.log(mol.getAtomByLabel(motif) );
+    console.log("PHI " + mol.getAtomByLabel("[10].CA").phi);
 }
 
 </script>
@@ -29,17 +89,34 @@ function loadFile(type,id) {
 </head>
 <body>
 <p>Load Local Structure File:
-<input type="radio" name="local" value="pdb" onchange="loadFile('pdb','1LMB')">PDB</input>
-<input type="radio" name="local" value="pdb" onchange="loadFile('pdbml','1LMB')">PDBML(TODO)</input>
-<input type="radio" name="local" value="pdb" onchange="loadFile('mmcif','1LMB')">mmCIF(TODO)</input>
-<input type="radio" name="local" value="xyz" onchange="loadFile('xyz','methane')">XYZ</input>
-<input type="radio" name="local" value="xyz" onchange="loadFile('xyz','methane')">XYZ-animate(TODO)/input>
+<ul>
+<li><input type="radio" name="local" selected>None</input></li>
+<li><input type="radio" name="local" value="pdb" onchange="loadFile('pdb','1LMB')">PDB</input></li>
+<li><input type="radio" name="local" value="pdb" onchange="loadFile('pdbml','1LMB')">PDBML(TODO)</input></li>
+<li><input type="radio" name="local" value="pdb" onchange="loadFile('mmcif','1LMB')">mmCIF(TODO)</input></li>
+<li><input type="radio" name="local" value="xyz" onchange="loadFile('xyz','methane')">XYZ</input></li>
+<li><input type="radio" name="local" value="xyz" onchange="loadFile('xyz','methane')">XYZ-animate(TODO)</input></li>
+<li><input type="radio" name="local" value="png" onchange="loadRaster('png','solenoid')">Toric solenoid (128x128x86) - local</input></li>
+<li><input type="radio" name="local" value="png_xhr" onchange="loadRaster('png_url','solenoid')">Toric solenoid (128x128x86) - distant</input></li>
+</ul>
 </p>
-<p>Load From RCSB PDB ID: 
-<input type="text" id="distant"></input>&nbsp;
-<input type="submit" id="ok" onclick="loadFile('distant',document.getElementById('distant').value)"></input>
+<p>Load From RCSB PDB ID:
+<ul>
+<li><input type="text" id="distant"></input>&nbsp;
+<input type="submit" id="ok" onclick="loadFile('rcsb',document.getElementById('distant').value)"></input></li>
+</ul>
+</p>
+<p>Get Atom By Label:
+<ul>
+<li><input type="text" id="atombylabel"></input>&nbsp;
+<input type="submit" id="ok" onclick="atomByLabel()"></input></li>
+</ul>
 </p>
 
+
+<img id="solenoid" style="display:none" src="./img/toricSolenoid_vertical_128x128x86.png"></img>
+<div id="output">
+</div>
 <div id="methane"  style="display:none">
 5
 methane molecule (in ångströms)

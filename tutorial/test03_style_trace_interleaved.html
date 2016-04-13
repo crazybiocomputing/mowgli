@@ -2,12 +2,12 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Spacefill Impostor</title>
+<title>Wireframe and CPK</title>
 
 <!-- ************** S H A D E R S ************** -->
 
-<script id="spacefill-vs" type="x-shader/x-vertex">
-  attribute vec4 aVertexPosition;
+<script id="wireframe-vs" type="x-shader/x-vertex">
+  attribute vec3 aVertexPosition;
   attribute vec3 aVertexColor;
 
   uniform mat4 uMMatrix;
@@ -15,73 +15,21 @@
   uniform mat4 uPMatrix;
 
   varying vec3 vColor;
-  varying vec4 eyePos;
-
-  float vdwRadius = aVertexPosition.w;
-  // pointScale = viewportHeight / tan(fovy);
-  float pointScale = 720.0/tan(radians(45.0/2.0) );
 
   void main(void) {
-    eyePos = uVMatrix *uMMatrix * vec4(aVertexPosition.xyz,1.0);
-    float dist = length(eyePos);      
-    gl_PointSize = vdwRadius * (pointScale / dist);
-
-    gl_Position = uPMatrix * uVMatrix * uMMatrix * vec4(aVertexPosition.xyz, 1.0);
+    gl_Position = uPMatrix * uVMatrix * uMMatrix * vec4(aVertexPosition, 1.0);
     vColor = aVertexColor;
   }
 </script>
 
-<script id="spacefill-fs" type="x-shader/x-fragment">
-#extension GL_EXT_frag_depth : enable
+<script id="wireframe-fs" type="x-shader/x-fragment">
 
-  precision highp float;
-
-  uniform mat4 uPMatrix;
+  precision mediump float;
 
   varying vec3 vColor;
-  varying vec4 eyePos;
-
-  vec3 light = normalize( vec3(1.0,-1.0,2.0) );
-  vec3 reflection;
-  vec3 eye;
 
   void main(void) {
-
-    vec2 v = gl_PointCoord.xy - vec2(0.5,0.5);
-    float d = dot(v,v);
-
-    // If outside, stop...
-    if (d > 0.25) {
-      discard;
-    }
-
-    // else if inside... compute the normal vector
-    vec3 normal;
-    normal.xy = v.xy;
-    normal.z = sqrt(0.25 - normal.x*normal.x - normal.y*normal.y);
-    normal = normalize(normal);
-
-    // diffuse
-    float diffuse = clamp(max(dot(normal,light),0.0),0.0,1.0);
-
-    // specular
-    eye = -normalize(eyePos.xyz);
-    reflection = normalize(reflect(-light, normal));
-    float specular = 0.7*pow(clamp(max(dot(reflection, eye), 0.0), 0.0, 1.0), 80.0 );
-
-    // calculate depth
-    vec4 eyeSpacePos = vec4(eyePos.xyz + normal.xyz, 1.0);   // position of this pixel on sphere in eye space
-    vec4 clipSpacePos = uPMatrix * eyeSpacePos;
-
-    // and because z is non-linear (1/z) to favour the nearer triangles, 
-    // most of a scenes z will be in that very small range (0.9 to 1.0).
-    // You can linearise it by encoding (z-near)/(far-near) in the z column of projection matrix, 
-    // and pre-multiply z by w in the vertex shader : (z * w) / w = z
-    float depth = (clipSpacePos.z / clipSpacePos.w) * 0.5 + 0.5;
-
-    gl_FragDepthEXT = depth; // to lineariz, just do ((gl_DepthRange.diff * depth) + gl_DepthRange.near + gl_DepthRange.far) / 2.0;
-    // ambient + diffuse + specular
-    gl_FragColor = vec4(0.2,0.2,0.2,1.0) + vec4( vColor * diffuse,1.0) + vec4(0.9, 0.9, 0.9, 1.0) * specular;
+    gl_FragColor = vec4( vColor,1.0);
   }
 
 </script>
@@ -89,39 +37,17 @@
 <!-- ************** M O W G L I ************** -->
 
 <script  type="text/javascript" src="../dist/gl-matrix-min.js"></script> 
-<script  type="text/javascript" src="../src/parser/PDBParser.js"></script> 
-<script  type="text/javascript" src="../src/PDBLoader.js"></script> 
-<script  type="text/javascript" src="../src/bond.js"></script> 
-<script  type="text/javascript" src="../src/bondCalculator.js"></script> 
-<script  type="text/javascript" src="../src/structure.js"></script> 
-<script  type="text/javascript" src="../src/graphics/renderer.js"></script> 
-<script  type="text/javascript" src="../src/graphics/scene.js"></script> 
-<script  type="text/javascript" src="../src/graphics/shape.js"></script> 
-<script  type="text/javascript" src="../src/graphics/shapeFactory.js"></script> 
-<script  type="text/javascript" src="../src/graphics/program.js"></script> 
-<script  type="text/javascript" src="../src/graphics/camera.js"></script> 
-<script  type="text/javascript" src="../src/graphics/light.js"></script> 
-<script  type="text/javascript" src="../src/styles/pointStyle.js"></script> 
-<script  type="text/javascript" src="../src/ui/mouseSensor.js"></script> 
+<script  type="text/javascript" src="../dist/mowgli.js"></script> 
+
+
 
 <script type="text/javascript">
 
 var structure;
 
-var symbols = { 
-  '_' : { 'symbol':''  ,'unknown': 180, 'vdwRadius': 360, 'value2':12, 'name': ""            ,'color':[255, 20,147]},  /*   0 */
-  'H' : { 'symbol':'H' ,'unknown':  80, 'vdwRadius': 275, 'value2': 4, 'name': "HYDROGEN"    ,'color':[255, 20,147]},  /*   1 */
-  'C' : { 'symbol':'C' ,'unknown': 180, 'vdwRadius': 387, 'value2': 0, 'name': "CARBON"      ,'color':[200,200,200]},  /*   6 */
-  'N' : { 'symbol':'N' ,'unknown': 170, 'vdwRadius': 350, 'value2': 1, 'name': "NITROGEN"    ,'color':[143,143,255]},  /*   7 */
-  'O' : { 'symbol':'O' ,'unknown': 170, 'vdwRadius': 337, 'value2': 2, 'name': "OXYGEN"      ,'color':[240,  0,  0]},  /*   8 */
-  'P' : { 'symbol':'P' ,'unknown': 259, 'vdwRadius': 470, 'value2': 8, 'name': "PHOSPHORUS"  ,'color':[255,165,  0]},  /*  15 */  /* 262? */
-  'S' : { 'symbol':'S' ,'unknown': 255, 'vdwRadius': 452, 'value2': 3, 'name': "SULPHUR"     ,'color':[255,200, 50]}   /*  16 */
-}
-
-
 function main() {
 
-  var loader = new PDBLoader();
+  var loader = new StructureReader();
   structure = loader.getFromDOM('1LMB','pdb');
 
   // 0- Create a renderer for this canvas
@@ -132,29 +58,61 @@ function main() {
   renderer.addScene(scene);
 
   // 2- Create a shape with geometry and colors
+
+  var selected = structure.finder(
+    'ATOM', 
+    function (atom) {
+      if ( atom.type === 'ATOM' && (atom.name === "CA" || atom.name === "P") ) {
+        return true;
+      } 
+    });
+
+  selected.sort(function (atom1, atom2) {
+    if (atom1.chain > atom2.chain)
+      return 1;
+    if (atom1.chain < atom2.chain)
+      return -1;
+    // a == b
+    return 0;
+  });
+
+  console.log(selected);
+
   var shape = new Shape();
   var vertices = [];
-  var colors   = [];
-  for (var i in structure.atoms) {
-    vertices.push(structure.atoms[i].x);
-    vertices.push(structure.atoms[i].y);
-    vertices.push(structure.atoms[i].z);
-    vertices.push(getVdWRadius(structure.atoms[i].symbol) );
-    getCPKColor(colors,structure.atoms[i].symbol);
+  // Only one array is used to define the vertices and corresponding colors
+  // Interleaved array of (vertices + colors)
+  // X Y Z R G B X Y Z R G B
+  for (var i=0; i < selected.length - 1; i++) {
+    if (selected[i].chain === selected[i+1].chain && (selected[i].groupID + 1) == selected[i+1].groupID ) {
+      vertices.push(selected[i].x);
+      vertices.push(selected[i].y);
+      vertices.push(selected[i].z);     
+      getStructureColor(vertices,selected[i].secondary[0]); // Structure color
+
+      vertices.push(selected[i+1].x);
+      vertices.push(selected[i+1].y);
+      vertices.push(selected[i+1].z);
+      getStructureColor(vertices,selected[i+1].secondary[0]); // Structure color
+    }
   }
 
-  shape.setGeometry({'type':'POINTS_RADIUS','attribute':'aVertexPosition','data':vertices});
-  shape.setColors({'type': 'RGB', 'attribute':'aVertexColor','data':colors});
+  // Set geometry and colors of this shape
+  shape.setGeometry(
+    {
+      'type':'LINES',
+      'data':vertices, 
+      'attributes': [new Attribute("aVertexPosition",0,6), new Attribute("aVertexColor",3,6)] 
+    }
+  );
 
+  shape.numItems = vertices.length / 6;
 
   // 2ter- Define shader program by hand 
-  var shaderProgram = new Program(renderer.getContext(),'monochrome');
-  shaderProgram.loadDOM("vertex"  ,"spacefill-vs");
-  shaderProgram.loadDOM("fragment","spacefill-fs");
+  var shaderProgram = new Program(renderer.getContext(),'wireframe-cpk');
+  shaderProgram.loadDOM("vertex"  ,"wireframe-vs");
+  shaderProgram.loadDOM("fragment","wireframe-fs");
   shaderProgram.link();
-  // Get attribLocation
-  shaderProgram.setAttribute("aVertexPosition");
-  shaderProgram.setAttribute("aVertexColor");
   // Get uniformLocation
   shaderProgram.setUniformLocation("uPMatrix");
   shaderProgram.setUniformLocation("uVMatrix");
@@ -163,10 +121,13 @@ function main() {
   shape.setProgram(shaderProgram);
   shape.updateGL(renderer.getContext() );
 
+  // Center structure
   mat4.translate(shape.matrix,shape.matrix,[-structure.cg.x,-structure.cg.y,-structure.cg.z]);
-  console.log(shape.matrix );
+
   scene.add(shape);
-  mat4.translate(scene.getCamera().viewMatrix,scene.getCamera().viewMatrix,[0.0,0.0,-80.0]);
+
+  // Move camera to see the structure in its entirety
+  mat4.translate(scene.getCamera().viewMatrix,scene.getCamera().viewMatrix,[0.0,0.0,-60.0]);
   
   console.log(scene.toString());
   // 3- Update renderer
@@ -178,42 +139,34 @@ function main() {
 
   renderer.addSensor(mouse);
 
-  // 4- Draw Scene
+  // 5- Draw Scene
   renderer.drawScene();
 }
 
-function getVdWRadius(symbol) {
-  // Van der Waal Radius including Hydrogen atom
+function getStructureColor(colors,symbol) {
+  // Structure
   switch (symbol) {
-    case 'C': return 1.872;
-    case 'N': return 1.507;
-    case 'O': return 1.400;
-    case 'S': return 1.848;
-    default:
-      if (symbols[symbol] == null) {
-        return symbols['_'].vdwRadius/250.0;
-      }
-      else {
-        return symbols[symbol].vdwRadius/250.0;
-      }
+    case 'H': 
+      colors.push(0.94); //red
+      colors.push(0.0); //green
+      colors.push(0.5); //blue
+      break;
+    case 'E': 
+      colors.push(1.00); //red
+      colors.push(1.00); //green
+      colors.push(0.00); //blue
+      break;
+    case 'T': 
+      colors.push(0.38); //red
+      colors.push(0.50); //green
+      colors.push(1.00); //blue
+      break;
+    default: 
+      colors.push(1.00); //red
+      colors.push(1.00); //green
+      colors.push(1.00); //blue
       break;
   }
-}
-
-
-function getCPKColor(colors,symbol) {
-  // CPK
-  if (symbols[symbol] == null) {
-     colors.push(symbols['_'].color[0]/255.0);
-     colors.push(symbols['_'].color[1]/255.0);
-     colors.push(symbols['_'].color[2]/255.0);
-  }
-  else {
-     colors.push(symbols[symbol].color[0]/255.0);
-     colors.push(symbols[symbol].color[1]/255.0);
-     colors.push(symbols[symbol].color[2]/255.0);
-  }
-
 }
 
 </script>
@@ -221,8 +174,9 @@ function getCPKColor(colors,symbol) {
 </head>
 <body onload="main()">
 <center>
-<canvas id="canvas" width="1280" height="720" > </canvas>
+<canvas id="canvas" width="1280" height="720"> </canvas>
 </center>
+
 <div id="1LMB" style="display:none">
 HEADER    TRANSCRIPTION/DNA                       05-NOV-91   1LMB              
 TITLE     REFINED 1.8 ANGSTROM CRYSTAL STRUCTURE OF THE LAMBDA                  
@@ -2697,5 +2651,7 @@ HETATM 2338  O   HOH 4 121       4.224  -6.661 -16.861  1.00 49.49           O
 MASTER      337    0    0   10    0    0    0    6 2334    4    0   20          
 END                                                                             
 </div>
+</div>
+
 </body>
 </html>

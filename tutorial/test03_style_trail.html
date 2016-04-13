@@ -87,26 +87,31 @@ function main() {
     return 0;
   });
 
-  console.log(selected);
+//  console.log(selected);
 
   var shape = new Shape();
   var vertices = [];
   var colors   = [];
-  for (var i=0; i < selected.length - 1; i++) {
-    if (selected[i].chain === selected[i+1].chain && (selected[i].groupID + 1) == selected[i+1].groupID ) {
-      vertices.push(selected[i].x);
-      vertices.push(selected[i].y);
-      vertices.push(selected[i].z);
-      vertices.push(selected[i+1].x);
-      vertices.push(selected[i+1].y);
-      vertices.push(selected[i+1].z);
-      // CPK
-      getCPKColor(colors,selected[i].symbol);
-      getCPKColor(colors,selected[i+1].symbol);
-    }
+
+    console.log('Create...');
+  var i, j, a, b, c, x, y, z;
+  var _i;
+  for (j = _i = 0 ; _i < 10000; j = ++_i) {
+
+    i = j * 0.1;
+    a = i + 3;
+    b = i + 7;
+    c = i + 11;
+    x = Math.sin(a / 5)  + Math.sin(a / 23) + Math.sin(a / 53);
+    y = Math.sin(b / 7)  + Math.sin(b / 29) + Math.sin(b / 67);
+    z = Math.sin(b / 11) + Math.sin(b / 31) + Math.sin(b / 73);
+    console.log(x + ' '+ y +' ' + z);
+    vertices.push(x,y,z);
+    colors.push(0.1); colors.push(0.8); colors.push(0.8);
   }
 
-  shape.setGeometry({'type':'LINES','attribute':'aVertexPosition','data':vertices});
+  console.log(vertices);
+  shape.setGeometry({'type':'LINE_STRIP','attribute':'aVertexPosition','data':vertices});
   shape.setColors({'type': 'RGB', 'attribute':'aVertexColor','data':colors});
 
 
@@ -127,12 +132,12 @@ function main() {
   shape.updateGL(renderer.getContext() );
 
   // Center structure
-  mat4.translate(shape.matrix,shape.matrix,[-structure.cg.x,-structure.cg.y,-structure.cg.z]);
+  //mat4.translate(shape.matrix,shape.matrix,[-structure.cg.x,-structure.cg.y,-structure.cg.z]);
 
   scene.add(shape);
 
   // Move camera to see the structure in its entirety
-  mat4.translate(scene.getCamera().viewMatrix,scene.getCamera().viewMatrix,[0.0,0.0,-60.0]);
+  mat4.translate(scene.getCamera().viewMatrix,scene.getCamera().viewMatrix,[0.0,0.0,-7.0]);
   
   console.log(scene.toString());
   // 3- Update renderer
