@@ -120,7 +120,7 @@ Renderer.prototype.addScene = function (a_scene) {
  * @return {Scene} - Get the scene which is the root of the scene graph.
  *
  **/
-Renderer.prototype.getScene = function (a_scene) {
+Renderer.prototype.getScene = function () {
     return this.scene;
 };
 

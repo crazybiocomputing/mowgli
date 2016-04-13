@@ -4,14 +4,14 @@
  *
  *  This file is part of mowgli
  *
- * This program is free software: you can redistribute it and/or modify it 
- * under the terms of the GNU General Public License as published by 
- * the Free Software Foundation, either version 3 of the License, or 
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
@@ -23,9 +23,9 @@
  */
 
 
-"use strict";
+'use strict';
 
- 
+
 /**
  * OpenGL part of Shape
  *
@@ -61,25 +61,24 @@ ShapeGL.prototype.init = function(context) {
 
     // Get the corresponding node of the scene graph
     var shape = this.sgnode;
-    console.log(shape);
+
     // Add shader(s) to the renderer for uniform management
     this.sgnode.getRenderer().addShader(this.shaderProgram);
-    
+
     // For each buffer, create corresponding VBO
     for (var i in shape.geometries) {
-        console.log(shape.geometries[i]);
         this.VBOs[i] = this._createVBO(context,shape.geometries[i]);
     }
-    
+
     // For each textured image, create corresponding Texture
-    console.log('INIT TEXTURE TOTAL:' + shape.textures.length);
-    console.log(shape.textures);
+    // HACK console.log('INIT TEXTURE TOTAL:' + shape.textures.length);
+    // HACK console.log(shape.textures);
     for (var i=0; i < shape.textures.length; i++) {
-        console.log('INIT TEXTURE '+shape.textures[i]);
+        // HACK console.log('INIT TEXTURE '+shape.textures[i]);
         // TODO
         this.GLTextures.push(this._createTexture(context,shape.textures[i]) );
     }
-    
+
     // All is fine (I hope ?)
     this.isDirty = false;
 }
@@ -93,28 +92,28 @@ ShapeGL.prototype.render = function(context) {
     // Update matrix
     mat4.multiply(this.workmatrix,this.sgnode.parent.getNodeGL().workmatrix,this.sgnode.matrix);
     this.sgnode.getRenderer().setUniform("uMMatrix", this.workmatrix);
-    
+
     // Choose shader
-    console.log(this.shaderProgram);
+    // HACK console.log(this.shaderProgram);
     this.shaderProgram.use();
 
-    console.log('coordSize '+ this.numItems );
-    
-    
+    // TODO console.log('coordSize '+ this.numItems );
+
+
     // For this geometry, activate VBO
     for (var j in this.VBOs) {
         var vbo = this.VBOs[j];
         if (vbo.type === 'indexed') {
-            console.log('bind buffer '+ vbo.type + ' ' + vbo.ID+ ' ' + vbo.data);
+            // HACK console.log('bind buffer '+ vbo.type + ' ' + vbo.ID+ ' ' + vbo.data);
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, vbo.IndxID);
         }
         else {
-            console.log('bind buffer '+ vbo.type + ' ' + vbo.ID);
+            // HACK console.log('bind buffer '+ vbo.type + ' ' + vbo.ID);
             gl.bindBuffer(gl.ARRAY_BUFFER, vbo.ID);
         }
         for (var k in vbo.attributes) {
             var attribute = vbo.attributes[k];
-            console.log('enable ' + attribute.name+' '+attribute.location+' '+attribute.size+' '+attribute.stride+' '+attribute.offset);
+            // TODO console.log('enable ' + attribute.name+' '+attribute.location+' '+attribute.size+' '+attribute.stride+' '+attribute.offset);
             gl.enableVertexAttribArray(attribute.location );
             gl.vertexAttribPointer(
                 attribute.location,
@@ -126,12 +125,12 @@ ShapeGL.prototype.render = function(context) {
             );
         }
     }
-    
+
     // For this geometry, activate Texture
     for (var i=0; i < this.GLTextures.length; i++) {
-        // HACK: TODO
+        // TODO
         if (this.GLTextures[i] !== undefined) {
-            console.log('Activate tex ' + this.GLTextures[i]);
+            // HACK console.log('Activate tex ' + this.GLTextures[i]);
             gl.activeTexture(gl.TEXTURE0);
             gl.bindTexture(gl.TEXTURE_2D, this.GLTextures[i]);
             this.sgnode.getRenderer().setUniform("uTexture", 0);
@@ -144,10 +143,10 @@ ShapeGL.prototype.render = function(context) {
 
     // TODO Update uniforms
     this.shaderProgram.updateUniforms();
-    
+
 
     // Draw ...
-    console.log(this.sgnode.type + ' '+ this.glType +' '+ this.numIndices+' '+ this.numItems);
+    // HACK console.log(this.sgnode.type + ' '+ this.glType +' '+ this.numIndices+' '+ this.numItems);
     if (this.numIndices != 0 ) {
         gl.drawElements(this.glType, this.numIndices, gl.UNSIGNED_SHORT, 0);
     }
@@ -161,10 +160,10 @@ ShapeGL.prototype.render = function(context) {
 // Private
 ShapeGL.prototype._createVBO = function(context,geom) {
     var gl = context;
-    console.log('SHAPE TYPE ' + this.sgnode.type);
+    // HACK console.log('SHAPE TYPE ' + this.sgnode.type);
     switch (this.sgnode.type) {
     case 'POINTS':
-    case 'POINTS_RADIUS': 
+    case 'POINTS_RADIUS':
         this.glType = gl.POINTS;
         break;
     case 'LINES':
@@ -187,15 +186,15 @@ ShapeGL.prototype._createVBO = function(context,geom) {
     var vbo = {};
     vbo.attributes = [];
     vbo.type = geom.type;
-    
+
     // Create VBO
     vbo.ID = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, vbo.ID);
     gl.bufferData(gl.ARRAY_BUFFER, geom.data, gl.STATIC_DRAW);
 
     // Update attribute(s) associated to this VBO
-    console.log('VBO attributes');
-    console.log(geom.attributes);
+    // HACK console.log('VBO attributes');
+    // HACK console.log(geom.attributes);
     for (var j=0; j < geom.attributes.length; j++) {
         if ( (geom.content & Shape.XYZ) == Shape.XYZ) {
             var n = 32 // Highest value of Shape type(s)
@@ -214,7 +213,7 @@ ShapeGL.prototype._createVBO = function(context,geom) {
         vbo.attributes[j].size     = this.shaderProgram.attributes[vbo.attributes[j].name].size;
         vbo.attributes[j].stride   = geom.attributes[j].stride;
         vbo.attributes[j].offset   = geom.attributes[j].offset;
-        console.log('location [' + vbo.attributes[j].name + ']= '+ vbo.attributes[j].location + ' '+vbo.attributes[j].size);
+        // TODO console.log('location [' + vbo.attributes[j].name + ']= '+ vbo.attributes[j].location + ' '+vbo.attributes[j].size);
     }
 
     if (vbo.type === 'indexed') {
@@ -223,7 +222,7 @@ ShapeGL.prototype._createVBO = function(context,geom) {
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, geom.indices, gl.STATIC_DRAW);
         this.numIndices = geom.indices.length;
     }
-    console.log('VBO ID: ' + JSON.stringify(vbo) );
+    // HACK console.log('VBO ID: ' + JSON.stringify(vbo) );
     return vbo;
 
 }
@@ -233,15 +232,15 @@ ShapeGL.prototype._createTexture = function(context, img) {
     var gl = context;
     var glTex = gl.createTexture();
     this.GLTextures.push(glTex);
-    
-    console.log('Create Texture from '+img.src + ' ' + img.complete);
+
+    // TODO console.log('Create Texture from '+img.src + ' ' + img.complete);
 
     img.onload = function() {
         newTexture(img,glTex);
     }
-    
-    
-    
+
+
+
     function newTexture(img,glTex) {
         // Image now asynchronously loaded
         // Check dimension
@@ -255,16 +254,16 @@ ShapeGL.prototype._createTexture = function(context, img) {
             // Set parameters
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); //_MIPMAP_NEAREST);
-            
+
             //gl.generateMipmap(gl.TEXTURE_2D);
-            
+
             // Fill texture with image data
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
 
             // Free texture binding
             gl.bindTexture(gl.TEXTURE_2D, null);
         }
-        
+
         function powerOfTwo(n) {
             return ( (n & (n - 1)) == 0);
         }
@@ -287,8 +286,7 @@ ShapeGL.prototype._updateAttributes = function(context) {
         for (var j=0; j < vbo.attributes.length; j++) {
             vbo.attributes[j].location = this.shaderProgram.getAttribLocation(vbo.attributes[j].name);
             vbo.attributes[j].size = this.shaderProgram.attributes[vbo.attributes[j].name].size;
-            console.log('location [' + vbo.attributes[j].name + ']= '+ vbo.attributes[j].location + ' '+vbo.attributes[j].size);
+            // HACK console.log('location [' + vbo.attributes[j].name + ']= '+ vbo.attributes[j].location + ' '+vbo.attributes[j].size);
         }
     }
 }
-

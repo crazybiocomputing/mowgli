@@ -68,7 +68,6 @@ Composite.prototype.getById = function(id) {
 
     function traverse(id,a_node) {
         if (a_node.ID === id) {
-            console.log('Found '+a_node.ID);
             return a_node;
         }
 
@@ -85,7 +84,6 @@ Composite.prototype.getById = function(id) {
 };
 
 Composite.prototype.getRenderer = function() {
-    console.log(this);
     if (this.renderer != null) {
         return this.renderer;
     }
@@ -131,11 +129,10 @@ Composite.prototype.init = function(context) {
  * @param{number} OpenGL context
  **/
 Composite.prototype.render = function(context) {
-    console.log('RENDER_Composite ' + this.ID );
-    console.log(this.parent);
+    // HACK console.log('RENDER_Composite ' + this.ID );
+    // HACK console.log(this.parent);
     // Update matrix
     if (!(this.parent instanceof Renderer) ) {
-        console.log('multiply');
         mat4.multiply(this.getNodeGL().workmatrix,this.parent.getNodeGL().workmatrix,this.matrix);
     }
     // Render

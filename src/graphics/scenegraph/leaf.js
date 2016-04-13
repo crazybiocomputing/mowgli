@@ -4,14 +4,14 @@
  *
  *  This file is part of mowgli
  *
- * This program is free software: you can redistribute it and/or modify it 
- * under the terms of the GNU General Public License as published by 
- * the Free Software Foundation, either version 3 of the License, or 
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
@@ -23,7 +23,7 @@
  */
 
 
-"use strict"
+'use strict';
 
 
 /**
@@ -37,10 +37,10 @@ function Leaf(node) {
     this._isDirty = true;
     this.parent = null;
     this.renderer = null;
-    
-    // 
+
+    //
     this.nodeGL = null;
-    
+
     // Matrix for rotation(s) and translation(s)
     this.matrix=mat4.create();
     mat4.identity(this.matrix);
@@ -55,7 +55,6 @@ Leaf.prototype.getNodeGL = function() {
 }
 
 Leaf.prototype.getRenderer = function() {
-    console.log(this);
     if (this.renderer != null) {
         return this.renderer;
     }
@@ -85,8 +84,8 @@ Leaf.prototype.init = function(context) {
  * @param{number} OpenGL context
  **/
 Leaf.prototype.render = function(context) {
-    console.log('RENDER_Leaf ' + this.ID);
-    console.log(this.parent.getNodeGL().workmatrix);
+    // HACK console.log('RENDER_Leaf ' + this.ID);
+    // HACK console.log(this.parent.getNodeGL().workmatrix);
     // Update matrix
     mat4.multiply(this.getNodeGL().workmatrix,this.parent.getNodeGL().workmatrix,this.matrix);
     // OpenGL rendering
@@ -94,14 +93,12 @@ Leaf.prototype.render = function(context) {
 }
 
 Leaf.prototype.translate = function(tx, ty, tz) {
-    console.log(this.matrix);
+    // HACK console.log(this.matrix);
     mat4.translate(this.matrix,this.matrix,[tx, ty, tz]);
-        console.log(this.matrix);
+    // HACK console.log(this.matrix);
 }
 
 Leaf.prototype.graph = function(level) {
     var str = (this.ID || 'unknown');
     return str;
 }
-
-

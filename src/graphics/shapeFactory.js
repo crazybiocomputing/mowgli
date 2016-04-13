@@ -37,13 +37,14 @@ var ShapeFactory = (function () {
          */
         get: function ( options ) {
             console.log(options);
+            var style;
             switch (options.displayType) {
             case 'points':
                 // Already computed for the given structure?
                 // var style = types['atoms'] ????
                 // if (style === undefined) then
                 // Basic shape - only for debug
-                var style = new PointGeometer(options.molecule,ColorFactory.get(options.color) );
+                style = new PointGeometer(options.molecule,ColorFactory.get(options.color) );
                 style.getShape().setProgram(
                     ShaderFactory.get(
                         {
@@ -80,9 +81,16 @@ var ShapeFactory = (function () {
             case 'trace':
                 // TODO
                 break;
-            case 'wireframe':
-                // TODO
+            case 'wire':
                 style = new WireGeometer(options.molecule,ColorFactory.get(options.color) );
+                style.getShape().setProgram(
+                    ShaderFactory.get(
+                        {
+                            'displayType': 'points',
+                            'glContext': options.glContext
+                        }
+                    )
+                );
                 return style.getShape();
             default:
                 // Do nothing ??
