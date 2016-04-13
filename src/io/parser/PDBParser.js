@@ -4,14 +4,14 @@
  *
  *  This file is part of mowgli
  *
- * This program is free software: you can redistribute it and/or modify it 
- * under the terms of the GNU General Public License as published by 
- * the Free Software Foundation, either version 3 of the License, or 
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
@@ -22,16 +22,16 @@
  * Jean-Christophe Taveau
  */
 
-"use strict"
+"use strict";
 
 /**
  *
  * @module parser
  *
  **/
- 
- 
- 
+
+
+
 /**
  * Constructor
  * @class PDBParser
@@ -133,7 +133,7 @@ PDBParser.prototype.parse = function (text) {
       var tag = PDBParser.TAGS[rows[i].substring(0,6).trim()];
       // console.log(rows[i].substring(0,6).trim()+' '+tag);
       switch (tag) {
-      case PDBParser.TAGS.ATOM: 
+      case PDBParser.TAGS.ATOM:
       case PDBParser.TAGS.HETATM:
         this.parseAtom(rows[i]);
         break;
@@ -160,22 +160,22 @@ PDBParser.prototype.parse = function (text) {
     }
   }
 
-  //  3- Finalization
-  this.mol.centroid.x/=this.mol.atoms.length;
-  this.mol.centroid.y/=this.mol.atoms.length;
-  this.mol.centroid.z/=this.mol.atoms.length;
-  mat4.translate(this.mol.matrix,this.mol.matrix, [-this.mol.centroid.x, -this.mol.centroid.y, -this.mol.centroid.z]);
-  this.mol.bbox.center.x = (this.mol.bbox.min.x+this.mol.bbox.max.x)/2.0;
-  this.mol.bbox.center.y = (this.mol.bbox.min.y+this.mol.bbox.max.y)/2.0;
-  this.mol.bbox.center.z = (this.mol.bbox.min.z+this.mol.bbox.max.z)/2.0;
-  this.mol.bbox.radius   = 
+    //  3- Finalization
+    this.mol.centroid.x/=this.mol.atoms.length;
+    this.mol.centroid.y/=this.mol.atoms.length;
+    this.mol.centroid.z/=this.mol.atoms.length;
+    mat4.translate(this.mol.matrix,this.mol.matrix, [-this.mol.centroid.x, -this.mol.centroid.y, -this.mol.centroid.z]);
+    this.mol.bbox.center.x = (this.mol.bbox.min.x+this.mol.bbox.max.x)/2.0;
+    this.mol.bbox.center.y = (this.mol.bbox.min.y+this.mol.bbox.max.y)/2.0;
+    this.mol.bbox.center.z = (this.mol.bbox.min.z+this.mol.bbox.max.z)/2.0;
+    this.mol.bbox.radius   = 
     (this.mol.bbox.min.x-this.mol.bbox.max.x)*(this.mol.bbox.min.x-this.mol.bbox.max.x)+
     (this.mol.bbox.min.y-this.mol.bbox.max.y)*(this.mol.bbox.min.y-this.mol.bbox.max.y)+
     (this.mol.bbox.min.z-this.mol.bbox.max.z)*(this.mol.bbox.min.z-this.mol.bbox.max.z);
-  this.mol.bbox.radius   = Math.sqrt(this.mol.bbox.radius)/2.0;
+    this.mol.bbox.radius   = Math.sqrt(this.mol.bbox.radius)/2.0;
 
-  console.log('centroid '+this.mol.centroid.x+' '+this.mol.centroid.y+' '+this.mol.centroid.z);
-  console.log(this.mol.atoms.length+' '+this.mol.bbox.radius+' '+this.mol.bbox.center.x+' '+this.mol.bbox.center.y+' '+this.mol.bbox.center.z);
+    console.log('centroid '+this.mol.centroid.x+' '+this.mol.centroid.y+' '+this.mol.centroid.z);
+    console.log(this.mol.atoms.length+' '+this.mol.bbox.radius+' '+this.mol.bbox.center.x+' '+this.mol.bbox.center.y+' '+this.mol.bbox.center.z);
 }
 
 
@@ -186,8 +186,8 @@ PDBParser.prototype.parse = function (text) {
  * @summary Parse ATOM and HETATM row - Private method
  *
  * @description
- * 
- * 
+ *
+ *
  * |COLUMNS   |    DATA  TYPE   | FIELD      |  DEFINITION
  * |----------|------------------------------|--------------------------------------------
  * |01 - 06   |    Record name  | "ATOM  "   |  |
@@ -205,7 +205,7 @@ PDBParser.prototype.parse = function (text) {
  * |61 - 66   |    Real(6.2)    | tempFactor |  Temperature  factor.
  * |77 - 78   |    LString(2)   | element    |  Element symbol, right-justified.
  * |79 - 80   |    LString(2)   | charge     |  Charge  on the atom.
- * 
+ *
  **/
 
 PDBParser.prototype.parseAtom = function (line) {
@@ -234,7 +234,7 @@ PDBParser.prototype.parseAtom = function (line) {
     }
 
     // Atom Label
-    atom.label = this.mol.ID + "." + atom.chain + "["+atom.secondary+"]." + atom.group + "["+atom.groupID+"]." + atom.name + "["+atom.serial+"]."+atom.type.toLowerCase(); 
+    atom.label = this.mol.ID + "." + atom.chain + "["+atom.secondary+"]." + atom.group + "["+atom.groupID+"]." + atom.name + "["+atom.serial+"]."+atom.type.toLowerCase();
     //  if (atom.groupID===24 && atom.chain==="B") console.log(atom.secondary);
 
     this.mol.atoms.push(atom);
@@ -257,14 +257,14 @@ PDBParser.prototype.parseAtom = function (line) {
  * @summary Parse HEADER row - Private method
  *
  * @description
- * 
+ *
  * |COLUMNS  |    DATA  TYPE   |  FIELD           |  DEFINITION
  * |---------|-----------------|------------------|---------------------------------------
  * |01 - 06  |    Record name  |  "HEADER"        |  |
  * |11 - 50  |    String(40)   |  classification  |  Classifies the molecule(s).
  * |51 - 59  |    Date         |  depDate         |  Deposition date. This is the date the coordinates were received at the PDB.
  * |63 - 66  |    IDcode       |  idCode          |  This identifier is unique within the PDB.
- * 
+ *
  **/
 PDBParser.prototype.parseHeader = function (row) {
   this.mol.classification = row.substring(10,50).trim();
@@ -278,11 +278,11 @@ PDBParser.prototype.parseHeader = function (row) {
  * @summary Parse HELIX rows - Private method
  *
  * @description
- * 
- * 
+ *
+ *
  * |COLUMNS   |    DATA  TYPE   | FIELD          |  DEFINITION
  * |----------|-----------------|----------------|--------------------------------------------
- * |01 - 06   |    Record name  |    "HELIX      |  | 
+ * |01 - 06   |    Record name  |    "HELIX      |  |
  * |08 - 10   |   Integer       |    serNum      | Serial number of the helix. This starts at 1 and increases incrementally.
  * |12 - 14   |    LString(3)   |    helixID     | Helix identifier.
  * |16 - 18   |    Residue name |    initResName | Name of the initial residue.
@@ -300,19 +300,19 @@ PDBParser.prototype.parseHeader = function (row) {
 PDBParser.prototype.parseHelix = function(row) {
   this.secondary.push( {
     'type'      : 'H',
-    'serial'    : parseInt(row.substring(7,10) ), 
+    'serial'    : parseInt(row.substring(7,10) ),
     'ID'        : row.substring(11,14).trim(),
-    'strand'    : '', 
-    'initChain' : row[19], 
-    'init'      : parseInt(row.substring(21,25) ), 
-    'endChain'  : row[31], 
-    'end'       : parseInt(row.substring(33,37) ), 
+    'strand'    : '',
+    'initChain' : row[19],
+    'init'      : parseInt(row.substring(21,25) ),
+    'endChain'  : row[31],
+    'end'       : parseInt(row.substring(33,37) ),
     'class'     : Structure.RIGHT_HANDED_ALPHA || parseInt(row.substring(38,40)),
     'label'     : 'H('+row.substring(11,14).trim()+';'+parseInt(row.substring(7,10) )+')'
    });
 /****
-   console.log('HELIX:'+ 'H{' + this.secondary[this.secondary.length-1].ID +'}'+ 
-     ' first:' + this.secondary[this.secondary.length-1].init + this.secondary[this.secondary.length-1].initChain + 
+   console.log('HELIX:'+ 'H{' + this.secondary[this.secondary.length-1].ID +'}'+
+     ' first:' + this.secondary[this.secondary.length-1].init + this.secondary[this.secondary.length-1].initChain +
      ' last:'+ this.secondary[this.secondary.length-1].end + this.secondary[this.secondary.length-1].endChain);
 *****/
 }
@@ -331,7 +331,7 @@ PDBParser.prototype.parseHelix = function(row) {
  * |12 - 14   |     LString(3)   | sheetID        | Sheet identifier.
  * |15 - 16   |     Integer      | numStrands     | Number of strands in sheet.
  * |18 - 20   |     Residue name | initResName    | Residue  name of initial residue.
- * |22        |     Character    | initChainID    | Chain identifier of initial residue in strand. 
+ * |22        |     Character    | initChainID    | Chain identifier of initial residue in strand.
  * |23 - 26   |     Integer      | initSeqNum     | Sequence number of initial residue in strand.
  * |27        |     AChar        | initICode      | Insertion code of initial residue in  strand.
  * |29 - 31   |     Residue name | endResName     | Residue name of terminal residue.
@@ -357,11 +357,11 @@ PDBParser.prototype.parseSheet = function (row) {
     'serial'    : 'x',
     'ID'        : row.substring(11,14).trim(),
     'strand'    : parseInt(row.substring(7,10)),
-    'initChain' : row[21], 
-    'init'      : parseInt(row.substring(22,26) ), 
-    'endChain'  : row[32], 
+    'initChain' : row[21],
+    'init'      : parseInt(row.substring(22,26) ),
+    'endChain'  : row[32],
     'end'       : parseInt(row.substring(33,37) ),
-    'sense'     : parseInt(row.substring(38,40) ), 
+    'sense'     : parseInt(row.substring(38,40) ),
     'label'     : 'E'+parseInt(row.substring(7,10))+'('+row.substring(11,14).trim()+';'+parseInt(row.substring(38,40) )+')'
   });
     console.log(this.secondary[this.secondary.length - 1]);
@@ -380,7 +380,7 @@ PDBParser.prototype.parseSheet = function (row) {
  * |11 - 80   |    String       |  title         | Title of the  experiment.
  *
  **/
-PDBParser.prototype.parseTitle = function (row) 
+PDBParser.prototype.parseTitle = function (row)
 {
   if (parseInt(row.substring(8,10).trim()) == 1) {
     this.mol.title = row.substring(10,80).trim();
@@ -410,5 +410,3 @@ PDBParser.prototype.postProcess = function () {
   // Now, don't know what to do.
   // Check data ?
 }
-
-
