@@ -37,6 +37,11 @@ var ColorFactory = (function () {
          */
         get: function ( name ) {
             switch (name) {
+            case 'color_chain':
+                if (colorers.CHAIN === undefined) {
+                    colorers.CHAIN = new ChainColorer();
+                }
+                return colorers.CHAIN;
             case 'color_cpk':
                 if (colorers.CPK === undefined) {
                     colorers.CPK = new CPKColorer();
