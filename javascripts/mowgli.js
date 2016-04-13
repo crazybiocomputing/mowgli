@@ -4,14 +4,14 @@
  *
  *  This file is part of mowgli
  *
- * This program is free software: you can redistribute it and/or modify it 
- * under the terms of the GNU General Public License as published by 
- * the Free Software Foundation, either version 3 of the License, or 
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
@@ -22,35 +22,96 @@
  * Jean-Christophe Taveau
  */
 
-"use strict";
+'use strict';
 
 
-/*
-function MOWGLI() {
-    this.structure;
-}
-*/
+/**
+ *
+ */
+(function (exports) {
 
-(function(exports) {
-    var _mol;
-    var _renderer;
-    
-    exports.alert = function(msg) {
-        document.querySelector(".alert .modal-header h2").innerHTML = 'MOWGLI: Info';
-        document.querySelector(".alert .modal-body").innerHTML='<p>'+msg+'</p>';
+    var _MOWGLI = function() {
+        if (_MOWGLI.prototype._singletonInstance) {
+          return _MOWGLI.prototype._singletonInstance;
+        }
+
+        _MOWGLI.prototype._singletonInstance = this;
+
+        /**
+         * Renderer used for display
+         */
+        this.renderer;
+
+        /**
+         * Active structure used by mowgli
+         */
+        this.structure = {};
+
+        /**
+         * Settings for graphics
+         */
+        this.settings = {};
+    }
+
+    /**
+     * Init graphics
+     */
+    _MOWGLI.prototype.init = function () {
+        if (this.renderer === undefined) {
+            init();
+        }
+
+        function init() {
+            console.log('INIt');
+            var canvas = document.getElementById('mowgli');
+            try {
+                MOWGLI.renderer = new Renderer('mowgli');
+            }
+            catch (e) {
+                MOWGLI.alert('ERR: Cannot get WebGL graphics context');
+            }
+            var scene = new Scene();
+            scene.setDefault();
+            MOWGLI.renderer.addScene(scene);
+
+            var group = new ShapeGroup();
+            scene.add(group);
+            // 4- Add a sensor
+            var mouse = new MouseSensor('mowgli');
+            mouse.attach(group);
+
+            MOWGLI.renderer.addSensor(mouse);
+
+            // var gl = MOWGLI.renderer.context;
+            // gl.clearColor(1.0,0.5,0.0,1.0);
+        }
+    };
+
+    /**
+     * Update graphics
+     */
+    _MOWGLI.prototype.update = function () {
+        if (this.renderer === undefined) {
+            MOWGLI.alert('ERR: No initialization done.')
+        }
+        this.renderer.init();
+        this.renderer.drawScene();
+    };
+
+    /**
+     * Alert window
+     */
+    _MOWGLI.prototype.alert = function(msg) {
+        document.querySelector('.alert .modal-header h2').innerHTML = 'MOWGLI: Info';
+        document.querySelector('.alert .modal-body').innerHTML='<p>'+msg+'</p>';
         // Trigger display of the alert
         document.querySelector('.alert #modal-alert').checked = true;
-    }
-    
-    
-    /**
-     * Active structure used by mowgli
-     **/
-    exports.structure = undefined;
+    };
 
 
-})(this.MOWGLI = {});
+    exports.MOWGLI = new _MOWGLI();
 
+})(window);
 
 /*
  *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
@@ -94,6 +155,57 @@ function Alert(msg) {
     
     // Display alert
     document.getElementById('alert').classList.toggle('alert_target');
+}
+
+/*
+ *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
+ *  Copyright (C) 2015  Jean-Christophe Taveau.
+ *
+ *  This file is part of mowgli
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * Authors:
+ * Jean-Christophe Taveau
+ */
+
+"use strict";
+
+/**
+ * Constructor
+ * @class CheckBox
+ * @memberof module:mwGUI
+ * @constructor
+ *
+ * @author Jean-Christophe Taveau
+ **/
+ function CheckBox(options) {
+     // Do nothing?
+}
+
+CheckBox.prototype.update = function(el,value) {
+    // Needs the parent <ul>
+    var list = el.parentNode;
+    for (var i=0; i < list.children.length; i++) {
+        if (list.children[i].children[0].dataset.value === value) {
+            list.children[i].className = "checked";
+        }
+        else {
+            list.children[i].className = "checkbox_item";
+        }
+    }
 }
 
 /*
@@ -892,9 +1004,44 @@ window.onload = function() {
                         if(xhr.status == 200) {
                             var json = xhr.response; // JSON.parse(xhr.responseText);
                             MOWGLI.structure = new Molecule(json);
-                            MOWGLI.alert(the_id.toUpperCase() + " successfully loaded...");
                             console.log(MOWGLI.structure instanceof Molecule);
+                            // Calc phi+psi dihedral angles
                             MOWGLI.structure.calcPhiPsi();
+
+                            // Init and create default scene graph
+                            console.log('MOWGLI.init');
+                            MOWGLI.init();
+
+                            // Set default rendering display modes
+                            MOWGLI.settings.displayAtoms= "points";
+                            MOWGLI.settings.displayColors= "color_cpk";
+                            // Create a shape wireframe + CPK for Molecule or a shape BBox for Raster
+                            var shape = ShapeFactory.get({
+                                'molecule': MOWGLI.structure,
+                                'displayType': MOWGLI.settings.displayAtoms,
+                                'color': MOWGLI.settings.displayColors,
+                                'glContext': MOWGLI.renderer.getContext()
+                            });
+
+                            // Attach to the scene graph
+                            var scene = MOWGLI.renderer.getScene();
+                            var group = scene.getById("group[shape]");
+
+                            group.add(shape);
+                            scene.add(group);
+
+                            // TODO: Must be set automatically from BBoxes of shapegroup
+                            mat4.translate(
+                                scene.getCamera().viewMatrix,
+                                scene.getCamera().viewMatrix,
+                                [0.0,0.0,-80.0]
+
+                            );
+                            // Adjust Camera settings
+                            // TODO: scene.getCamera().set(...);
+                            // Trigger the rendering infinite loop
+                            MOWGLI.update();
+
                         }
 
                         else {
@@ -924,6 +1071,8 @@ window.onload = function() {
                     if (mode === '8-bit') {
                         data = new Uint8ClampedArray(pix.length/4);
                         for (var i=0, count=0; i<pix.length; i+=4,count++) {
+                            // Only use the red channel
+                            // An average could be better (r+g+b)/3
                             data[count] = pix[i];
                         }
                     }
@@ -954,12 +1103,6 @@ window.onload = function() {
 
         // Note that the listeners in this case are this, not this.handleEvent
         this.element.addEventListener('click', this, false);
-
-        // You can properly remove the listeners
-        // this.element.removeEventListener('click', this, false);
-        // this.element.removeEventListener('dblclick', this, false);
-
-
     }
 
     exports.Sample = SampleGUI;
@@ -1161,3 +1304,97 @@ window.onload = function() {
 
 
 
+
+/*
+ *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
+ *  Copyright (C) 2015  Jean-Christophe Taveau.
+ *
+ *  This file is part of mowgli
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * Authors:
+ * Jean-Christophe Taveau
+ */
+
+'use strict';
+
+
+ /**
+ * Load various samples for testing:
+ * - from PDB: 1ZNI, 1HHO, and 3CRO (here in pre-loaded JSON files)
+ * - from EMDB
+ * - from ImageJ: [lena-std.tif](http://imagej.nih.gov/ij/images/lena-std.tif) and [T1-Head](t1-head.zip)
+ *
+ * @class ShapeSettings
+ * @memberof module:mwGUI
+ * @param {number} the_id - DOM element ID
+ *
+ * @author Jean-Christophe Taveau
+ **/
+
+/**
+ * @function handleEvent
+ * @memberof module:mwGUI.ShapeSettings
+ * @desc Handle click events
+ * @param {object} event - The DOM event
+ *
+ * @author Jean-Christophe Taveau
+ **/
+
+
+(function(exports) {
+
+    function ShapeSettingsGUI(the_id) {
+        /**
+         * DOM element ID
+         *
+         **/
+        this.element = document.getElementById(the_id);
+
+        /**
+         * Handle various event types
+         * @param event - The DOM event
+        **/
+        this.handleEvent = function(event) {
+            switch(event.type) {
+            case 'click':
+                var displayMode = event.target.parentNode;
+                var displayMenu = displayMode.parentNode.parentNode.id;
+                console.log(displayMenu + '->' + displayMode.id);
+                if (displayMenu === 'atoms') {
+                    MOWGLI.settings.displayAtoms = displayMode.id;
+                }
+                else if (displayMenu === 'maps') {
+                    MOWGLI.settings.displayMaps = displayMode.id;
+                }
+                else if (displayMenu === 'colors') {
+                    MOWGLI.settings.displayColors = displayMode.id;
+                }
+                // Update Graphics stuff
+                console.log('Update MOWGLI');
+                console.log(MOWGLI.settings);
+                MOWGLI.update();
+                break;
+            }
+        }
+
+        // Note that the listeners in this case are this, not this.handleEvent
+        this.element.addEventListener('click', this, false);
+    }
+
+    exports.ShapeSettings = ShapeSettingsGUI;
+
+})(this.mwGUI = this.mwGUI || {} );

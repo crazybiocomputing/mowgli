@@ -97,9 +97,44 @@
                         if(xhr.status == 200) {
                             var json = xhr.response; // JSON.parse(xhr.responseText);
                             MOWGLI.structure = new Molecule(json);
-                            MOWGLI.alert(the_id.toUpperCase() + " successfully loaded...");
                             console.log(MOWGLI.structure instanceof Molecule);
+                            // Calc phi+psi dihedral angles
                             MOWGLI.structure.calcPhiPsi();
+
+                            // Init and create default scene graph
+                            console.log('MOWGLI.init');
+                            MOWGLI.init();
+
+                            // Set default rendering display modes
+                            MOWGLI.settings.displayAtoms= "points";
+                            MOWGLI.settings.displayColors= "color_cpk";
+                            // Create a shape wireframe + CPK for Molecule or a shape BBox for Raster
+                            var shape = ShapeFactory.get({
+                                'molecule': MOWGLI.structure,
+                                'displayType': MOWGLI.settings.displayAtoms,
+                                'color': MOWGLI.settings.displayColors,
+                                'glContext': MOWGLI.renderer.getContext()
+                            });
+
+                            // Attach to the scene graph
+                            var scene = MOWGLI.renderer.getScene();
+                            var group = scene.getById("group[shape]");
+
+                            group.add(shape);
+                            scene.add(group);
+
+                            // TODO: Must be set automatically from BBoxes of shapegroup
+                            mat4.translate(
+                                scene.getCamera().viewMatrix,
+                                scene.getCamera().viewMatrix,
+                                [0.0,0.0,-80.0]
+
+                            );
+                            // Adjust Camera settings
+                            // TODO: scene.getCamera().set(...);
+                            // Trigger the rendering infinite loop
+                            MOWGLI.update();
+
                         }
 
                         else {
@@ -129,6 +164,8 @@
                     if (mode === '8-bit') {
                         data = new Uint8ClampedArray(pix.length/4);
                         for (var i=0, count=0; i<pix.length; i+=4,count++) {
+                            // Only use the red channel
+                            // An average could be better (r+g+b)/3
                             data[count] = pix[i];
                         }
                     }
@@ -159,12 +196,6 @@
 
         // Note that the listeners in this case are this, not this.handleEvent
         this.element.addEventListener('click', this, false);
-
-        // You can properly remove the listeners
-        // this.element.removeEventListener('click', this, false);
-        // this.element.removeEventListener('dblclick', this, false);
-
-
     }
 
     exports.Sample = SampleGUI;
