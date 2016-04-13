@@ -4,14 +4,14 @@
  *
  *  This file is part of mowgli
  *
- * This program is free software: you can redistribute it and/or modify it 
- * under the terms of the GNU General Public License as published by 
- * the Free Software Foundation, either version 3 of the License, or 
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
@@ -23,7 +23,7 @@
  */
 
 
-"use strict"
+'use strict';
 
 
 /**
@@ -36,8 +36,8 @@
  * shape.type = 'POINTS';
  * var vrtxData = {
  *     'content': Shape.XYZ | Shape.RGB,
- *     'data':vertices, 
- *     'attributes': [new Attribute("aVertexPosition",0,6), new Attribute("aVertexColor",3,6)] 
+ *     'data':vertices,
+ *     'attributes': [new Attribute("aVertexPosition",0,6), new Attribute("aVertexColor",3,6)]
  * };
  * shape.addVertexData(vrtxData);
  * shape.setProgram(shaderProgram);
@@ -50,7 +50,7 @@
  **/
 function Shape() {
     Leaf.call(this);
-    
+
     this.ID = 'shape';
     this.colorMode = 'monochrome';
     this.shaderProgram = null;
@@ -66,9 +66,9 @@ function Shape() {
     this.cg = {'x':0,'y':0,'z':0};
 
     this._isIndexed=false;
-    
+
     this.nodeGL = new ShapeGL(this);
-    
+
 
 }
 
@@ -126,14 +126,14 @@ Shape.prototype.isIndexedGeometry = function() {
  * @param {VertexData} a_geom - Contains all the data describing the vertices of this shape
  *
  *
- * 
- * @property {VertexData} a_geom 
- * @property {number}  a_geom.type 
+ *
+ * @property {VertexData} a_geom
+ * @property {number}  a_geom.type
  * @property {number}  a_geom.type.Shape.XYZ - X, Y, Z- Vertex Coordinates
  * @property {number}  a_geom.type.Shape.XYZW - X, Y, Z, W- Vertex Coordinates
  * @property {number}  a_geom.type.Shape.NXYZ - X, Y, Z- Normal Coordinates
- * @property {number}  a_geom.type.Shape.RGB - Red, Green, and Blue Color 
- * @property {number}  a_geom.type.Shape.RGBA - Red, Green, Blue, and Alpha Color 
+ * @property {number}  a_geom.type.Shape.RGB - Red, Green, and Blue Color
+ * @property {number}  a_geom.type.Shape.RGBA - Red, Green, Blue, and Alpha Color
  * @property {number}  a_geom.type.Shape.ST - S,T Texture Coordinates
  * @property {Array(number)}  a_geom.data
  * @property {Array(number)}  a_geom.indices
@@ -143,26 +143,26 @@ Shape.prototype.isIndexedGeometry = function() {
 Shape.prototype.addVertexData = function(a_geom) {
     if (a_geom.indices != undefined) {
         this._isIndexed = true;
-        this.geometries.push( 
+        this.geometries.push(
             new Geometry({
                 'type'       : 'indexed',
                 'content'    : a_geom.content,
                 'data'       : new Float32Array(a_geom.data),
                 'indices'    : new Uint16Array(a_geom.indices),
                 'attributes' : a_geom.attributes
-            }) 
+            })
         );
         this.numIndices = a_geom.indices.length;
     }
     else {
-        this.geometries.push( 
+        this.geometries.push(
             new Geometry( {
                 'type'     : 'vertex',
                 'content'    : a_geom.content,
                 'data'     : new Float32Array(a_geom.data),
                 'attributes' : a_geom.attributes
-            }) 
-        );    
+            })
+        );
     }
 
     console.log(this.geometries);
@@ -194,6 +194,3 @@ Shape.prototype.setCentroid = function(cg) {
 Shape.prototype.updateUniforms = function (context) {
 
 }
-
-
-
