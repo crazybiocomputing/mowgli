@@ -1,6 +1,6 @@
 ### 2.1. colorers
 
-The folder contains all the various color schemes used by any Molecule Viewer. The color tables are those described in the (wiki of JMol)[http://jmol.sourceforge.net/jscolors/index.en.html].
+The folder contains all the various color schemes used by any Molecule Viewer. The color tables are those described in the [wiki of JMol](http://jmol.sourceforge.net/jscolors/index.en.html).
 
 Color schemes:
 - CPK (Corey, Pauling, Koltun)
