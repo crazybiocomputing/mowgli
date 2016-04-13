@@ -39,7 +39,7 @@ var ShaderFactory = (function () {
             'uniform mat4 uPMatrix;',
             'varying vec3 vColor;',
             'void main(void) {',
-            'gl_PointSize = 4.0;',
+            'gl_PointSize = 8.0;',
             'gl_Position = uPMatrix * uVMatrix * uMMatrix * vec4(aVertexPosition, 1.0);',
             'vColor = aVertexColor;',
             '}'
@@ -51,7 +51,12 @@ var ShaderFactory = (function () {
             'precision mediump float;',
             'varying vec3 vColor;',
             'void main(void) {',
-            '  gl_FragColor = vec4( vColor,1.0);',
+            'vec2 v = gl_PointCoord.xy - vec2(0.5,0.5);',
+            'float d = dot(v,v);',
+            'if (d > 0.25) {',
+            'discard;',
+            '}',
+            'gl_FragColor = vec4( vColor,1.0);',
             '}'
         ]
     };

@@ -64,6 +64,26 @@ Composite.prototype.getNodeGL = function() {
     return this.nodeGL;
 };
 
+Composite.prototype.getById = function(id) {
+
+    function traverse(id,a_node) {
+        if (a_node.ID === id) {
+            console.log('Found '+a_node.ID);
+            return a_node;
+        }
+
+        for (var i in a_node.children) {
+            var result = traverse(id,a_node.children[i]);
+            if (result !== undefined) {
+                return result;
+            }
+        }
+        return;
+    }
+
+    return traverse(id,this);
+};
+
 Composite.prototype.getRenderer = function() {
     console.log(this);
     if (this.renderer != null) {
