@@ -34,6 +34,7 @@
  * @author Jean-Christophe Taveau
  **/
 function PointGeometer(mol,colorer) {
+    console.log('PointGeometer');
     this.mol = mol;
     this.colorer = colorer || CPKColorer;
     this.shape;
@@ -48,33 +49,36 @@ function PointGeometer(mol,colorer) {
  * @author Jean-Christophe Taveau
  */
 PointGeometer.prototype.getShape = function () {
-    this.shape = new Shape();
-    var vertices = [];
-    // Only one array is used to define the vertices and corresponding colors
-    // Interleaved array of (vertices + colors)
-    // X Y Z R G B X Y Z R G B
-    for (var i=0; i < this.mol.atoms.length; i++) {
-        vertices.push(this.mol.atoms[i].x);
-        vertices.push(this.mol.atoms[i].y);
-        vertices.push(this.mol.atoms[i].z);
-        // get RGB color
-        var rgb = this.colorer.get(this.mol.atoms[i]);
-        vertices.push(rgb[0]);
-        vertices.push(rgb[1]);
-        vertices.push(rgb[2]);
-    }
-    // Set geometry and colors of this shape
-    this.shape.type = 'POINTS';
-    this.shape.addVertexData(
-        {
-            'content': Shape.XYZ | Shape.RGB,
-            'data':vertices,
-            'attributes': [new Attribute("aVertexPosition",0,6), new Attribute("aVertexColor",3,6)]
+    if (this.shape === undefined) {
+        this.shape = new Shape();
+        var vertices = [];
+        // Only one array is used to define the vertices and corresponding colors
+        // Interleaved array of (vertices + colors)
+        // X Y Z R G B X Y Z R G B
+        for (var i=0; i < this.mol.atoms.length; i++) {
+            vertices.push(this.mol.atoms[i].x);
+            vertices.push(this.mol.atoms[i].y);
+            vertices.push(this.mol.atoms[i].z);
+            // get RGB color
+            var rgb = this.colorer.get(this.mol.atoms[i]);
+            vertices.push(rgb[0]);
+            vertices.push(rgb[1]);
+            vertices.push(rgb[2]);
         }
-    );
+        // Set geometry and colors of this shape
+        this.shape.type = 'POINTS';
+        this.shape.addVertexData(
+            {
+                'content': Shape.XYZ | Shape.RGB,
+                'data':vertices,
+                'attributes': [new Attribute("aVertexPosition",0,6), new Attribute("aVertexColor",3,6)]
+            }
+        );
+        console.log(this.mol.centroid);
+        //mat4.translate(this.shape.matrix,this.shape.matrix,[-this.mol.centroid.x,-this.mol.centroid.y,-this.mol.centroid.z]);
+        this.shape.translate(-this.mol.centroid.x, -this.mol.centroid.y, -this.mol.centroid.z);
 
-    this.shape.setProgram(shaderProgram);
-
-    this.shape.translate(-this.mol.centroid.x, -this.mol.centroid.cg.y, -this.mol.centroid.cg.z);
-
+    }
+    console.log(this.shape);
+    return this.shape;
 };
