@@ -4,73 +4,6 @@
  *
  *  This file is part of mowgli
  *
- * This program is free software: you can redistribute it and/or modify it 
- * under the terms of the GNU General Public License as published by 
- * the Free Software Foundation, either version 3 of the License, or 
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
- * GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
- *
- *
- * Authors:
- * Jean-Christophe Taveau
- */
-
-
-"use strict";
-
- 
-/**
- * Attribute class used by the shader program
- *
- * @class Attribute
- * @memberof module:graphics
- * @constructor
- **/
-function Attribute (name,offset,stride) {
-
-  /** 
-   * The name
-   * @type {string} 
-   *
-   **/
-  this.name = name;
-
-  /** 
-   * The offset
-   * @type {number}
-   *
-   **/
-  this.offset = offset;
-
-  /** 
-   * The stride
-   * @type {number}
-   *
-   **/
-  this.stride = stride;
-
-  this.size = -1;
-  
-  this.location = -1;
-
-}
-
-
-
-
-/*
- *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
- *  Copyright (C) 2015  Jean-Christophe Taveau.
- *
- *  This file is part of mowgli
- *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -1143,234 +1076,6 @@ function ShaderLinkException(value) {
  *
  *  This file is part of mowgli
  *
- * This program is free software: you can redistribute it and/or modify it 
- * under the terms of the GNU General Public License as published by 
- * the Free Software Foundation, either version 3 of the License, or 
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
- * GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
- *
- *
- * Authors:
- * Jean-Christophe Taveau
- */
-
-
-"use strict"
-
-
-/*****
-Code 	colour Name 	Sample 	RGB Values 	Hexadecimal
-LG 	Light Grey 	[200,200,200] 	C8C8C8
-SB 	Sky Blue 	[143,143,255] 	8F8FFF
-R 	Red 	  	[240, 0, 0] 	F00000
-Y 	Yellow 	  	[255,200, 50] 	FFC832
-W 	White 	  	[255,255,255] 	FFFFFF
-Pk 	Pink 	  	[255,192,203] 	FFC0CB
-Go 	Golden Rod 	[218,165, 32] 	DAA520
-Bl 	Blue 	  	[ 0, 0,255] 	0000FF
-Or 	Orange 	  	[255,165, 0] 	FFA500
-DG 	Dark Grey 	[128,128,144] 	808090
-Br 	Brown 	  	[165, 42, 42] 	A52A2A
-P 	Purple 	  	[160, 32,240] 	A020F0
-DP 	Deep Pink 	[255, 20,147] 	FF1493
-G 	Green 	  	[ 0,255, 0] 	00FF00
-FB 	Fire Brick 	[178, 34, 34] 	B22222
-FG 	Forest Green 	[ 34,139, 34] 	228B22
-****/
-
-var symbols = { 
-  '_' : { 'symbol':''  ,'unknown': 180, 'vdwRadius': 360, 'value2': 12, 'name': ""            ,'color':[255, 20,147]},  /*   0 */
-  'H' : { 'symbol':'H' ,'unknown':  80, 'vdwRadius': 275, 'value2':  4, 'name': "HYDROGEN"    ,'color':[255, 20,147]},  /*   1 */
-  'HE': { 'symbol':'He','unknown': 400, 'vdwRadius': 550, 'value2':  5, 'name': "HELIUM"      ,'color':[255,192,203]},  /*   2 */
-  'LI': { 'symbol':'Li','unknown': 170, 'vdwRadius': 305, 'value2': 14, 'name': "LITHIUM"     ,'color':[255, 20,147]},  /*   3 */
-  'BE': { 'symbol':'Be','unknown':  88, 'vdwRadius': 157, 'value2': 12, 'name': "BERYLLIUM"   ,'color':[255, 20,147]},  /*   4 */
-  'B' : { 'symbol':'B' ,'unknown': 208, 'vdwRadius': 387, 'value2': 13, 'name': "BORON"       ,'color':[  0,255,  0]},  /*   5 */
-  'C' : { 'symbol':'C' ,'unknown': 180, 'vdwRadius': 387, 'value2':  0, 'name': "CARBON"      ,'color':[255, 20,147]},  /*   6 */
-  'N' : { 'symbol':'N' ,'unknown': 170, 'vdwRadius': 350, 'value2':  1, 'name': "NITROGEN"    ,'color':[255, 20,147]},  /*   7 */
-  'O' : { 'symbol':'O' ,'unknown': 170, 'vdwRadius': 337, 'value2':  2, 'name': "OXYGEN"      ,'color':[255, 20,147]},  /*   8 */
-  'F' : { 'symbol':'F' ,'unknown': 160, 'vdwRadius': 325, 'value2':  6, 'name': "FLUORINE"    ,'color':[255, 20,147]},  /*   9 */
-  'N' : { 'symbol':'N' ,'unknown': 280, 'vdwRadius': 505, 'value2': 12, 'name': "NEON"        ,'color':[255, 20,147]},  /*  10 */
-  'NA': { 'symbol':'Na','unknown': 243, 'vdwRadius': 550, 'value2':  7, 'name': "SODIUM"      ,'color':[255, 20,147]},  /*  11 */
-  'MG': { 'symbol':'Mg','unknown': 275, 'vdwRadius': 375, 'value2': 15, 'name': "MAGNESIUM"   ,'color':[255, 20,147]},  /*  12 */
-  'AL': { 'symbol':'Al','unknown': 338, 'vdwRadius': 375, 'value2':  9, 'name': "ALUMINIUM"   ,'color':[255, 20,147]},  /*  13 */
-  'SI': { 'symbol':'Si','unknown': 300, 'vdwRadius': 550, 'value2':  6, 'name': "SILICON"     ,'color':[255, 20,147]},  /*  14 */
-  'P' : { 'symbol':'P' ,'unknown': 259, 'vdwRadius': 470, 'value2':  8, 'name': "PHOSPHORUS"  ,'color':[255,165,  0]},  /*  15 */  /* 262? */
-  'S' : { 'symbol':'S' ,'unknown': 255, 'vdwRadius': 452, 'value2':  3, 'name': "SULPHUR"     ,'color':[255,200, 50]},  /*  16 */
-  'CL': { 'symbol':'Cl','unknown': 250, 'vdwRadius': 437, 'value2': 13, 'name': "CHLORINE"    ,'color':[  0,255,  0]},  /*  17 */
-  'AR': { 'symbol':'Ar','unknown': 392, 'vdwRadius': 692, 'value2': 12, 'name': "ARGON"       ,'color':[255, 20,147]},  /*  18 */
-  'K' : { 'symbol':'K' ,'unknown': 332, 'vdwRadius': 597, 'value2': 12, 'name': "POTASSIUM"   ,'color':[255, 20,147]},  /*  19 */
-  'CA': { 'symbol':'Ca','unknown': 248, 'vdwRadius': 487, 'value2':  9, 'name': "CALCIUM"     ,'color':[255, 20,147]},  /*  20 */
-  'SC': { 'symbol':'Sc','unknown': 360, 'vdwRadius': 330, 'value2': 12, 'name': "SCANDIUM"    ,'color':[255, 20,147]},  /*  21 */
-  'TI': { 'symbol':'Ti','unknown': 368, 'vdwRadius': 487, 'value2':  9, 'name': "TITANIUM"    ,'color':[255, 20,147]},  /*  22 */
-  'V' : { 'symbol':'V' ,'unknown': 332, 'vdwRadius': 265, 'value2': 12, 'name': "VANADIUM"    ,'color':[255, 20,147]},  /*  23 */
-  'CR': { 'symbol':'Cr','unknown': 338, 'vdwRadius': 282, 'value2':  9, 'name': "CHROMIUM"    ,'color':[255, 20,147]},  /*  24 */
-  'MN': { 'symbol':'Mn','unknown': 338, 'vdwRadius': 297, 'value2':  9, 'name': "MANGANESE"   ,'color':[255, 20,147]},  /*  25 */
-  'FE': { 'symbol':'Fe','unknown': 335, 'vdwRadius': 487, 'value2':  8, 'name': "IRON"        ,'color':[255, 20,147]},  /*  26 */
-  'CO': { 'symbol':'Co','unknown': 332, 'vdwRadius': 282, 'value2': 12, 'name': "COBALT"      ,'color':[255, 20,147]},  /*  27 */
-  'NI': { 'symbol':'Ni','unknown': 405, 'vdwRadius': 310, 'value2': 10, 'name': "NICKEL"      ,'color':[255, 20,147]},  /*  28 */  /* >375! */
-  'CU': { 'symbol':'Cu','unknown': 380, 'vdwRadius': 287, 'value2': 10, 'name': "COPPER"      ,'color':[255, 20,147]},  /*  29 */
-  'ZN': { 'symbol':'Zn','unknown': 362, 'vdwRadius': 287, 'value2': 10, 'name': "ZINC"        ,'color':[255, 20,147]},  /*  30 */
-  'GA': { 'symbol':'Ga','unknown': 305, 'vdwRadius': 387, 'value2': 12, 'name': "GALLIUM"     ,'color':[255, 20,147]},  /*  31 */
-  'GE': { 'symbol':'Ge','unknown': 292, 'vdwRadius': 999, 'value2': 12, 'name': "GERMANIUM"   ,'color':[255, 20,147]},  /*  32 */  /* 1225? */
-  'AS': { 'symbol':'As','unknown': 302, 'vdwRadius': 207, 'value2': 12, 'name': "ARSENIC"     ,'color':[255, 20,147]},  /*  33 */
-  'SE': { 'symbol':'Se','unknown': 305, 'vdwRadius': 225, 'value2': 12, 'name': "SELENIUM"    ,'color':[255, 20,147]},  /*  34 */
-  'BR': { 'symbol':'Br','unknown': 302, 'vdwRadius': 437, 'value2': 10, 'name': "BROMINE"     ,'color':[255, 20,147]},  /*  35 */
-  'KR': { 'symbol':'Kr','unknown': 400, 'vdwRadius': 475, 'value2': 12, 'name': "KRYPTON"     ,'color':[255, 20,147]},  /*  36 */
-  'RB': { 'symbol':'Rb','unknown': 368, 'vdwRadius': 662, 'value2': 12, 'name': "RUBIDIUM"    ,'color':[255, 20,147]},  /*  37 */
-  'SR': { 'symbol':'Sr','unknown': 280, 'vdwRadius': 505, 'value2': 12, 'name': "STRONTIUM"   ,'color':[255, 20,147]},  /*  38 */
-  'Y' : { 'symbol':'Y' ,'unknown': 445, 'vdwRadius': 402, 'value2': 12, 'name': "YTTRIUM"     ,'color':[255, 20,147]},  /*  39 */
-  'ZR': { 'symbol':'Zr','unknown': 390, 'vdwRadius': 355, 'value2': 12, 'name': "ZIRCONIUM"   ,'color':[255, 20,147]},  /*  40 */
-  'NB': { 'symbol':'Nb','unknown': 370, 'vdwRadius': 332, 'value2': 12, 'name': "NIOBIUM"     ,'color':[255, 20,147]},  /*  41 */
-  'MO': { 'symbol':'Mo','unknown': 368, 'vdwRadius': 437, 'value2': 12, 'name': "MOLYBDENUM"  ,'color':[255, 20,147]},  /*  42 */
-  'TC': { 'symbol':'Tc','unknown': 338, 'vdwRadius': 450, 'value2': 12, 'name': "TECHNETIUM"  ,'color':[255, 20,147]},  /*  43 */
-  'RU': { 'symbol':'Ru','unknown': 350, 'vdwRadius': 300, 'value2': 12, 'name': "RUTHENIUM"   ,'color':[255, 20,147]},  /*  44 */
-  'RH': { 'symbol':'Rh','unknown': 362, 'vdwRadius': 305, 'value2': 12, 'name': "RHODIUM"     ,'color':[255, 20,147]},  /*  45 */
-  'PD': { 'symbol':'Pd','unknown': 375, 'vdwRadius': 360, 'value2': 12, 'name': "PALLADIUM"   ,'color':[255, 20,147]},  /*  46 */
-  'AG': { 'symbol':'Ag','unknown': 398, 'vdwRadius': 387, 'value2':  9, 'name': "SILVER"      ,'color':[255, 20,147]},  /*  47 */
-  'CD': { 'symbol':'Cd','unknown': 422, 'vdwRadius': 437, 'value2': 12, 'name': "CADMIUM"     ,'color':[255, 20,147]},  /*  48 */
-  'IN': { 'symbol':'In','unknown': 408, 'vdwRadius': 362, 'value2': 12, 'name': "INDIUM"      ,'color':[255, 20,147]},  /*  49 */
-  'SN': { 'symbol':'Sn','unknown': 365, 'vdwRadius': 417, 'value2': 12, 'name': "TIN"         ,'color':[255, 20,147]},  /*  50 */
-  'SB': { 'symbol':'Sb','unknown': 365, 'vdwRadius': 280, 'value2': 12, 'name': "ANTIMONY"    ,'color':[255, 20,147]},  /*  51 */
-  'TE': { 'symbol':'Te','unknown': 368, 'vdwRadius': 315, 'value2': 12, 'name': "TELLURIUM"   ,'color':[255, 20,147]},  /*  52 */
-  'I' : { 'symbol':'I' ,'unknown': 350, 'vdwRadius': 437, 'value2': 11, 'name': "IODINE"      ,'color':[255, 20,147]},  /*  53 */
-  'XE': { 'symbol':'Xe','unknown': 425, 'vdwRadius': 525, 'value2': 12, 'name': "XENON"       ,'color':[255, 20,147]},  /*  54 */
-  'CS': { 'symbol':'Cs','unknown': 418, 'vdwRadius': 752, 'value2': 12, 'name': "CAESIUM"     ,'color':[255, 20,147]},  /*  55 */
-  'BA': { 'symbol':'Ba','unknown': 335, 'vdwRadius': 602, 'value2':  8, 'name': "BARIUM"      ,'color':[255, 20,147]},  /*  56 */
-  'LA': { 'symbol':'La','unknown': 468, 'vdwRadius': 457, 'value2': 12, 'name': "LANTHANUM"   ,'color':[255, 20,147]},  /*  57 */
-  'CE': { 'symbol':'Ce','unknown': 458, 'vdwRadius': 465, 'value2': 12, 'name': "CERIUM"      ,'color':[255, 20,147]},  /*  58 */
-  'PR': { 'symbol':'Pr','unknown': 455, 'vdwRadius': 405, 'value2': 12, 'name': "PRASEODYMIUM",'color':[255, 20,147]},  /*  59 */
-  'ND': { 'symbol':'Nd','unknown': 452, 'vdwRadius': 447, 'value2': 12, 'name': "NEODYMIUM"   ,'color':[255, 20,147]},  /*  60 */
-  'PM': { 'symbol':'Pm','unknown': 450, 'vdwRadius': 440, 'value2': 12, 'name': "PROMETHIUM"  ,'color':[255, 20,147]},  /*  61 */
-  'SM': { 'symbol':'Sm','unknown': 450, 'vdwRadius': 435, 'value2': 12, 'name': "SAMARIUM"    ,'color':[255, 20,147]},  /*  62 */
-  'EU': { 'symbol':'Eu','unknown': 498, 'vdwRadius': 490, 'value2': 12, 'name': "EUROPIUM"    ,'color':[255, 20,147]},  /*  63 */
-  'GD': { 'symbol':'Gd','unknown': 448, 'vdwRadius': 422, 'value2': 12, 'name': "GADOLINIUM"  ,'color':[255, 20,147]},  /*  64 */
-  'TD': { 'symbol':'Tb','unknown': 440, 'vdwRadius': 415, 'value2': 12, 'name': "TERBIUM"     ,'color':[255, 20,147]},  /*  65 */
-  'DY': { 'symbol':'Dy','unknown': 438, 'vdwRadius': 407, 'value2': 12, 'name': "DYSPROSIUM"  ,'color':[255, 20,147]},  /*  66 */
-  'HO': { 'symbol':'Ho','unknown': 435, 'vdwRadius': 402, 'value2': 12, 'name': "HOLMIUM"     ,'color':[255, 20,147]},  /*  67 */
-  'ER': { 'symbol':'Er','unknown': 432, 'vdwRadius': 397, 'value2': 12, 'name': "ERBIUM"      ,'color':[255, 20,147]},  /*  68 */
-  'TM': { 'symbol':'Tm','unknown': 430, 'vdwRadius': 392, 'value2': 12, 'name': "THULIUM"     ,'color':[255, 20,147]},  /*  69 */
-  'YB': { 'symbol':'Yb','unknown': 485, 'vdwRadius': 385, 'value2': 12, 'name': "YTTERBIUM"   ,'color':[255, 20,147]},  /*  70 */
-  'LU': { 'symbol':'Lu','unknown': 430, 'vdwRadius': 382, 'value2': 12, 'name': "LUTETIUM"    ,'color':[255, 20,147]},  /*  71 */
-  'HF': { 'symbol':'Hf','unknown': 392, 'vdwRadius': 350, 'value2': 12, 'name': "HAFNIUM"     ,'color':[255, 20,147]},  /*  72 */
-  'TA': { 'symbol':'Ta','unknown': 358, 'vdwRadius': 305, 'value2': 12, 'name': "TANTALUM"    ,'color':[255, 20,147]},  /*  73 */
-  'W' : { 'symbol':'W' ,'unknown': 342, 'vdwRadius': 315, 'value2': 12, 'name': "TUNGSTEN"    ,'color':[255, 20,147]},  /*  74 */
-  'RE': { 'symbol':'Re','unknown': 338, 'vdwRadius': 325, 'value2': 12, 'name': "RHENIUM"     ,'color':[255, 20,147]},  /*  75 */
-  'OS': { 'symbol':'Os','unknown': 342, 'vdwRadius': 395, 'value2': 12, 'name': "OSMIUM"      ,'color':[255, 20,147]},  /*  76 */
-  'IR': { 'symbol':'Ir','unknown': 330, 'vdwRadius': 305, 'value2': 12, 'name': "IRIDIUM"     ,'color':[255, 20,147]},  /*  77 */
-  'PT': { 'symbol':'Pt','unknown': 375, 'vdwRadius': 387, 'value2': 12, 'name': "PLATINUM"    ,'color':[255, 20,147]},  /*  78 */
-  'AU': { 'symbol':'Au','unknown': 375, 'vdwRadius': 362, 'value2':  6, 'name': "GOLD"        ,'color':[255, 20,147]},  /*  79 */
-  'HG': { 'symbol':'Hg','unknown': 425, 'vdwRadius': 495, 'value2': 12, 'name': "MERCURY"     ,'color':[255, 20,147]},  /*  80 */
-  'TL': { 'symbol':'Tl','unknown': 388, 'vdwRadius': 427, 'value2': 12, 'name': "THALLIUM"    ,'color':[255, 20,147]},  /*  81 */
-  'PB': { 'symbol':'Pb','unknown': 385, 'vdwRadius': 540, 'value2': 12, 'name': "LEAD"        ,'color':[255, 20,147]},  /*  82 */
-  'BI': { 'symbol':'Bi','unknown': 385, 'vdwRadius': 432, 'value2': 12, 'name': "BISMUTH"     ,'color':[255, 20,147]},  /*  83 */
-  'PO': { 'symbol':'Po','unknown': 420, 'vdwRadius': 302, 'value2': 12, 'name': "POLONIUM"    ,'color':[255, 20,147]},  /*  84 */
-  'AT': { 'symbol':'At','unknown': 302, 'vdwRadius': 280, 'value2': 12, 'name': "ASTATINE"    ,'color':[255, 20,147]},  /*  85 */
-  'RN': { 'symbol':'Rn','unknown': 475, 'vdwRadius': 575, 'value2': 12, 'name': "RADON"       ,'color':[255, 20,147]},  /*  86 */
-  'FR': { 'symbol':'Fr','unknown': 450, 'vdwRadius': 810, 'value2': 12, 'name': "FRANCIUM"    ,'color':[255, 20,147]},  /*  87 */
-  'RA': { 'symbol':'Ra','unknown': 358, 'vdwRadius': 642, 'value2': 12, 'name': "RADIUM"      ,'color':[255, 20,147]},  /*  88 */
-  'AC': { 'symbol':'Ac','unknown': 295, 'vdwRadius': 530, 'value2': 12, 'name': "ACTINIUM"    ,'color':[255, 20,147]},  /*  89 */
-  'TH': { 'symbol':'Th','unknown': 255, 'vdwRadius': 460, 'value2': 12, 'name': "THORIUM"     ,'color':[255, 20,147]},  /*  90 */
-  'PA': { 'symbol':'Pa','unknown': 222, 'vdwRadius': 400, 'value2': 12, 'name': "PROTACTINIUM",'color':[255, 20,147]},  /*  91 */
-  'U' : { 'symbol':'U' ,'unknown': 242, 'vdwRadius': 437, 'value2': 12, 'name': "URANIUM"     ,'color':[255, 20,147]},  /*  92 */
-  'NP': { 'symbol':'Np','unknown': 238, 'vdwRadius': 427, 'value2': 12, 'name': "NEPTUNIUM"   ,'color':[255, 20,147]},  /*  93 */
-  'PU': { 'symbol':'Pu','unknown': 232, 'vdwRadius': 417, 'value2': 12, 'name': "PLUTONIUM"   ,'color':[255, 20,147]},  /*  94 */
-  'AM': { 'symbol':'Am','unknown': 230, 'vdwRadius': 415, 'value2': 12, 'name': "AMERICIUM"   ,'color':[255, 20,147]},  /*  95 */
-  'CM': { 'symbol':'Cm','unknown': 228, 'vdwRadius': 412, 'value2': 12, 'name': "CURIUM"      ,'color':[255, 20,147]},  /*  96 */
-  'BK': { 'symbol':'Bk','unknown': 225, 'vdwRadius': 410, 'value2': 12, 'name': "BERKELIUM"   ,'color':[255, 20,147]},  /*  97 */
-  'CF': { 'symbol':'Cf','unknown': 222, 'vdwRadius': 407, 'value2': 12, 'name': "CALIFORNIUM" ,'color':[255, 20,147]},  /*  98 */
-  'ES': { 'symbol':'Es','unknown': 220, 'vdwRadius': 405, 'value2': 12, 'name': "EINSTEINIUM" ,'color':[255, 20,147]},  /*  99 */
-  'FM': { 'symbol':'Fm','unknown': 218, 'vdwRadius': 402, 'value2': 12, 'name': "FERMIUM"     ,'color':[255, 20,147]},  /* 100 */
-  'MD': { 'symbol':'Md','unknown': 215, 'vdwRadius': 400, 'value2': 12, 'name': "MENDELEVIUM" ,'color':[255, 20,147]},  /* 101 */
-  'NO': { 'symbol':'No','unknown': 212, 'vdwRadius': 397, 'value2': 12, 'name': "NOBELIUM"    ,'color':[255, 20,147]},  /* 102 */
-  'LR': { 'symbol':'Lr','unknown': 210, 'vdwRadius': 395, 'value2': 12, 'name': "LAWRENCIUM"  ,'color':[255, 20,147]}  /* 103 */ /* Lw? */
-}; 
-
-
-/******
-Nucleic
-Backbone (the atoms of the sugar phosphate backbone)
-AT
-CG
-Purine
-Pyrimidine
-
-Protein
-Alpha (carbon = *.CA)
-Amino (atoms present in aminoacids == Protein)
-Backbone (atoms N-CA-C-O or the atoms of the sugar phosphate backbone)
- 
-Hydrogen
-
-Bonded
-Cystine
-Helix
-Sheet
-Turn
-
-Hetero
-Ions
-Ligand
-Water
-
-Selected
-
-Sidechain
-Solvent
-
-****************/
-
-//props
-// protein/nucleic,acidic, acyclic, aliphatic, aromatic, basic, buried, charged, cyclic, hydrophobic, large, medium, negative, neutral, polar, positive, small, surface,AT,CG,purine,pyrimidine
-var groups = {
-'ALA': {'3code': 'ALA','1code':'A','props':"01100100100010010"},
-'ARG': {'3code': 'ARG','1code':'R','props':"01001010010001101"},
-'ASN': {'3code': 'ASN','1code':'N','props':"01000000001011001"},
-'ASP': {'3code': 'ASP','1code':'D','props':"11000010001101001"},
-'CYS': {'3code': 'CYS','1code':'C','props':"01000100001011000"},
-
-
-'DA ': {'3code': 'DA ','1code':'1','props':"000000000000000001010"},
-};
-
-/**************************************
-Residues:	ala	arg	asn	asp	cys	glu	gln	gly	his	ile	leu	lys	met	phe	pro	ser	thr	trp	tyr	val
-	A	R	N	D	C	E	Q	G	H	I	L	K	M	F	P	S	T	W	Y	V
-Predefined Set	
-	A	R	N	D	C	E	Q	G	H	I	L	K	M	F	P	S	T	W	Y	V
-acidic 				*		*														
-acyclic 	*	*	* 	*	*	*	* 	*		*	* 	*	*			*	*			*
-aliphatic 	*							*		*	* 									*
-aromatic 									*					*				*	* 	
-basic 		*							*			*								
-buried 	*				*					*	* 		*	*				*		*
-charged 		*		*		*			*			*								
-cyclic 									*					*	* 			*	* 	
-hydrophobic	*							*		*	* 		*	*	* 			*	* 	*
-large 		*				*	* 		*	*	* 	*	*	*				*	* 	
-medium 			* 	*	*										* 		*			*
-negative 				*		*														
-neutral 	*		* 		*		* 	*	*	*	* 		*	*	* 	*	*	*	* 	*
-polar 		*	* 	*	*	*	* 		*			*				*	*			
-positive 		*							*			*								
-small 	*							*								*				
-surface 		*	* 	*		*	* 	*	*			*			* 	*	*		* 	
-
-
-***************************************/
-
-/*
- *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
- *  Copyright (C) 2015  Jean-Christophe Taveau.
- *
- *  This file is part of mowgli
- *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -1456,14 +1161,14 @@ PointGeometer.prototype.getShape = function () {
  *
  *  This file is part of mowgli
  *
- * This program is free software: you can redistribute it and/or modify it 
- * under the terms of the GNU General Public License as published by 
- * the Free Software Foundation, either version 3 of the License, or 
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
@@ -1474,16 +1179,117 @@ PointGeometer.prototype.getShape = function () {
  * Jean-Christophe Taveau
  */
 
-"use strict"
+'use strict';
 
-/*
- * Constructor
+/**
+ * Wireframe Geometer generates lines from bonds
+ *
+ * @class WireGeometer
+ * @memberof module:graphics
+ * @constructor
+ * @author Jean-Christophe Taveau
+ **/
+function WireGeometer(mol,colorer) {
+    this.mol = mol;
+    this.colorer = colorer || CPKColorer;
+    this.shape;
+    // TODO: Check if already calculated and stored in database
+}
+
+/**
+ * Get shape corresponding to this geometry style
+ *
+ * @return {shape}
+ * @author Jean-Christophe Taveau
  */
- 
- function Wireframe() {
- 
- }
- 
+WireGeometer.prototype.getShape = function () {
+    var vertices = [];
+    var indices = [];
+
+    var createWireframeShape = function(mol,colMaker) {
+        var alreadyDone = {};
+        var index=0;
+
+        // Collect all the XYZ-coordinates of atoms + middle points
+        for (var i=0; i < mol.bonds.length; i++) {
+            var bond = mol.bonds[i];
+            // First atom
+            var rgbAtom1 = colMaker.get(bond.atom1);
+            if (alreadyDone[bond.atom1.serial] === undefined) {
+                index = vertices.length / 6.0;
+                vertices.push(bond.atom1.x);
+                vertices.push(bond.atom1.y);
+                vertices.push(bond.atom1.z);
+                vertices.push(rgbAtom1[0]);
+                vertices.push(rgbAtom1[1]);
+                vertices.push(rgbAtom1[2]);
+                alreadyDone[bond.atom1.serial] = index;
+            }
+
+            // First half bond
+            index = vertices.length / 6.0;
+            vertices.push(bond.middle.x);
+            vertices.push(bond.middle.y);
+            vertices.push(bond.middle.z);
+            vertices.push(rgbAtom1[0]);
+            vertices.push(rgbAtom1[1]);
+            vertices.push(rgbAtom1[2]);
+
+            indices.push(alreadyDone[bond.atom1.serial]);
+            indices.push(index); // middle
+
+            // Second half bond
+            var rgbAtom2 = colMaker.get(bond.atom2);
+            if (alreadyDone[bond.atom2.serial] === undefined) {
+                index = vertices.length / 6.0;
+                vertices.push(bond.atom2.x);
+                vertices.push(bond.atom2.y);
+                vertices.push(bond.atom2.z);
+                vertices.push(rgbAtom2[0]);
+                vertices.push(rgbAtom2[1]);
+                vertices.push(rgbAtom2[2]);
+
+                alreadyDone[bond.atom2.serial] = index;
+            }
+
+            index = vertices.length / 6.0;
+            vertices.push(bond.middle.x);
+            vertices.push(bond.middle.y);
+            vertices.push(bond.middle.z);
+            vertices.push(rgbAtom2[0]);
+            vertices.push(rgbAtom2[1]);
+            vertices.push(rgbAtom2[2]);
+
+            indices.push(alreadyDone[bond.atom2.serial]);
+            indices.push(index); // middle
+        }
+    };
+
+    // Do the job
+    if (this.shape === undefined) {
+        if (this.mol.bonds === undefined || this.mol.bonds.length === 0) {
+            BondCalculator(this.mol);
+        }
+        console.log('Create wireframe shape');
+        createWireframeShape(this.mol,this.colorer);
+        console.log(colors);
+        console.log(indices);
+
+        this.shape = new Shape();
+        this.shape.type = 'LINES';
+        this.shape.addVertexData(
+            {
+                'content'   : Shape.XYZ | Shape.RGB,
+                'data'      : vertices,
+                'indices'   : indices,
+                'attributes': [new Attribute('aVertexPosition',0,6), new Attribute('aVertexColor',3,6)]
+            }
+        );
+        this.shape.translate(-this.mol.centroid.x, -this.mol.centroid.y, -this.mol.centroid.z);
+    }
+    console.log(this.shape);
+    return this.shape;
+};
 
 /*
  *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
@@ -1607,7 +1413,7 @@ Renderer.prototype.addScene = function (a_scene) {
  * @return {Scene} - Get the scene which is the root of the scene graph.
  *
  **/
-Renderer.prototype.getScene = function (a_scene) {
+Renderer.prototype.getScene = function () {
     return this.scene;
 };
 
@@ -1899,7 +1705,6 @@ Composite.prototype.getById = function(id) {
 
     function traverse(id,a_node) {
         if (a_node.ID === id) {
-            console.log('Found '+a_node.ID);
             return a_node;
         }
 
@@ -1916,7 +1721,6 @@ Composite.prototype.getById = function(id) {
 };
 
 Composite.prototype.getRenderer = function() {
-    console.log(this);
     if (this.renderer != null) {
         return this.renderer;
     }
@@ -1962,11 +1766,10 @@ Composite.prototype.init = function(context) {
  * @param{number} OpenGL context
  **/
 Composite.prototype.render = function(context) {
-    console.log('RENDER_Composite ' + this.ID );
-    console.log(this.parent);
+    // HACK console.log('RENDER_Composite ' + this.ID );
+    // HACK console.log(this.parent);
     // Update matrix
     if (!(this.parent instanceof Renderer) ) {
-        console.log('multiply');
         mat4.multiply(this.getNodeGL().workmatrix,this.parent.getNodeGL().workmatrix,this.matrix);
     }
     // Render
@@ -2143,14 +1946,14 @@ Geometry.prototype.isIndexed = function() {
  *
  *  This file is part of mowgli
  *
- * This program is free software: you can redistribute it and/or modify it 
- * under the terms of the GNU General Public License as published by 
- * the Free Software Foundation, either version 3 of the License, or 
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
@@ -2162,33 +1965,33 @@ Geometry.prototype.isIndexed = function() {
  */
 
 
-"use strict";
+'use strict';
 
-/** 
+/**
  * @module mwGL
  */
- 
- 
+
+
 /**
  * WebGL part of Camera class
  *
  * @class Camera
  * @memberof module:mwGL
- * 
- * 
+ *
+ *
  **/
- 
- 
+
+
 /**
  * @constructor
  * @param {Node} node - Camera Object belonging to the scene graph
  * @extends module:mwGL.Node
  * @author Jean-Christophe Taveau
  **/
- 
+
 /**
- * 
- * 
+ *
+ *
  * @desc Set Viewport of canvas
  *
  * @param {number} width - Canvas width
@@ -2201,7 +2004,7 @@ Geometry.prototype.isIndexed = function() {
         this.sgnode = node;
         this.glType = -1;
         this._isDirty = true;
-        
+
         // Matrix for rotation(s) and translation(s)
         this.workmatrix= mat4.create();
         mat4.identity(this.workmatrix);
@@ -2223,8 +2026,8 @@ Geometry.prototype.isIndexed = function() {
 
     _Camera.prototype.render = function(context) {
         var gl = context;
-        console.log('RENDER CAM++ ' ,gl.viewportWidth,gl.viewportHeight);
-        console.log(context);
+        // HACK console.log('RENDER CAM++ ' ,gl.viewportWidth,gl.viewportHeight);
+        // HACK console.log(context);
         this.setViewport(gl.viewportWidth,gl.viewportHeight);
         this.sgnode.getRenderer().setUniform("uVMatrix", this.sgnode.viewMatrix);
         this.sgnode.getRenderer().setUniform("uPMatrix", this.sgnode.projMatrix);
@@ -2234,9 +2037,8 @@ Geometry.prototype.isIndexed = function() {
 
     exports.Camera = _Camera;
 
-    
-})(this.mwGL = this.mwGL || {} );
 
+})(this.mwGL = this.mwGL || {} );
 
 /*
  *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
@@ -2244,14 +2046,14 @@ Geometry.prototype.isIndexed = function() {
  *
  *  This file is part of mowgli
  *
- * This program is free software: you can redistribute it and/or modify it 
- * under the terms of the GNU General Public License as published by 
- * the Free Software Foundation, either version 3 of the License, or 
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
@@ -2263,7 +2065,7 @@ Geometry.prototype.isIndexed = function() {
  */
 
 
-"use strict";
+'use strict';
 
 
 
@@ -2271,7 +2073,7 @@ Geometry.prototype.isIndexed = function() {
  * OpenGL node of the scene graph
  *
  * @class NodeGL
- * 
+ *
  *
  * @constructor
  **/
@@ -2279,7 +2081,7 @@ function NodeGL(node) {
     this.sgnode = node;
     this.glType = -1;
     this._isDirty = true;
-    
+
     // Matrix for rotation(s) and translation(s)
     this.workmatrix= mat4.create();
     mat4.identity(this.workmatrix);
@@ -2298,24 +2100,20 @@ NodeGL.prototype.render = function(context) {
     // Do nothing
 }
 
-
-
-
-
 /*
  *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
  *  Copyright (C) 2015  Jean-Christophe Taveau.
  *
  *  This file is part of mowgli
  *
- * This program is free software: you can redistribute it and/or modify it 
- * under the terms of the GNU General Public License as published by 
- * the Free Software Foundation, either version 3 of the License, or 
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
@@ -2327,9 +2125,9 @@ NodeGL.prototype.render = function(context) {
  */
 
 
-"use strict";
+'use strict';
 
- 
+
 /**
  * OpenGL part of Shape
  *
@@ -2365,25 +2163,24 @@ ShapeGL.prototype.init = function(context) {
 
     // Get the corresponding node of the scene graph
     var shape = this.sgnode;
-    console.log(shape);
+
     // Add shader(s) to the renderer for uniform management
     this.sgnode.getRenderer().addShader(this.shaderProgram);
-    
+
     // For each buffer, create corresponding VBO
     for (var i in shape.geometries) {
-        console.log(shape.geometries[i]);
         this.VBOs[i] = this._createVBO(context,shape.geometries[i]);
     }
-    
+
     // For each textured image, create corresponding Texture
-    console.log('INIT TEXTURE TOTAL:' + shape.textures.length);
-    console.log(shape.textures);
+    // HACK console.log('INIT TEXTURE TOTAL:' + shape.textures.length);
+    // HACK console.log(shape.textures);
     for (var i=0; i < shape.textures.length; i++) {
-        console.log('INIT TEXTURE '+shape.textures[i]);
+        // HACK console.log('INIT TEXTURE '+shape.textures[i]);
         // TODO
         this.GLTextures.push(this._createTexture(context,shape.textures[i]) );
     }
-    
+
     // All is fine (I hope ?)
     this.isDirty = false;
 }
@@ -2397,28 +2194,28 @@ ShapeGL.prototype.render = function(context) {
     // Update matrix
     mat4.multiply(this.workmatrix,this.sgnode.parent.getNodeGL().workmatrix,this.sgnode.matrix);
     this.sgnode.getRenderer().setUniform("uMMatrix", this.workmatrix);
-    
+
     // Choose shader
-    console.log(this.shaderProgram);
+    // HACK console.log(this.shaderProgram);
     this.shaderProgram.use();
 
-    console.log('coordSize '+ this.numItems );
-    
-    
+    // TODO console.log('coordSize '+ this.numItems );
+
+
     // For this geometry, activate VBO
     for (var j in this.VBOs) {
         var vbo = this.VBOs[j];
         if (vbo.type === 'indexed') {
-            console.log('bind buffer '+ vbo.type + ' ' + vbo.ID+ ' ' + vbo.data);
+            // HACK console.log('bind buffer '+ vbo.type + ' ' + vbo.ID+ ' ' + vbo.data);
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, vbo.IndxID);
         }
         else {
-            console.log('bind buffer '+ vbo.type + ' ' + vbo.ID);
+            // HACK console.log('bind buffer '+ vbo.type + ' ' + vbo.ID);
             gl.bindBuffer(gl.ARRAY_BUFFER, vbo.ID);
         }
         for (var k in vbo.attributes) {
             var attribute = vbo.attributes[k];
-            console.log('enable ' + attribute.name+' '+attribute.location+' '+attribute.size+' '+attribute.stride+' '+attribute.offset);
+            // TODO console.log('enable ' + attribute.name+' '+attribute.location+' '+attribute.size+' '+attribute.stride+' '+attribute.offset);
             gl.enableVertexAttribArray(attribute.location );
             gl.vertexAttribPointer(
                 attribute.location,
@@ -2430,12 +2227,12 @@ ShapeGL.prototype.render = function(context) {
             );
         }
     }
-    
+
     // For this geometry, activate Texture
     for (var i=0; i < this.GLTextures.length; i++) {
-        // HACK: TODO
+        // TODO
         if (this.GLTextures[i] !== undefined) {
-            console.log('Activate tex ' + this.GLTextures[i]);
+            // HACK console.log('Activate tex ' + this.GLTextures[i]);
             gl.activeTexture(gl.TEXTURE0);
             gl.bindTexture(gl.TEXTURE_2D, this.GLTextures[i]);
             this.sgnode.getRenderer().setUniform("uTexture", 0);
@@ -2448,10 +2245,10 @@ ShapeGL.prototype.render = function(context) {
 
     // TODO Update uniforms
     this.shaderProgram.updateUniforms();
-    
+
 
     // Draw ...
-    console.log(this.sgnode.type + ' '+ this.glType +' '+ this.numIndices+' '+ this.numItems);
+    // HACK console.log(this.sgnode.type + ' '+ this.glType +' '+ this.numIndices+' '+ this.numItems);
     if (this.numIndices != 0 ) {
         gl.drawElements(this.glType, this.numIndices, gl.UNSIGNED_SHORT, 0);
     }
@@ -2465,10 +2262,10 @@ ShapeGL.prototype.render = function(context) {
 // Private
 ShapeGL.prototype._createVBO = function(context,geom) {
     var gl = context;
-    console.log('SHAPE TYPE ' + this.sgnode.type);
+    // HACK console.log('SHAPE TYPE ' + this.sgnode.type);
     switch (this.sgnode.type) {
     case 'POINTS':
-    case 'POINTS_RADIUS': 
+    case 'POINTS_RADIUS':
         this.glType = gl.POINTS;
         break;
     case 'LINES':
@@ -2491,15 +2288,15 @@ ShapeGL.prototype._createVBO = function(context,geom) {
     var vbo = {};
     vbo.attributes = [];
     vbo.type = geom.type;
-    
+
     // Create VBO
     vbo.ID = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, vbo.ID);
     gl.bufferData(gl.ARRAY_BUFFER, geom.data, gl.STATIC_DRAW);
 
     // Update attribute(s) associated to this VBO
-    console.log('VBO attributes');
-    console.log(geom.attributes);
+    // HACK console.log('VBO attributes');
+    // HACK console.log(geom.attributes);
     for (var j=0; j < geom.attributes.length; j++) {
         if ( (geom.content & Shape.XYZ) == Shape.XYZ) {
             var n = 32 // Highest value of Shape type(s)
@@ -2518,7 +2315,7 @@ ShapeGL.prototype._createVBO = function(context,geom) {
         vbo.attributes[j].size     = this.shaderProgram.attributes[vbo.attributes[j].name].size;
         vbo.attributes[j].stride   = geom.attributes[j].stride;
         vbo.attributes[j].offset   = geom.attributes[j].offset;
-        console.log('location [' + vbo.attributes[j].name + ']= '+ vbo.attributes[j].location + ' '+vbo.attributes[j].size);
+        // TODO console.log('location [' + vbo.attributes[j].name + ']= '+ vbo.attributes[j].location + ' '+vbo.attributes[j].size);
     }
 
     if (vbo.type === 'indexed') {
@@ -2527,7 +2324,7 @@ ShapeGL.prototype._createVBO = function(context,geom) {
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, geom.indices, gl.STATIC_DRAW);
         this.numIndices = geom.indices.length;
     }
-    console.log('VBO ID: ' + JSON.stringify(vbo) );
+    // HACK console.log('VBO ID: ' + JSON.stringify(vbo) );
     return vbo;
 
 }
@@ -2537,15 +2334,15 @@ ShapeGL.prototype._createTexture = function(context, img) {
     var gl = context;
     var glTex = gl.createTexture();
     this.GLTextures.push(glTex);
-    
-    console.log('Create Texture from '+img.src + ' ' + img.complete);
+
+    // TODO console.log('Create Texture from '+img.src + ' ' + img.complete);
 
     img.onload = function() {
         newTexture(img,glTex);
     }
-    
-    
-    
+
+
+
     function newTexture(img,glTex) {
         // Image now asynchronously loaded
         // Check dimension
@@ -2559,16 +2356,16 @@ ShapeGL.prototype._createTexture = function(context, img) {
             // Set parameters
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); //_MIPMAP_NEAREST);
-            
+
             //gl.generateMipmap(gl.TEXTURE_2D);
-            
+
             // Fill texture with image data
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
 
             // Free texture binding
             gl.bindTexture(gl.TEXTURE_2D, null);
         }
-        
+
         function powerOfTwo(n) {
             return ( (n & (n - 1)) == 0);
         }
@@ -2591,11 +2388,10 @@ ShapeGL.prototype._updateAttributes = function(context) {
         for (var j=0; j < vbo.attributes.length; j++) {
             vbo.attributes[j].location = this.shaderProgram.getAttribLocation(vbo.attributes[j].name);
             vbo.attributes[j].size = this.shaderProgram.attributes[vbo.attributes[j].name].size;
-            console.log('location [' + vbo.attributes[j].name + ']= '+ vbo.attributes[j].location + ' '+vbo.attributes[j].size);
+            // HACK console.log('location [' + vbo.attributes[j].name + ']= '+ vbo.attributes[j].location + ' '+vbo.attributes[j].size);
         }
     }
 }
-
 
 /*
  *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
@@ -2603,14 +2399,14 @@ ShapeGL.prototype._updateAttributes = function(context) {
  *
  *  This file is part of mowgli
  *
- * This program is free software: you can redistribute it and/or modify it 
- * under the terms of the GNU General Public License as published by 
- * the Free Software Foundation, either version 3 of the License, or 
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
@@ -2622,7 +2418,7 @@ ShapeGL.prototype._updateAttributes = function(context) {
  */
 
 
-"use strict"
+'use strict';
 
 
 /**
@@ -2636,10 +2432,10 @@ function Leaf(node) {
     this._isDirty = true;
     this.parent = null;
     this.renderer = null;
-    
-    // 
+
+    //
     this.nodeGL = null;
-    
+
     // Matrix for rotation(s) and translation(s)
     this.matrix=mat4.create();
     mat4.identity(this.matrix);
@@ -2654,7 +2450,6 @@ Leaf.prototype.getNodeGL = function() {
 }
 
 Leaf.prototype.getRenderer = function() {
-    console.log(this);
     if (this.renderer != null) {
         return this.renderer;
     }
@@ -2684,8 +2479,8 @@ Leaf.prototype.init = function(context) {
  * @param{number} OpenGL context
  **/
 Leaf.prototype.render = function(context) {
-    console.log('RENDER_Leaf ' + this.ID);
-    console.log(this.parent.getNodeGL().workmatrix);
+    // HACK console.log('RENDER_Leaf ' + this.ID);
+    // HACK console.log(this.parent.getNodeGL().workmatrix);
     // Update matrix
     mat4.multiply(this.getNodeGL().workmatrix,this.parent.getNodeGL().workmatrix,this.matrix);
     // OpenGL rendering
@@ -2693,17 +2488,15 @@ Leaf.prototype.render = function(context) {
 }
 
 Leaf.prototype.translate = function(tx, ty, tz) {
-    console.log(this.matrix);
+    // HACK console.log(this.matrix);
     mat4.translate(this.matrix,this.matrix,[tx, ty, tz]);
-        console.log(this.matrix);
+    // HACK console.log(this.matrix);
 }
 
 Leaf.prototype.graph = function(level) {
     var str = (this.ID || 'unknown');
     return str;
 }
-
-
 
 /*
  *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
@@ -2751,330 +2544,6 @@ function Light() {
 Light.prototype = new Leaf;
 
 
-
-/*
- *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
- *  Copyright (C) 2015  Jean-Christophe Taveau.
- *
- *  This file is part of mowgli
- *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
- *
- *
- * Authors:
- * Jean-Christophe Taveau
- */
-
-'use strict';
-
-
-/**
- * OpenGL shader program class
- *
- * @class Program
- * @memberof module:graphics
- * @constructor
- *
- * @example
-  * // 1- Create a new shader program termed 'cel-shading' from the current graphics context
- *  var shaderProgram = new Program(renderer.getContext(),'cel-shading');
- *  // 2- Load vertex source file from DOM and compile
- *  shaderProgram.loadDOM("vertex"  ,"cel-shading-vs");
- *  // 3- Load fragment source file from DOM and compile
- *  shaderProgram.loadDOM("fragment","cel-shading-fs");
- *  // 4- Link the program
- *  shaderProgram.link();
- *  // 5 Get uniformLocation
- *  shaderProgram.setUniformLocation("uPMatrix");
- *  shaderProgram.setUniformLocation("uVMatrix");
- *  shaderProgram.setUniformLocation("uMMatrix");
- *
- * @author Jean-Christophe Taveau
- *
- **/
-function Program(context,name) {
-    this.ctx = context;
-    this.name = name;
-    this.vertex_shader   = null;
-    this.fragment_shader = null;
-    this.shaderProgram = 0;
-    this.attributes =[];
-    this.uniforms = [];
-    this.attribLocation = {};
-    this.uniformLocation = {};
-}
-
-/**
- * Get OpenGL ID of this shader program
- *
- **/
-Program.prototype.getID=function() {
-    return this.shaderProgram;
-};
-
-/**
- * Load vertex or fragment source files for compilation and link
- *
- * @param {string} type: Source file types - **'vertex'** or **'fragment'**
- * @param {string} name: Source filename
- **/
-Program.prototype.load = function(type,src) {
-    var gl = this.ctx;
-
-    if (type === 'x-shader/x-fragment') {
-        this.fragment_shader = this._compile(gl.FRAGMENT_SHADER,src);
-    }
-    else if (type === 'x-shader/x-vertex') {
-        this.vertex_shader = this._compile(gl.VERTEX_SHADER,src);
-    }
-    else {
-        return null;
-    }
-
-    // Extract attribute(s) and uniform(s) from shader sources and create objects
-    this._createAttributesAndUniforms(src);
-
-};
-
-
-/**
- * Load vertex or fragment source files for compilation and link via http
- *
- * @param {string} type: Source file types - 'vertex' or 'fragment'
- * @param {string} name: Source filename
- **/
-Program.prototype.loadHTTP = function(type,name) {
-    var gl = this.ctx;
-    // From http://www.html5rocks.com/en/tutorials/file/xhr2/
-    // XMLHttpRequest()
-
-    var url = 'shaders/'+name+'.'+type;
-    var req = new XMLHttpRequest();
-    req.open('GET', url, true);
-    req.responseType = 'text';
-    req.onreadystatechange = function() {
-        if (req.readyState==4 && req.status==200) {
-            this.fragment_shader = this._compile(gl.FRAGMENT_SHADER,this.response);
-        }
-    };
-    req.send();
-};
-
-/**
- * Load vertex or fragment source files for compilation and link from the DOM.
- * From Learning WEBGL.
- *
- * @param {string} type: Source file types - 'vertex' or 'fragment'
- * @param {string} name: ID of the html div
- **/
-Program.prototype.loadDOM = function(type,name) {
-    var gl = this.ctx;
-
-    var shaderScript = document.getElementById(name);
-    if (!shaderScript) {
-        return null;
-    }
-
-    var str = '';
-    var k = shaderScript.firstChild;
-    while (k) {
-        if (k.nodeType == 3) {
-            str += k.textContent;
-        }
-        k = k.nextSibling;
-    }
-
-
-    if (shaderScript.type == 'x-shader/x-fragment') {
-        this.fragment_shader = this._compile(gl.FRAGMENT_SHADER,str);
-    }
-    else if (shaderScript.type == 'x-shader/x-vertex') {
-        this.vertex_shader = this._compile(gl.VERTEX_SHADER,str);
-    }
-    else {
-        return null;
-    }
-
-    // Extract attribute from shader text and create objects
-    this._createAttributesAndUniforms(str);
-
-};
-
-
-Program.prototype.link = function() {
-    var gl = this.ctx;
-    this.shaderProgram = gl.createProgram();
-    gl.attachShader(this.shaderProgram, this.vertex_shader);
-    gl.attachShader(this.shaderProgram, this.fragment_shader);
-    gl.linkProgram(this.shaderProgram);
-
-    if (!gl.getProgramParameter(this.shaderProgram, gl.LINK_STATUS)) {
-        throw new ShaderLinkException('Could not link shaders');
-    }
-};
-
-/**
- * Activate this shader program for rendering
- *
- **/
-Program.prototype.use = function() {
-    var gl = this.ctx;
-    gl.useProgram(this.shaderProgram);
-};
-
-
-Program.prototype.getAttribLocation = function(attrib_name) {
-    var gl = this.ctx;
-    gl.useProgram(this.getID());
-    return gl.getAttribLocation(this.getID(),attrib_name);
-};
-
-/**
- *  Get uniform location and set up the corresponding array.
- * The method's name is not really appropriate (set/getUniform[...])
- *
- *
- **/
-Program.prototype.setUniformLocation=function(name) {
-    var gl = this.ctx;
-    gl.useProgram(this.getID());
-    this.uniformLocation[name]=gl.getUniformLocation(this.getID(),name);
-};
-
-Program.prototype.getUniformLocation=function(name) {
-    //var gl = this.ctx;
-    return this.uniformLocation[name];
-};
-
-/**
- *  Update all the uniforms. This function is called by the ShapeGL.render().
- *
- *
- **/
-Program.prototype.updateUniforms = function () {
-    var gl = this.ctx;
-    for (var i in this.uniforms) {
-        var uniform = this.uniforms[i];
-        switch (uniform.type) {
-        case 'mat4' :
-            gl.uniformMatrix4fv(this.getUniformLocation(uniform.name), false, uniform.value);
-            break;
-        case 'sampler2D' :
-            gl.uniform1i(this.getUniformLocation(uniform.name), uniform.value);
-            break;
-        case 'vec3' :
-            gl.uniform3fv(this.getUniformLocation(uniform.name), false, uniform.value);
-            break;
-        case 'vec4' :
-            gl.uniform4fv(this.getUniformLocation(uniform.name), false, uniform.value);
-            break;
-        }
-    }
-};
-
-/**
- * Private method for compiling shader
- *
- */
-Program.prototype._compile = function(type,text) {
-    var gl = this.ctx;
-    var shader = gl.createShader(type);
-    gl.shaderSource(shader, text);
-    gl.compileShader(shader);
-
-    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-        throw new ShaderCompilationException(gl.getShaderInfoLog(shader) );
-    }
-
-    return shader;
-};
-
-/**
- * Private method to automatically detect in the shader source files the attribute(s) and uniform(s).
- * TODO - Must be improved to remove commented lines containing attributes and/or uniforms
- *
- */
-Program.prototype._createAttributesAndUniforms=function(source) {
-    // Remove comments
-    // Works in most cases. However, does not take into account weird cases :-)
-    var text = source.replace(/\/\*[\s\S]*?\*\/|([^:]|^)\/\/.*$/gm, '');
-    var rows = text.split(';');
-    var re = /[\s,;]+/;
-    var type;
-    var qualifier = 'x';
-
-    for (var i in rows) {
-        var a_row = rows[i];
-        if (a_row.indexOf('attribute') != -1 || a_row.indexOf('uniform') != -1) {
-            var words = a_row.trim().split(re); //  match(/[\S,;]+/g);
-            var itemSize = 0;
-            console.log(words);
-            for (var j=0; j < words.length; j++) {
-                switch (words[j]) {
-                case 'attribute':
-                    qualifier = 'a';
-                    break;
-                case 'uniform':
-                    qualifier = 'u';
-                    break;
-                case 'bool':
-                    itemSize = 1;
-                    type = words[j];
-                    break;
-                case 'int' :
-                    itemSize = 1;
-                    type = words[j];
-                    break;
-                case 'float':
-                    itemSize = 1;
-                    type = words[j];
-                    break;
-                case 'sampler2D':
-                    itemSize = 1;
-                    type = words[j];
-                    break;
-                case 'vec2':
-                    itemSize = 2;
-                    type = words[j];
-                    break;
-                case 'vec3':
-                    itemSize = 3;
-                    type = words[j];
-                    break;
-                case 'vec4':
-                    itemSize = 4;
-                    type = words[j];
-                    break;
-                case 'mat4':
-                    itemSize = 16;
-                    type = words[j];
-                    break;
-                default:
-                    if (qualifier == 'a' && words[j] != '') {
-                        console.log('attribute '+ words[j] + ' type '+ type);
-                        this.attributes[words[j]] = {'name':words[j],'type':type,'size':itemSize};
-                    }
-                    else if (qualifier == 'u' && words[j] != '') {
-                        console.log('uniform '+ words[j] + ' type '+ type);
-                        this.uniforms[words[j]] = {'name':words[j],'type':type,'size':itemSize};
-                    }
-                    break;
-                }
-            }
-        }
-    }
-};
 
 /*
  *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
@@ -3440,7 +2909,9 @@ var ShaderFactory = (function () {
             'uniform mat4 uPMatrix;',
             'varying vec3 vColor;',
             'void main(void) {',
+/*
             'gl_PointSize = 8.0;',
+*/
             'gl_Position = uPMatrix * uVMatrix * uMMatrix * vec4(aVertexPosition, 1.0);',
             'vColor = aVertexColor;',
             '}'
@@ -3452,11 +2923,13 @@ var ShaderFactory = (function () {
             'precision mediump float;',
             'varying vec3 vColor;',
             'void main(void) {',
+/*
             'vec2 v = gl_PointCoord.xy - vec2(0.5,0.5);',
             'float d = dot(v,v);',
             'if (d > 0.25) {',
             'discard;',
             '}',
+*/
             'gl_FragColor = vec4( vColor,1.0);',
             '}'
         ]
@@ -3516,6 +2989,435 @@ var ShaderFactory = (function () {
  *
  *  This file is part of mowgli
  *
+ * This program is free software: you can redistribute it and/or modify it 
+ * under the terms of the GNU General Public License as published by 
+ * the Free Software Foundation, either version 3 of the License, or 
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, 
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+ * GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * Authors:
+ * Jean-Christophe Taveau
+ */
+
+
+"use strict";
+
+ 
+/**
+ * Attribute class used by the shader program
+ *
+ * @class Attribute
+ * @memberof module:graphics
+ * @constructor
+ **/
+function Attribute (name,offset,stride) {
+
+  /** 
+   * The name
+   * @type {string} 
+   *
+   **/
+  this.name = name;
+
+  /** 
+   * The offset
+   * @type {number}
+   *
+   **/
+  this.offset = offset;
+
+  /** 
+   * The stride
+   * @type {number}
+   *
+   **/
+  this.stride = stride;
+
+  this.size = -1;
+  
+  this.location = -1;
+
+}
+
+
+
+
+/*
+ *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
+ *  Copyright (C) 2015  Jean-Christophe Taveau.
+ *
+ *  This file is part of mowgli
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * Authors:
+ * Jean-Christophe Taveau
+ */
+
+'use strict';
+
+
+/**
+ * OpenGL shader program class
+ *
+ * @class Program
+ * @memberof module:graphics
+ * @constructor
+ *
+ * @example
+  * // 1- Create a new shader program termed 'cel-shading' from the current graphics context
+ *  var shaderProgram = new Program(renderer.getContext(),'cel-shading');
+ *  // 2- Load vertex source file from DOM and compile
+ *  shaderProgram.loadDOM("vertex"  ,"cel-shading-vs");
+ *  // 3- Load fragment source file from DOM and compile
+ *  shaderProgram.loadDOM("fragment","cel-shading-fs");
+ *  // 4- Link the program
+ *  shaderProgram.link();
+ *  // 5 Get uniformLocation
+ *  shaderProgram.setUniformLocation("uPMatrix");
+ *  shaderProgram.setUniformLocation("uVMatrix");
+ *  shaderProgram.setUniformLocation("uMMatrix");
+ *
+ * @author Jean-Christophe Taveau
+ *
+ **/
+function Program(context,name) {
+    this.ctx = context;
+    this.name = name;
+    this.vertex_shader   = null;
+    this.fragment_shader = null;
+    this.shaderProgram = 0;
+    this.attributes =[];
+    this.uniforms = [];
+    this.attribLocation = {};
+    this.uniformLocation = {};
+}
+
+/**
+ * Get OpenGL ID of this shader program
+ *
+ **/
+Program.prototype.getID=function() {
+    return this.shaderProgram;
+};
+
+/**
+ * Load vertex or fragment source files for compilation and link
+ *
+ * @param {string} type: Source file types - **'vertex'** or **'fragment'**
+ * @param {string} name: Source filename
+ **/
+Program.prototype.load = function(type,src) {
+    var gl = this.ctx;
+
+    if (type === 'x-shader/x-fragment') {
+        this.fragment_shader = this._compile(gl.FRAGMENT_SHADER,src);
+    }
+    else if (type === 'x-shader/x-vertex') {
+        this.vertex_shader = this._compile(gl.VERTEX_SHADER,src);
+    }
+    else {
+        return null;
+    }
+
+    // Extract attribute(s) and uniform(s) from shader sources and create objects
+    this._createAttributesAndUniforms(src);
+
+};
+
+
+/**
+ * Load vertex or fragment source files for compilation and link via http
+ *
+ * @param {string} type: Source file types - 'vertex' or 'fragment'
+ * @param {string} name: Source filename
+ **/
+Program.prototype.loadHTTP = function(type,name) {
+    var gl = this.ctx;
+    // From http://www.html5rocks.com/en/tutorials/file/xhr2/
+    // XMLHttpRequest()
+
+    var url = 'shaders/'+name+'.'+type;
+    var req = new XMLHttpRequest();
+    req.open('GET', url, true);
+    req.responseType = 'text';
+    req.onreadystatechange = function() {
+        if (req.readyState==4 && req.status==200) {
+            this.fragment_shader = this._compile(gl.FRAGMENT_SHADER,this.response);
+        }
+    };
+    req.send();
+};
+
+/**
+ * Load vertex or fragment source files for compilation and link from the DOM.
+ * From Learning WEBGL.
+ *
+ * @param {string} type: Source file types - 'vertex' or 'fragment'
+ * @param {string} name: ID of the html div
+ **/
+Program.prototype.loadDOM = function(type,name) {
+    var gl = this.ctx;
+
+    var shaderScript = document.getElementById(name);
+    if (!shaderScript) {
+        return null;
+    }
+
+    var str = '';
+    var k = shaderScript.firstChild;
+    while (k) {
+        if (k.nodeType == 3) {
+            str += k.textContent;
+        }
+        k = k.nextSibling;
+    }
+
+
+    if (shaderScript.type == 'x-shader/x-fragment') {
+        this.fragment_shader = this._compile(gl.FRAGMENT_SHADER,str);
+    }
+    else if (shaderScript.type == 'x-shader/x-vertex') {
+        this.vertex_shader = this._compile(gl.VERTEX_SHADER,str);
+    }
+    else {
+        return null;
+    }
+
+    // Extract attribute from shader text and create objects
+    this._createAttributesAndUniforms(str);
+
+};
+
+
+Program.prototype.link = function() {
+    var gl = this.ctx;
+    this.shaderProgram = gl.createProgram();
+    gl.attachShader(this.shaderProgram, this.vertex_shader);
+    gl.attachShader(this.shaderProgram, this.fragment_shader);
+    gl.linkProgram(this.shaderProgram);
+
+    if (!gl.getProgramParameter(this.shaderProgram, gl.LINK_STATUS)) {
+        throw new ShaderLinkException('Could not link shaders');
+    }
+};
+
+/**
+ * Activate this shader program for rendering
+ *
+ **/
+Program.prototype.use = function() {
+    var gl = this.ctx;
+    gl.useProgram(this.shaderProgram);
+};
+
+
+Program.prototype.getAttribLocation = function(attrib_name) {
+    var gl = this.ctx;
+    gl.useProgram(this.getID());
+    return gl.getAttribLocation(this.getID(),attrib_name);
+};
+
+/**
+ *  Get uniform location and set up the corresponding array.
+ * The method's name is not really appropriate (set/getUniform[...])
+ *
+ *
+ **/
+Program.prototype.setUniformLocation=function(name) {
+    var gl = this.ctx;
+    gl.useProgram(this.getID());
+    this.uniformLocation[name]=gl.getUniformLocation(this.getID(),name);
+};
+
+Program.prototype.getUniformLocation=function(name) {
+    //var gl = this.ctx;
+    return this.uniformLocation[name];
+};
+
+/**
+ *  Update all the uniforms. This function is called by the ShapeGL.render().
+ *
+ *
+ **/
+Program.prototype.updateUniforms = function () {
+    var gl = this.ctx;
+    for (var i in this.uniforms) {
+        var uniform = this.uniforms[i];
+        switch (uniform.type) {
+        case 'mat4' :
+            gl.uniformMatrix4fv(this.getUniformLocation(uniform.name), false, uniform.value);
+            break;
+        case 'sampler2D' :
+            gl.uniform1i(this.getUniformLocation(uniform.name), uniform.value);
+            break;
+        case 'vec3' :
+            gl.uniform3fv(this.getUniformLocation(uniform.name), false, uniform.value);
+            break;
+        case 'vec4' :
+            gl.uniform4fv(this.getUniformLocation(uniform.name), false, uniform.value);
+            break;
+        }
+    }
+};
+
+/**
+ * Private method for compiling shader
+ *
+ */
+Program.prototype._compile = function(type,text) {
+    var gl = this.ctx;
+    var shader = gl.createShader(type);
+    gl.shaderSource(shader, text);
+    gl.compileShader(shader);
+
+    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+        throw new ShaderCompilationException(gl.getShaderInfoLog(shader) );
+    }
+
+    return shader;
+};
+
+/**
+ * Private method to automatically detect in the shader source files the attribute(s) and uniform(s).
+ * TODO - Must be improved to remove commented lines containing attributes and/or uniforms
+ *
+ */
+Program.prototype._createAttributesAndUniforms=function(source) {
+    // Remove comments
+    // Works in most cases. However, does not take into account weird cases :-)
+    var text = source.replace(/\/\*[\s\S]*?\*\/|([^:]|^)\/\/.*$/gm, '');
+    var rows = text.split(';');
+    var re = /[\s,;]+/;
+    var type;
+    var qualifier = 'x';
+
+    for (var i in rows) {
+        var a_row = rows[i];
+        if (a_row.indexOf('attribute') != -1 || a_row.indexOf('uniform') != -1) {
+            var words = a_row.trim().split(re); //  match(/[\S,;]+/g);
+            var itemSize = 0;
+            console.log(words);
+            for (var j=0; j < words.length; j++) {
+                switch (words[j]) {
+                case 'attribute':
+                    qualifier = 'a';
+                    break;
+                case 'uniform':
+                    qualifier = 'u';
+                    break;
+                case 'bool':
+                    itemSize = 1;
+                    type = words[j];
+                    break;
+                case 'int' :
+                    itemSize = 1;
+                    type = words[j];
+                    break;
+                case 'float':
+                    itemSize = 1;
+                    type = words[j];
+                    break;
+                case 'sampler2D':
+                    itemSize = 1;
+                    type = words[j];
+                    break;
+                case 'vec2':
+                    itemSize = 2;
+                    type = words[j];
+                    break;
+                case 'vec3':
+                    itemSize = 3;
+                    type = words[j];
+                    break;
+                case 'vec4':
+                    itemSize = 4;
+                    type = words[j];
+                    break;
+                case 'mat4':
+                    itemSize = 16;
+                    type = words[j];
+                    break;
+                default:
+                    if (qualifier == 'a' && words[j] != '') {
+                        console.log('attribute '+ words[j] + ' type '+ type);
+                        this.attributes[words[j]] = {'name':words[j],'type':type,'size':itemSize};
+                    }
+                    else if (qualifier == 'u' && words[j] != '') {
+                        console.log('uniform '+ words[j] + ' type '+ type);
+                        this.uniforms[words[j]] = {'name':words[j],'type':type,'size':itemSize};
+                    }
+                    break;
+                }
+            }
+        }
+    }
+};
+
+/*
+ *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
+ *  Copyright (C) 2015  Jean-Christophe Taveau.
+ *
+ *  This file is part of mowgli
+ *
+ * This program is free software: you can redistribute it and/or modify it 
+ * under the terms of the GNU General Public License as published by 
+ * the Free Software Foundation, either version 3 of the License, or 
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, 
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+ * GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * Authors:
+ * Jean-Christophe Taveau
+ */
+
+
+"use strict"
+
+/*
+ * Constructor
+ */
+function Uniform (options) {
+    this.name = options.name;
+
+}
+
+
+
+
+/*
+ *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
+ *  Copyright (C) 2015  Jean-Christophe Taveau.
+ *
+ *  This file is part of mowgli
+ *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -3549,13 +3451,14 @@ var ShapeFactory = (function () {
          */
         get: function ( options ) {
             console.log(options);
+            var style;
             switch (options.displayType) {
             case 'points':
                 // Already computed for the given structure?
                 // var style = types['atoms'] ????
                 // if (style === undefined) then
                 // Basic shape - only for debug
-                var style = new PointGeometer(options.molecule,ColorFactory.get(options.color) );
+                style = new PointGeometer(options.molecule,ColorFactory.get(options.color) );
                 style.getShape().setProgram(
                     ShaderFactory.get(
                         {
@@ -3592,9 +3495,16 @@ var ShapeFactory = (function () {
             case 'trace':
                 // TODO
                 break;
-            case 'wireframe':
-                // TODO
+            case 'wire':
                 style = new WireGeometer(options.molecule,ColorFactory.get(options.color) );
+                style.getShape().setProgram(
+                    ShaderFactory.get(
+                        {
+                            'displayType': 'points',
+                            'glContext': options.glContext
+                        }
+                    )
+                );
                 return style.getShape();
             default:
                 // Do nothing ??
@@ -3777,44 +3687,6 @@ Cube.indices = [
 
 
  
-
-/*
- *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
- *  Copyright (C) 2015  Jean-Christophe Taveau.
- *
- *  This file is part of mowgli
- *
- * This program is free software: you can redistribute it and/or modify it 
- * under the terms of the GNU General Public License as published by 
- * the Free Software Foundation, either version 3 of the License, or 
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
- * GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
- *
- *
- * Authors:
- * Jean-Christophe Taveau
- */
-
-
-"use strict"
-
-/*
- * Constructor
- */
-function Uniform (options) {
-    this.name = options.name;
-
-}
-
-
-
 
 function EMDBInfoParser() {
 
@@ -5745,14 +5617,14 @@ Bond.HBOND    = 4;
  *
  *  This file is part of mowgli
  *
- * This program is free software: you can redistribute it and/or modify it 
- * under the terms of the GNU General Public License as published by 
- * the Free Software Foundation, either version 3 of the License, or 
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
@@ -5763,141 +5635,135 @@ Bond.HBOND    = 4;
  * Jean-Christophe Taveau
  */
 
-"use strict"
+'use strict';
 
-/*
+/**
  * Constructor
- *
+ * @constructor
  * @author: Jean-Christophe Taveau
  */
 function BondCalculator(structure)  {
 
-  var isDirty = true;
-  var volume = {};
-  var width  = 0;
-  var height = 0;
-  var depth  = 0;
-  var cov_bonds = [];
-  var h_bonds   = [];
-  var ss_bonds  = [];
+    var isDirty = true;
+    var volume = {};
+    var width  = 0;
+    var height = 0;
+    var depth  = 0;
+    var cov_bonds = [];
+    var h_bonds   = [];
+    var ss_bonds  = [];
 
 
-  function calcSubVolumes(mol) {
-    var cube_side = 5.0 // 5 Angstroems
-    width  = Math.round( (mol.bbox.max.x - mol.bbox.min.x) / cube_side);
-    height = Math.round( (mol.bbox.max.y - mol.bbox.min.y) / cube_side);
-    depth  = Math.round( (mol.bbox.max.z - mol.bbox.min.z) / cube_side);
-                       
-    for (var i in mol.atoms ) {
-      var an_atom = mol.atoms[i];
-      var cube = [];
-      var x_cell = Math.floor( (an_atom.x - mol.bbox.min.x) / cube_side);
-      var y_cell = Math.floor( (an_atom.y - mol.bbox.min.y) / cube_side);
-      var z_cell = Math.floor( (an_atom.z - mol.bbox.min.z) / cube_side);
-      var key = (x_cell + y_cell * width + z_cell * width * height);
-      if (volume[key] == undefined) {
-        // Create a new cube
-        volume[key]={'key':key,'atoms':[]};
-      }
-      volume[key].atoms.push(an_atom);
-    }
-  }
+    function calcSubVolumes(mol) {
+        var cube_side = 5.0; // 5 Angstroems
+        width  = Math.round( (mol.bbox.max.x - mol.bbox.min.x) / cube_side);
+        height = Math.round( (mol.bbox.max.y - mol.bbox.min.y) / cube_side);
+        depth  = Math.round( (mol.bbox.max.z - mol.bbox.min.z) / cube_side);
 
-  function calcAllBonds(mol) {
-    console.log('calcAllBonds');
-    for (var i in volume) {
-      var cell = volume[i];
-      for (var z = -1; z <= 1; z++) { 
-        for (var y = -1; y <= 1; y++) {
-          for (var x = -1; x <= 1; x++) {
-            var key = volume[i].key + x+ y* width + z* width*height;
-            if (volume[key] != undefined) {
-              calcBonds(cell, volume[key]);
+        for (var i in mol.atoms ) {
+            var an_atom = mol.atoms[i];
+            var x_cell = Math.floor( (an_atom.x - mol.bbox.min.x) / cube_side);
+            var y_cell = Math.floor( (an_atom.y - mol.bbox.min.y) / cube_side);
+            var z_cell = Math.floor( (an_atom.z - mol.bbox.min.z) / cube_side);
+            var key = (x_cell + y_cell * width + z_cell * width * height);
+            if (volume[key] === undefined) {
+                // Create a new cube
+                volume[key]={'key':key,'atoms':[]};
             }
-          }
+            volume[key].atoms.push(an_atom);
         }
-      }
     }
 
-    // open checkResult RasMol like !!
-    console.log("covalent bonds .... " + cov_bonds.length);
-    console.log("hydrogen bonds .... " + h_bonds.length);
-    console.log("disulfide bonds ... " + ss_bonds.length);
+    function calcAllBonds(mol) {
+        for (var i in volume) {
+            var cell = volume[i];
+            for (var z = -1; z <= 1; z++) {
+                for (var y = -1; y <= 1; y++) {
+                    for (var x = -1; x <= 1; x++) {
+                        var key = volume[i].key + x+ y* width + z* width*height;
+                        if (volume[key] !== undefined) {
+                            calcBonds(cell, volume[key]);
+                        }
+                    }
+                }
+            }
+        }
 
-    // close checkResult
-    mol.bonds = cov_bonds;
-    mol.hBonds = h_bonds;
-    mol.ssBonds = ss_bonds;
+        // open checkResult RasMol like !!
+        console.log('covalent bonds .... ' + cov_bonds.length);
+        console.log('hydrogen bonds .... ' + h_bonds.length);
+        console.log('disulfide bonds ... ' + ss_bonds.length);
 
-/***
+        // close checkResult
+        mol.bonds = cov_bonds;
+        mol.hBonds = h_bonds;
+        mol.ssBonds = ss_bonds;
+
+    /***
     for (var i in cov_bonds) {
       console.log('Bond['+cov_bonds[i].atom1.serial+';'+cov_bonds[i].atom2.serial+'] = '+'Bond['+cov_bonds[i].atom1.name+';'+cov_bonds[i].atom2.name+']');
     }
-***/
-  }
+    ***/
+    }
 
-  function calcBonds(cell1, cell2 ) {
-  for (var i in cell1.atoms) {
-    var atom1 = cell1.atoms[i];
-    for (var j in cell2.atoms) {
-      var atom2 = cell2.atoms[j];
-      if (atom1.serial < atom2.serial) {
-        var flag = isBonded(atom1, atom2);
-        switch (flag) {
-        case Bond.COVALENT:
-            var bond = new Bond(atom1, atom2);
-            cov_bonds.push(bond);
-          break;
-        case Bond.HBOND:
-            var bond = new Bond(atom1, atom2);
-            h_bonds.push(bond);
-          break;
-        case Bond.SSBOND:
-            var bond = new Bond(atom1, atom2);
-            ss_bonds.push(bond);
-          break;
-        default:
-          // Do nothing
+    function calcBonds(cell1, cell2 ) {
+        for (var i in cell1.atoms) {
+            var atom1 = cell1.atoms[i];
+            for (var j in cell2.atoms) {
+                var atom2 = cell2.atoms[j];
+                if (atom1.serial < atom2.serial) {
+                    var flag = isBonded(atom1, atom2);
+                    switch (flag) {
+                    case Bond.COVALENT:
+                        var bond = new Bond(atom1, atom2);
+                        cov_bonds.push(bond);
+                        break;
+                    case Bond.HBOND:
+                        var bond = new Bond(atom1, atom2);
+                        h_bonds.push(bond);
+                        break;
+                    case Bond.SSBOND:
+                        var bond = new Bond(atom1, atom2);
+                        ss_bonds.push(bond);
+                        break;
+                    default:
+                    // Do nothing
+                    }
+                }
+            }
         }
-      } 
-    } 
-  }                 
-}   
-    
-  function isBonded(at1, at2) {
-  var minlength2 = 0.5 * 0.5;
-  var maxlength2 = 1.9 * 1.9;
-  var maxlength_sbond2 = 2.2 * 2.2;
-  var maxlength_hbond2 = 3.5 * 3.5;
-            
-  var d2 = (at2.x - at1.x)*(at2.x - at1.x) + (at2.y - at1.y)*(at2.y - at1.y) + (at2.z - at1.z)*(at2.z - at1.z);
+    }
 
-  if (at1.name === "SG" && at2.name === "SG" && d2 < maxlength_sbond2) {
-    return Bond.SSBOND;
-  }
-  else if ( minlength2 < d2 && d2 < maxlength2) {
-    return Bond.COVALENT;
-  }
-  else if ( (at1.name === "O" && at2.name === "N" && d2 < maxlength_hbond2 ) 
-         || (at1.name === "N" && at2.name === "O" && d2 < maxlength_hbond2 )
-         || (at1.name === "C" && at2.name === "O" && d2 < maxlength_hbond2 )
-         || (at1.name === "O" && at2.name === "C" && d2 < maxlength_hbond2 ) ) {
-    return Bond.HBOND;
-  }
-  else {
-    return Bond.NONE;
-  }
-}
+    function isBonded(at1, at2) {
+        var minlength2 = 0.5 * 0.5;
+        var maxlength2 = 1.9 * 1.9;
+        var maxlength_sbond2 = 2.2 * 2.2;
+        var maxlength_hbond2 = 3.5 * 3.5;
 
-  // Main 
-  calcSubVolumes(structure);
-  calcAllBonds(structure);
+        var d2 = (at2.x - at1.x)*(at2.x - at1.x) + (at2.y - at1.y)*(at2.y - at1.y) + (at2.z - at1.z)*(at2.z - at1.z);
+
+        if (at1.name === 'SG' && at2.name === 'SG' && d2 < maxlength_sbond2) {
+            return Bond.SSBOND;
+        }
+        else if ( minlength2 < d2 && d2 < maxlength2) {
+            return Bond.COVALENT;
+        }
+        else if ( (at1.name === 'O' && at2.name === 'N' && d2 < maxlength_hbond2 )
+             || (at1.name === 'N' && at2.name === 'O' && d2 < maxlength_hbond2 )
+             || (at1.name === 'C' && at2.name === 'O' && d2 < maxlength_hbond2 )
+             || (at1.name === 'O' && at2.name === 'C' && d2 < maxlength_hbond2 ) ) {
+            return Bond.HBOND;
+        }
+        else {
+            return Bond.NONE;
+        }
+    }
+
+    // Main
+    calcSubVolumes(structure);
+    calcAllBonds(structure);
 
 }
-   
-
- 
-
 
 /*
  *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
@@ -6749,14 +6615,14 @@ EventManager.prototype.add = function(type, a_callback) {
  *
  *  This file is part of mowgli
  *
- * This program is free software: you can redistribute it and/or modify it 
- * under the terms of the GNU General Public License as published by 
- * the Free Software Foundation, either version 3 of the License, or 
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
@@ -6768,26 +6634,26 @@ EventManager.prototype.add = function(type, a_callback) {
  */
 
 
-"use strict"
+'use strict';
 
-/*
- * Singleton ??
+/**
+ * MouseSensor
  */
 function MouseSensor(canvas_id) {
-  var mousePosition=[0.0,0.0];
-  var currentAngle=[0.0,0.0];
-  
-  var lastX = -1;
-  var lastY = -1;
-  var dragging = false;
+    var mousePosition=[0.0,0.0];
+    var currentAngle=[0.0,0.0];
 
-  var zoom = 0;
-  var zoomDelta=0.01;
+    var lastX = -1;
+    var lastY = -1;
+    var dragging = false;
 
-  var canvas = document.getElementById(canvas_id);
+    var zoom = 0;
+    var zoomDelta=0.01;
 
-  var shapes = [];
-  var renderer = null;
+    var canvas = document.getElementById(canvas_id);
+
+    var shapes = [];
+    var renderer = null;
 
 /***
   canvas.onmousewheel = function(event) {
@@ -6798,73 +6664,69 @@ function MouseSensor(canvas_id) {
     event.preventDefault();
   }
 ***/
- 
-  canvas.onmousedown = function(ev) {  
-   //Mouse is pressed
-     var x = ev.clientX;
-     var y = ev.clientY;
- 
-     var rect = ev.target.getBoundingClientRect();
-     if(rect.left <= x && x <= rect.right && rect.top <= y && y <= rect.bottom) {
-       lastX = x;
-       lastY = y;
-       mousePosition[0] = x;
-       mousePosition[1] = canvas.height - y;
-       dragging = true;
- 
-     }
-   };
- 
-  canvas.onmouseup = function(ev){ 
-  //Mouse is released
-     dragging = false;
-   }
- 
-  canvas.onmousemove = function(ev) { 
-  //Mouse is moved
-     var x = ev.clientX;
-     var y = ev.clientY;
-     if(dragging) {
-       //put some kind of dragging logic in here
-       //Here is a rotation example
-       var factor = 0.05;
-       var dx = factor * (x - lastX);
-       var dy = factor * (y - lastY);
-       //Limit x-axis rotation angle to -90 to 90 degrees
-       currentAngle[0] = Math.max(Math.min(currentAngle[0] + dy, 90), -90);
-       currentAngle[1] = currentAngle[1] + dx;
- 
-       mousePosition[0] = x;
-       mousePosition[1] = canvas.height - y;
- 
-      // Update shape(s) matrix 
-      console.log(currentAngle[0]+ ' '+ currentAngle[1])
-      var tmp = mat4.create();
-      mat4.identity(tmp);
-      mat4.rotate(tmp,tmp,dx,[0,1,0]);
-      mat4.rotate(tmp,tmp,dy,[1,0,0]);
 
-      // Apply rotation to each registered shape
-      for (var i in shapes) {
-        mat4.multiply(shapes[i].matrix,tmp,shapes[i].matrix);
-      }
+    canvas.onmousedown = function(ev) {
+        //Mouse is pressed
+        var x = ev.clientX;
+        var y = ev.clientY;
 
-      // Display
-      renderer.drawScene();
-     }
-     lastX = x;
-     lastY = y;
- 
-   }
+        var rect = ev.target.getBoundingClientRect();
+        if(rect.left <= x && x <= rect.right && rect.top <= y && y <= rect.bottom) {
+            lastX = x;
+            lastY = y;
+            mousePosition[0] = x;
+            mousePosition[1] = canvas.height - y;
+            dragging = true;
+        }
+    };
 
-  return {
-    attach : function (a_shape) {
-      shapes.push(a_shape);
-    },
-    
-    setRenderer : function (a_renderer) {
-      renderer = a_renderer;
-    }
-  };
+    canvas.onmouseup = function(ev){
+        //Mouse is released
+         dragging = false;
+    };
+
+    canvas.onmousemove = function(ev) {
+        //Mouse is moved
+        var x = ev.clientX;
+        var y = ev.clientY;
+        if (dragging) {
+            //put some kind of dragging logic in here
+            //Here is a rotation example
+            var factor = 0.05;
+            var dx = factor * (x - lastX);
+            var dy = factor * (y - lastY);
+            //Limit x-axis rotation angle to -90 to 90 degrees
+            currentAngle[0] = Math.max(Math.min(currentAngle[0] + dy, 90), -90);
+            currentAngle[1] = currentAngle[1] + dx;
+
+            mousePosition[0] = x;
+            mousePosition[1] = canvas.height - y;
+
+            // Update shape(s) matrix
+            // HACK console.log(currentAngle[0]+ ' '+ currentAngle[1])
+            var tmp = mat4.create();
+            mat4.identity(tmp);
+            mat4.rotate(tmp,tmp,dx,[0,1,0]);
+            mat4.rotate(tmp,tmp,dy,[1,0,0]);
+
+            // Apply rotation to each registered shape
+            for (var i in shapes) {
+                mat4.multiply(shapes[i].matrix,tmp,shapes[i].matrix);
+            }
+            // Display
+            renderer.drawScene();
+        }
+        lastX = x;
+        lastY = y;
+    };
+
+    return {
+        attach : function (a_shape) {
+            shapes.push(a_shape);
+        },
+
+        setRenderer : function (a_renderer) {
+            renderer = a_renderer;
+        }
+    };
 }
-

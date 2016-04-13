@@ -106,7 +106,7 @@
                             MOWGLI.init();
 
                             // Set default rendering display modes
-                            MOWGLI.settings.displayAtoms= "points";
+                            MOWGLI.settings.displayAtoms= "wire";
                             MOWGLI.settings.displayColors= "color_cpk";
                             // Create a shape wireframe + CPK for Molecule or a shape BBox for Raster
                             var shape = ShapeFactory.get({
@@ -115,7 +115,8 @@
                                 'color': MOWGLI.settings.displayColors,
                                 'glContext': MOWGLI.renderer.getContext()
                             });
-
+console.log('SHAAAAPPPEEE');
+console.log(shape);
                             // Attach to the scene graph
                             var scene = MOWGLI.renderer.getScene();
                             var group = scene.getById("group[shape]");
