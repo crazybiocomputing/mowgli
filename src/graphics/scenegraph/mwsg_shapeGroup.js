@@ -24,27 +24,28 @@
 
 'use strict';
 
-/**
- * All the classes related to the rendering, scene graph and OpenGL.
- * @module graphics
- */
+(function(exports) {
+
+    /**
+     * ShapeGroup: A collection of shapes
+     *
+     * @class ShapeGroup
+     * @constructor
+     * @memberof module:mwSG
+     * @augments Composite
+     **/
+    function ShapeGroup () {
+        mwSG.Composite.call(this);
+
+        this.ID = 'group[shape]';
+
+        this.nodeGL = new NodeGL(this);
+
+    }
+
+    ShapeGroup.prototype = Object.create(mwSG.Composite.prototype);
+    
+    exports.ShapeGroup = ShapeGroup;
 
 
-/**
- * ShapeGroup: A collection of shapes
- *
- * @class ShapeGroup
- * @constructor
- * @memberof module:graphics
- * @augments Composite
- **/
-var ShapeGroup = function () {
-    Composite.call(this);
-
-    this.ID = 'group[shape]';
-
-    this.nodeGL = new NodeGL(this);
-
-}
-
-ShapeGroup.prototype = Object.create(Composite.prototype);
+})(this.mwSG = this.mwSG || {} );

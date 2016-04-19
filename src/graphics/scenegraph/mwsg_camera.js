@@ -4,14 +4,14 @@
  *
  *  This file is part of mowgli
  *
- * This program is free software: you can redistribute it and/or modify it 
- * under the terms of the GNU General Public License as published by 
- * the Free Software Foundation, either version 3 of the License, or 
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
@@ -21,62 +21,80 @@
  * Authors:
  * Jean-Christophe Taveau
  */
- 
- "use strict";
 
- 
-/**
- * Camera
- *
- * @class Camera
- * @memberof module:graphics
- * @constructor
- * @augments Leaf
- **/
-function Camera() {
-    Leaf.call(this);
-    
-    this.ID = 'camera';
+'use strict';
 
-    this.projMatrix = mat4.create();
-    this.viewMatrix = mat4.create();
-    mat4.identity(this.viewMatrix);
-    
-    /**
-     * Y-Field of View
-     **/
-    this.fovy = 45.0*Math.PI/180.0;
-    
-    /**
-     * Zoom
-     **/
-    this.zoom = 1.0;
+(function(exports) {
 
     /**
-     * Z-near Plane
+     * Camera
+     *
+     * @class Camera
+     * @memberof module:mwSG
+     * @constructor
+     * @augments Leaf
      **/
-    this.zNear = 0.1;
+    function Camera() {
+        mwSG.Leaf.call(this);
+
+        this.ID = 'camera';
+
+        this.projMatrix = mat4.create();
+        this.viewMatrix = mat4.create();
+        mat4.identity(this.viewMatrix);
+
+        /**
+         * Y-Field of View
+         **/
+        this.fovy = 45.0 * Math.PI/180.0;
+
+        /**
+         * Zoom
+         **/
+        this.zoom = 1.0;
+
+        /**
+         * Z-near Plane
+         **/
+        this.zNear = 0.1;
+
+        /**
+         * Z-far Plane
+         **/
+        this.zFar  = 1000.0;
+
+        // NodeGL
+        this.nodeGL = new mwGL.Camera(this);
+
+    }
+
+    Camera.prototype = Object.create(mwSG.Leaf.prototype);
+
+    Camera.prototype.constructor = Camera;
 
     /**
-     * Z-far Plane
+     * Set the Y-Field of View.
+     *
+     * @param {number} angle_in_degrees - Angle of the Field of View expressed in degrees
+     *
      **/
-    this.zFar  = 1000.0;
+    Camera.prototype.setFovy = function (angle_in_degrees) {
+        this.fovy = angle_in_degrees * Math.PI/180.0;
+    };
 
-      // NodeGL
-    this.nodeGL = new mwGL.Camera(this);
-}
-
-Camera.prototype = new Leaf;
-
-/**
- * Set the Y-Field of View. 
- *
- * @param {number} angle_in_degrees - Angle of the Field of View expressed in degrees
- * 
- **/
-Camera.prototype.setFovy = function (angle_in_degrees) {
-  this.fovy= angle_in_degrees * Math.PI/180.0;
-}
+    /**
+     * Set the Y-Field of View.
+     *
+     * @param {number} angle_in_degrees - Angle of the Field of View expressed in degrees
+     *
+     **/
+    Camera.prototype.setZoom = function (zoomFactor) {
+        this.zoom = zoomFactor;
+    };
 
 
 
+    exports.Camera = Camera;
+
+
+})(this.mwSG = this.mwSG || {} );

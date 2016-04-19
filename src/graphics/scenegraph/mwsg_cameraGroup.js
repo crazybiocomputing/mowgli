@@ -24,35 +24,35 @@
 
 'use strict';
 
-/**
- * All the classes related to the rendering, scene graph and OpenGL.
- * @module graphics
- */
+(function(exports) {
 
 
-/**
- * CameraGroup: A collection of shapes
- *
- * @class CameraGroup
- * @constructor
- * @memberof module:graphics
- * @augments Composite
- **/
-function CameraGroup() {
-    Composite.call(this);
+    /**
+     * CameraGroup: A collection of shapes
+     *
+     * @class CameraGroup
+     * @constructor
+     * @memberof module:mwSG
+     * @augments Composite
+     **/
+    function CameraGroup() {
+        mwSG.Composite.call(this);
 
-    this.ID = 'group[camera]';
-    this.nodeGL = new NodeGL(this);
+        this.ID = 'group[camera]';
+        this.nodeGL = new NodeGL(this);
 
-}
-
-CameraGroup.prototype = Object.create(Composite.prototype);
-
-CameraGroup.prototype.add = function(an_object) {
-    if (an_object instanceof Camera) {
-        Composite.add.call(this,an_object);
     }
-    else {
-        // ERROR: Do nothing
-    }
-};
+
+    CameraGroup.prototype = Object.create(mwSG.Composite.prototype);
+
+    CameraGroup.prototype.add = function(an_object) {
+        if (an_object instanceof mwSG.Camera) {
+            Composite.add.call(this,an_object);
+        }
+        else {
+            // ERROR: Do nothing
+        }
+    };
+
+    exports.CameraGroup = CameraGroup;
+})(this.mwSG = this.mwSG || {} );

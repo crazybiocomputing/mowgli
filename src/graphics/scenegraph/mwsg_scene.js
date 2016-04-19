@@ -24,51 +24,57 @@
 
 'use strict';
 
+(function(exports) {
 
-/**
- * Scene: Root of the scene graph
- *
- * @class Scene
- * @memberof module:graphics
- * @constructor
- * @augments Composite
- **/
-function Scene() {
-    Composite.call(this);
+    /**
+     * Scene: Root of the scene graph
+     *
+     * @class Scene
+     * @memberof module:mwSG
+     * @constructor
+     * @augments Composite
+     **/
+    function Scene() {
+        mwSG.Composite.call(this);
 
-    this.ID = 'scene';
-    this.nodeGL = new NodeGL();
-
-}
-
-Scene.prototype = Object.create(Composite.prototype);
-
-/**
- * Set default scene with a camera and a light
- *
- **/
-Scene.prototype.setDefault = function() {
-    this.ID = 'scene_default';
-    // Add a camera
-    this.add(new Camera() );
-    // Add a light
-    this.add(new Light()  );
-};
-
-/**
- * Get Camera in the scene
- *
- * @return {Camera} Returns the current camera
- **/
-Scene.prototype.getCamera = function() {
-    // TODO: must be improved if CameraGroup exists for stereo
-    return this.children['camera_0'];
-};
-
-Scene.prototype.toString = function() {
-    var str = this.ID+'\n';
-    for (var i in this.children) {
-        str += '+-'+this.children[i].ID+'\n';
+        this.ID = 'scene';
+        this.nodeGL = new NodeGL(this);
     }
-    return str;
-};
+
+    Scene.prototype = Object.create(mwSG.Composite.prototype);
+
+    /**
+     * Set default scene with a camera and a light
+     *
+     **/
+    Scene.prototype.setDefault = function() {
+        this.ID = 'scene_default';
+        // Add a camera
+        var cam = new mwSG.Camera();
+        this.add( cam);
+        // Add a light
+        this.add(new mwSG.Light()  );
+    };
+
+    /**
+     * Get Camera in the scene
+     *
+     * @return {Camera} Returns the current camera
+     **/
+    Scene.prototype.getCamera = function() {
+        // TODO: must be improved if CameraGroup exists for stereo
+        return this.children['camera_0'];
+    };
+
+    Scene.prototype.toString = function() {
+        var str = this.ID+'\n';
+        for (var i in this.children) {
+            str += '+-'+this.children[i]+'\n';
+        }
+        return str;
+    };
+
+    exports.Scene = Scene;
+
+
+})(this.mwSG = this.mwSG || {} );
