@@ -119,11 +119,12 @@ console.log('SHAAAAPPPEEE');
 console.log(shape);
                             // Attach to the scene graph
                             var scene = MOWGLI.renderer.getScene();
+                            // Get group from default scene graph created in MOWGLI.init()
                             var group = scene.getById("group[shape]");
-
                             group.add(shape);
-                            scene.add(group);
 
+                            // Adjust Camera settings
+                            // TODO: scene.getCamera().set(...);
                             // TODO: Must be set automatically from BBoxes of shapegroup
                             mat4.translate(
                                 scene.getCamera().viewMatrix,
@@ -131,8 +132,7 @@ console.log(shape);
                                 [0.0,0.0,-80.0]
 
                             );
-                            // Adjust Camera settings
-                            // TODO: scene.getCamera().set(...);
+
                             // Trigger the rendering infinite loop
                             MOWGLI.update();
 

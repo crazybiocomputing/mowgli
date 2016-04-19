@@ -62,7 +62,7 @@
         }
 
         function init() {
-            console.log('INIt');
+            console.log('Create scenegraph');
             var canvas = document.getElementById('mowgli');
             try {
                 MOWGLI.renderer = new Renderer('mowgli');
@@ -70,17 +70,27 @@
             catch (e) {
                 MOWGLI.alert('ERR: Cannot get WebGL graphics context');
             }
-            var scene = new Scene();
-            scene.setDefault();
+
+            // 1- Create a scene
+            var scene = new mwSG.Scene();
             MOWGLI.renderer.addScene(scene);
 
-            var group = new ShapeGroup();
-            scene.add(group);
-            // 4- Add a sensor
-            var mouse = new MouseSensor('mowgli');
-            mouse.attach(group);
+            // 2 - Create Camera and Light
+            var camera = new mwSG.Camera();
+            var light = new mwSG.Light();
+            scene.add(camera);
+            scene.add(light);
 
-            MOWGLI.renderer.addSensor(mouse);
+            // 3- Create a group of shape(s)
+            var group = new mwSG.ShapeGroup();
+            scene.add(group);
+
+            // 4- Add sensor(s) for Rotation/Translation and Zoom
+            var rotSensor = new mwUI.MouseSensor('mowgli');
+            rotSensor.attach(group);
+            MOWGLI.renderer.addSensor(rotSensor);
+            var zoomSensor = new mwUI.ZoomSensor('mowgli');
+            zoomSensor.attach(camera);
 
             // var gl = MOWGLI.renderer.context;
             // gl.clearColor(1.0,0.5,0.0,1.0);
@@ -91,6 +101,7 @@
      * Update graphics
      */
     _MOWGLI.prototype.update = function () {
+        console.log('MOWGLI.update');
         if (this.renderer === undefined) {
             MOWGLI.alert('ERR: No initialization done.')
         }
@@ -1026,11 +1037,12 @@ console.log('SHAAAAPPPEEE');
 console.log(shape);
                             // Attach to the scene graph
                             var scene = MOWGLI.renderer.getScene();
+                            // Get group from default scene graph created in MOWGLI.init()
                             var group = scene.getById("group[shape]");
-
                             group.add(shape);
-                            scene.add(group);
 
+                            // Adjust Camera settings
+                            // TODO: scene.getCamera().set(...);
                             // TODO: Must be set automatically from BBoxes of shapegroup
                             mat4.translate(
                                 scene.getCamera().viewMatrix,
@@ -1038,8 +1050,7 @@ console.log(shape);
                                 [0.0,0.0,-80.0]
 
                             );
-                            // Adjust Camera settings
-                            // TODO: scene.getCamera().set(...);
+
                             // Trigger the rendering infinite loop
                             MOWGLI.update();
 

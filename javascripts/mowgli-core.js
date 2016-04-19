@@ -22,6 +22,434 @@
  * Jean-Christophe Taveau
  */
 
+/**
+ * @module mwSG
+ */
+
+'use strict';
+
+(function(exports) {
+
+    /**
+     * Node in the Scene Graph
+     *
+     * @class Node
+     * @memberof module:mwSG
+     * @constructor
+     **/
+    function Node() {
+
+        /**
+         * Type of scenegraph node
+         */
+        this.ID = 'node';
+
+        /**
+         * Name of scenegraph node
+         */
+        this.name = 'none';
+
+        /**
+         * Status of scenegraph node
+         * isDirty: Node.MATRIX | Node.GEOMETRY | Node.MATERIAL | Node.CLEAN;
+         */
+        this._isDirty = Node.MATRIX | Node.GEOMETRY | Node.MATERIAL;
+
+        /**
+         * Parent of this scenegraph node
+         */
+        this.parent = null;
+
+        /**
+         * Renderer of this scene that includes this node
+         */
+        this.renderer = null;
+
+        /**
+         * OpenGL/WeGL object of this node
+         */
+        this.nodeGL = null;
+
+        /**
+         * Matrix for rotation(s) and translation(s): the Model Matrix
+         */
+        this.matrix=mat4.create();
+        mat4.identity(this.matrix);
+    }
+
+    Node.CLEAN = 0;
+    Node.MATRIX = 1;
+    Node.GEOMETRY = 2;
+    Node.MATERIAL = 4;
+
+    Node.prototype.isDirty = function() {
+        return this._isDirty;
+    };
+
+    Node.prototype.getNodeGL = function() {
+        return this.nodeGL;
+    };
+
+    Node.prototype.getRenderer = function() {
+        if (this.renderer != null) {
+            return this.renderer;
+        }
+        else if (this.parent instanceof Renderer) {
+            this.renderer = this.parent;
+            return this.renderer;
+        }
+        return this.parent.getRenderer();
+    };
+
+    /**
+     * Init the OpenGL config of this object in the scene graph
+     * and traverse its children.
+     * Function called by the renderer
+     *
+     * @param{number} OpenGL context
+     **/
+    Node.prototype.init = function(context) {
+    };
+
+    /**
+     * Render this object and traverse its children
+     * Function called by the renderer
+     *
+     * @param{number} OpenGL context
+     **/
+    Node.prototype.render = function(context) {
+    };
+
+    Node.prototype.translate = function(tx, ty, tz) {
+        // HACK console.log(this.matrix);
+        mat4.translate(this.matrix,this.matrix,[tx, ty, tz]);
+        // HACK console.log(this.matrix);
+    };
+
+    Node.prototype.graph = function(level) {
+    };
+
+    exports.Node = Node;
+
+})(this.mwSG = this.mwSG || {} );
+
+/*
+ *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
+ *  Copyright (C) 2015  Jean-Christophe Taveau.
+ *
+ *  This file is part of mowgli
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * Authors:
+ * Jean-Christophe Taveau
+ */
+
+
+'use strict';
+
+(function(exports) {
+
+    /**
+     * Leaf node in the Scene Graph
+     *
+     * @class Leaf
+     * @memberof module:mwSG
+     * @constructor
+     * @augments Node
+     **/
+    function Leaf() {
+        mwSG.Node.call(this);
+        this.ID = 'leaf';
+    }
+
+    Leaf.prototype = Object.create(mwSG.Node.prototype);
+
+    Leaf.prototype.constructor = Leaf;
+
+
+    /**
+     * Init the OpenGL config of this object in the scene graph
+     * and traverse its children.
+     * Function called by the renderer
+     *
+     * @param{number} OpenGL context
+     **/
+    Leaf.prototype.init = function(context) {
+        console.log('INIT leaf ' + this.ID);
+        this.getNodeGL().init(context);
+    };
+
+    /**
+     * Render this object
+     * Function called by the renderer
+     *
+     * @param {number} context - OpenGL context
+     **/
+    Leaf.prototype.render = function(context) {
+        // HACK console.log('RENDER_Leaf ' + this.ID);
+        // HACK console.log(this.parent.getNodeGL().workmatrix);
+        // Update matrix
+        mat4.multiply(this.getNodeGL().workmatrix,this.parent.getNodeGL().workmatrix,this.matrix);
+        // OpenGL rendering
+        this.getNodeGL().render(context);
+    };
+
+    /**
+     * Update this object
+     *
+     * @param {number} context - OpenGL context
+     **/
+    Leaf.prototype.update = function(context) {
+        // HACK console.log('UPDATE_Leaf ' + this.ID);
+        // HACK console.log(this.parent);
+        // Update matrix
+        if (this._isDirty !== Node.CLEAN) {
+            mat4.multiply(this.getNodeGL().workmatrix,this.parent.getNodeGL().workmatrix,this.matrix);
+            // OpenGL rendering
+            this.getNodeGL().update(context);
+            this._isDirty = Node.CLEAN;
+        }
+    };
+
+
+    Leaf.prototype.graph = function(level) {
+        var str = (this.ID || 'unknown');
+        return str;
+    };
+
+
+    exports.Leaf = Leaf;
+
+
+})(this.mwSG = this.mwSG || {} );
+
+/*
+ *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
+ *  Copyright (C) 2015  Jean-Christophe Taveau.
+ *
+ *  This file is part of mowgli
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * Authors:
+ * Jean-Christophe Taveau
+ */
+
+
+'use strict';
+
+(function(exports) {
+
+    /**
+     * Node with children in the Scene Graph
+     *
+     * @class Composite
+     * @memberof module:mwSG
+     * @constructor
+     * @augments Node
+     **/
+    function Composite() {
+        mwSG.Node.call(this);
+        this.ID = 'composite';
+
+        this.children = {};
+    }
+
+    Composite.prototype = Object.create(mwSG.Node.prototype);
+    Composite.prototype.constructor = Composite;
+
+    Composite.prototype.add = function(an_object) {
+        // Modify ID if duplicates
+        an_object.name = an_object.ID + '_' + size(this.children);
+        this.children[an_object.name] = an_object;
+        an_object.parent = this;
+
+        function size(obj) {
+            var size = 0, key;
+            for (key in obj) {
+                if (obj.hasOwnProperty(key)) size++;
+            }
+            return size;
+        }
+    };
+
+    Composite.prototype.remove = function(id) {
+        if (this.children.id !== undefined) {
+            delete this.children.id;
+        }
+    };
+
+    Composite.prototype.getById = function(id) {
+
+        function traverse(id,a_node) {
+            if (a_node.ID === id) {
+                return a_node;
+            }
+
+            for (var i in a_node.children) {
+                var result = traverse(id,a_node.children[i]);
+                if (result !== undefined) {
+                    return result;
+                }
+            }
+            return;
+        }
+
+        return traverse(id,this);
+    };
+
+    /**
+     * Init the OpenGL config of this object in the scene graph
+     * and traverse its children.
+     * Function called by the renderer
+     *
+     * @param{number} OpenGL context
+     **/
+    Composite.prototype.init = function(context) {
+        // Uniforms
+        // HACK console.log('INIT ' + this.ID);
+        this.getNodeGL().init(context);
+        for (var i in this.children) {
+            // HACK console.log('child:INIT ' + this.children[i].ID);
+            // HACK console.log(this.children[i]);
+            this.children[i].init(context);
+        }
+        this.isDirty = false;
+    };
+
+    /**
+     * Render this object and traverse its children
+     * Function called by the renderer
+     *
+     * @param{number} OpenGL context
+     **/
+    Composite.prototype.render = function(context) {
+        // HACK console.log('RENDER_Composite ' + this.ID );
+        // HACK console.log(this.parent);
+        // Update matrix
+        if (!(this.parent instanceof Renderer) ) {
+            mat4.multiply(this.getNodeGL().workmatrix,this.parent.getNodeGL().workmatrix,this.matrix);
+        }
+        // Render
+        this.getNodeGL().render(context);
+        // Propagate to children
+        for (var i in this.children) {
+            this.children[i].render(context);
+        }
+    };
+
+    /**
+     * Update this object and traverse its children
+     *
+     * @param {number} context - OpenGL context
+     **/
+    Composite.prototype.update = function(context) {
+        if (this._isDirty !== Node.CLEAN) {
+            // Update matrix ?
+            mat4.multiply(this.getNodeGL().workmatrix,this.parent.getNodeGL().workmatrix,this.matrix);
+            // Update OpenGL (e.g. VBOs, shaders, etc.)
+            this.getNodeGL().update(context);
+            this._isDirty = Node.CLEAN;
+        }
+        // Propagate to children
+        for (var i in this.children) {
+            this.children[i].update(context);
+        }
+    };
+
+    Composite.prototype.graph = function(level) {
+        var lvl = level || 0;
+        var spaces = Array(lvl+1).join('.');
+        var str = (this.ID || 'unknown') +'\n';
+        for (var i in this.children) {
+            str += spaces + '+-'+this.children[i].graph(lvl++)+'\n';
+        }
+        return str;
+    };
+
+
+    Composite.prototype.traverse = function(context,a_node) {
+        for (var i in a_node.children) {
+            this.traverse(context,a_node.children[i]);
+        }
+    };
+
+/***
+Composite.prototype._updateAttributes = function(context) {
+    var gl = context;
+
+  if (this.shaderProgram.attributes.length != this.geometry.attributes.length) {
+    console.log(this.shaderProgram.attributes);
+    console.log(this.shaderProgram.attributes.length + ' != ' + this.geometry.attributesLength() );
+    console.log('MOWGLI: Attributes are not correctly defined');
+  }
+
+    for (var i=0; i < this.geometry.VBO.length;i++) {
+        var vbo = this.geometry.VBO[i];
+        for (var j=0; j < vbo.attributes.length; j++) {
+            vbo.attributes[j].location = this.shaderProgram.getAttribLocation(vbo.attributes[j].name);
+            vbo.attributes[j].size = this.shaderProgram.attributes[vbo.attributes[j].name].size;
+            console.log('location [' + vbo.attributes[j].name + ']= '+ vbo.attributes[j].location + ' '+vbo.attributes[j].size);
+        }
+    }
+}
+*****/
+
+
+    exports.Composite = Composite;
+
+
+})(this.mwSG = this.mwSG || {});
+
+/*
+ *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
+ *  Copyright (C) 2015  Jean-Christophe Taveau.
+ *
+ *  This file is part of mowgli
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * Authors:
+ * Jean-Christophe Taveau
+ */
+
 'use strict';
 
 var ColorFactory = (function () {
@@ -1204,6 +1632,7 @@ function WireGeometer(mol,colorer) {
  */
 WireGeometer.prototype.getShape = function () {
     var vertices = [];
+    var colors = [];
     var indices = [];
 
     var createWireframeShape = function(mol,colMaker) {
@@ -1216,24 +1645,24 @@ WireGeometer.prototype.getShape = function () {
             // First atom
             var rgbAtom1 = colMaker.get(bond.atom1);
             if (alreadyDone[bond.atom1.serial] === undefined) {
-                index = vertices.length / 6.0;
+                index = vertices.length / 3.0;
                 vertices.push(bond.atom1.x);
                 vertices.push(bond.atom1.y);
                 vertices.push(bond.atom1.z);
-                vertices.push(rgbAtom1[0]);
-                vertices.push(rgbAtom1[1]);
-                vertices.push(rgbAtom1[2]);
+                colors.push(rgbAtom1[0]);
+                colors.push(rgbAtom1[1]);
+                colors.push(rgbAtom1[2]);
                 alreadyDone[bond.atom1.serial] = index;
             }
 
             // First half bond
-            index = vertices.length / 6.0;
+            index = vertices.length / 3.0;
             vertices.push(bond.middle.x);
             vertices.push(bond.middle.y);
             vertices.push(bond.middle.z);
-            vertices.push(rgbAtom1[0]);
-            vertices.push(rgbAtom1[1]);
-            vertices.push(rgbAtom1[2]);
+            colors.push(rgbAtom1[0]);
+            colors.push(rgbAtom1[1]);
+            colors.push(rgbAtom1[2]);
 
             indices.push(alreadyDone[bond.atom1.serial]);
             indices.push(index); // middle
@@ -1241,24 +1670,24 @@ WireGeometer.prototype.getShape = function () {
             // Second half bond
             var rgbAtom2 = colMaker.get(bond.atom2);
             if (alreadyDone[bond.atom2.serial] === undefined) {
-                index = vertices.length / 6.0;
+                index = vertices.length / 3.0;
                 vertices.push(bond.atom2.x);
                 vertices.push(bond.atom2.y);
                 vertices.push(bond.atom2.z);
-                vertices.push(rgbAtom2[0]);
-                vertices.push(rgbAtom2[1]);
-                vertices.push(rgbAtom2[2]);
+                colors.push(rgbAtom2[0]);
+                colors.push(rgbAtom2[1]);
+                colors.push(rgbAtom2[2]);
 
                 alreadyDone[bond.atom2.serial] = index;
             }
 
-            index = vertices.length / 6.0;
+            index = vertices.length / 3.0;
             vertices.push(bond.middle.x);
             vertices.push(bond.middle.y);
             vertices.push(bond.middle.z);
-            vertices.push(rgbAtom2[0]);
-            vertices.push(rgbAtom2[1]);
-            vertices.push(rgbAtom2[2]);
+            colors.push(rgbAtom2[0]);
+            colors.push(rgbAtom2[1]);
+            colors.push(rgbAtom2[2]);
 
             indices.push(alreadyDone[bond.atom2.serial]);
             indices.push(index); // middle
@@ -1270,24 +1699,37 @@ WireGeometer.prototype.getShape = function () {
         if (this.mol.bonds === undefined || this.mol.bonds.length === 0) {
             BondCalculator(this.mol);
         }
-        console.log('Create wireframe shape');
+        // HACK console.log('Create wireframe shape');
         createWireframeShape(this.mol,this.colorer);
-        console.log(colors);
-        console.log(indices);
+        // HACK console.log(vertices);
+        // HACK console.log(indices);
 
-        this.shape = new Shape();
+        this.shape = new mwSG.Shape();
         this.shape.type = 'LINES';
         this.shape.addVertexData(
             {
-                'content'   : Shape.XYZ | Shape.RGB,
+                'content'   : mwSG.Shape.XYZ,
                 'data'      : vertices,
-                'indices'   : indices,
-                'attributes': [new Attribute('aVertexPosition',0,6), new Attribute('aVertexColor',3,6)]
+                'attributes': [new Attribute('aVertexPosition',0,0)]
             }
         );
+        this.shape.addVertexData(
+            {
+                'content'   : mwSG.Shape.RGB,
+                'data'      : colors,
+                'attributes': [new Attribute('aVertexColor',0,0)]
+            }
+        );
+        this.shape.addVertexData(
+            {
+                'content'   : mwSG.Shape.INDICES,
+                'data'      : indices
+            }
+        );
+
         this.shape.translate(-this.mol.centroid.x, -this.mol.centroid.y, -this.mol.centroid.z);
     }
-    console.log(this.shape);
+    // HACK console.log(this.shape);
     return this.shape;
 };
 
@@ -1499,453 +1941,6 @@ Renderer.prototype._initGL = function() {
  *
  *  This file is part of mowgli
  *
- * This program is free software: you can redistribute it and/or modify it 
- * under the terms of the GNU General Public License as published by 
- * the Free Software Foundation, either version 3 of the License, or 
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
- * GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
- *
- *
- * Authors:
- * Jean-Christophe Taveau
- */
- 
- "use strict";
-
- 
-/**
- * Camera
- *
- * @class Camera
- * @memberof module:graphics
- * @constructor
- * @augments Leaf
- **/
-function Camera() {
-    Leaf.call(this);
-    
-    this.ID = 'camera';
-
-    this.projMatrix = mat4.create();
-    this.viewMatrix = mat4.create();
-    mat4.identity(this.viewMatrix);
-    
-    /**
-     * Y-Field of View
-     **/
-    this.fovy = 45.0*Math.PI/180.0;
-    
-    /**
-     * Zoom
-     **/
-    this.zoom = 1.0;
-
-    /**
-     * Z-near Plane
-     **/
-    this.zNear = 0.1;
-
-    /**
-     * Z-far Plane
-     **/
-    this.zFar  = 1000.0;
-
-      // NodeGL
-    this.nodeGL = new mwGL.Camera(this);
-}
-
-Camera.prototype = new Leaf;
-
-/**
- * Set the Y-Field of View. 
- *
- * @param {number} angle_in_degrees - Angle of the Field of View expressed in degrees
- * 
- **/
-Camera.prototype.setFovy = function (angle_in_degrees) {
-  this.fovy= angle_in_degrees * Math.PI/180.0;
-}
-
-
-
-
-/*
- *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
- *  Copyright (C) 2015  Jean-Christophe Taveau.
- *
- *  This file is part of mowgli
- *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
- *
- *
- * Authors:
- * Jean-Christophe Taveau
- */
-
-'use strict';
-
-/**
- * All the classes related to the rendering, scene graph and OpenGL.
- * @module graphics
- */
-
-
-/**
- * CameraGroup: A collection of shapes
- *
- * @class CameraGroup
- * @constructor
- * @memberof module:graphics
- * @augments Composite
- **/
-function CameraGroup() {
-    Composite.call(this);
-
-    this.ID = 'group[camera]';
-    this.nodeGL = new NodeGL(this);
-
-}
-
-CameraGroup.prototype = Object.create(Composite.prototype);
-
-CameraGroup.prototype.add = function(an_object) {
-    if (an_object instanceof Camera) {
-        Composite.add.call(this,an_object);
-    }
-    else {
-        // ERROR: Do nothing
-    }
-};
-
-/*
- *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
- *  Copyright (C) 2015  Jean-Christophe Taveau.
- *
- *  This file is part of mowgli
- *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
- *
- *
- * Authors:
- * Jean-Christophe Taveau
- */
-
-
-'use strict';
-
-
-/**
- * Node with children in the Scene Graph
- *
- * @class Composite
- * @memberof module:graphics
- * @constructor
- **/
-function Composite(node) {
-    this.children = {};
-    this._isDirty = true;
-    this.parent   = null;
-    this.renderer = null;
-
-    //
-    this.nodeGL   = null;
-
-    // Matrix for rotation(s) and translation(s)
-    this.matrix=mat4.create();
-    mat4.identity(this.matrix);
-}
-
-Composite.prototype.add = function(an_object) {
-    this.children[an_object.ID+'_' + size(this.children)] = an_object;
-    an_object.parent = this;
-
-    function size(obj) {
-        var size = 0, key;
-        for (key in obj) {
-            if (obj.hasOwnProperty(key)) size++;
-        }
-        return size;
-    }
-};
-
-Composite.prototype.getNodeGL = function() {
-    return this.nodeGL;
-};
-
-Composite.prototype.getById = function(id) {
-
-    function traverse(id,a_node) {
-        if (a_node.ID === id) {
-            return a_node;
-        }
-
-        for (var i in a_node.children) {
-            var result = traverse(id,a_node.children[i]);
-            if (result !== undefined) {
-                return result;
-            }
-        }
-        return;
-    }
-
-    return traverse(id,this);
-};
-
-Composite.prototype.getRenderer = function() {
-    if (this.renderer != null) {
-        return this.renderer;
-    }
-    else if (this.parent instanceof Renderer){
-        this.renderer = this.parent;
-        return this.renderer;
-    }
-    return this.parent.getRenderer();
-};
-
-Composite.prototype.isDirty = function() {
-    return _isDirty;
-};
-
-/**
- * Init the OpenGL config of this object in the scene graph
- * and traverse its children.
- * Function called by the renderer
- *
- * @param{number} OpenGL context
- **/
-Composite.prototype.init = function(context) {
-    // Uniforms
-    console.log('INIT ' + this.ID);
-    this.getNodeGL().init(context);
-    for (var i in this.children) {
-        traverse(context,this.children[i]);
-    }
-    this.isDirty = false;
-
-    function traverse(context,a_node) {
-        a_node.init(context);
-        for (var i in a_node.children) {
-            traverse(context,a_node.children[i]);
-        }
-    }
-};
-
-/**
- * Render this object and traverse its children
- * Function called by the renderer
- *
- * @param{number} OpenGL context
- **/
-Composite.prototype.render = function(context) {
-    // HACK console.log('RENDER_Composite ' + this.ID );
-    // HACK console.log(this.parent);
-    // Update matrix
-    if (!(this.parent instanceof Renderer) ) {
-        mat4.multiply(this.getNodeGL().workmatrix,this.parent.getNodeGL().workmatrix,this.matrix);
-    }
-    // Render
-    this.getNodeGL().render(context);
-    // Propagate to children
-    for (var i in this.children) {
-        traverse(context,this.children[i]);
-    }
-
-    function traverse(context,a_node) {
-        a_node.render(context);
-        for (var i in a_node.children) {
-            traverse(context,a_node.children[i]);
-        }
-    }
-
-};
-
-Composite.prototype.graph = function(level) {
-    var lvl = level || 0;
-    var spaces = Array(lvl+1).join('.');
-    var str = (this.ID || 'unknown') +'\n';
-    for (var i in this.children) {
-        str += spaces + '+-'+this.children[i].graph(lvl++)+'\n';
-    }
-    return str;
-};
-
-/***
-Composite.prototype._updateAttributes = function(context) {
-    var gl = context;
-
-  if (this.shaderProgram.attributes.length != this.geometry.attributes.length) {
-    console.log(this.shaderProgram.attributes);
-    console.log(this.shaderProgram.attributes.length + ' != ' + this.geometry.attributesLength() );
-    console.log('MOWGLI: Attributes are not correctly defined');
-  }
-
-    for (var i=0; i < this.geometry.VBO.length;i++) {
-        var vbo = this.geometry.VBO[i];
-        for (var j=0; j < vbo.attributes.length; j++) {
-            vbo.attributes[j].location = this.shaderProgram.getAttribLocation(vbo.attributes[j].name);
-            vbo.attributes[j].size = this.shaderProgram.attributes[vbo.attributes[j].name].size;
-            console.log('location [' + vbo.attributes[j].name + ']= '+ vbo.attributes[j].location + ' '+vbo.attributes[j].size);
-        }
-    }
-}
-*****/
-
-/*
- *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
- *  Copyright (C) 2015  Jean-Christophe Taveau.
- *
- *  This file is part of mowgli
- *
- * This program is free software: you can redistribute it and/or modify it 
- * under the terms of the GNU General Public License as published by 
- * the Free Software Foundation, either version 3 of the License, or 
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
- * GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
- *
- *
- * Authors:
- * Jean-Christophe Taveau
- */
-
-
-"use strict"
-
-
-
-/**
- * Geometry contains geometrical data like coordinates, normals, texCoords, colors,etc.
- *
- * @class Geometry
- * @memberof module:graphics
- * @constructor
- **/
-function Geometry (options) {
-  
-  /** 
-   * The type
-   *
-   * @type {string} 
-   *
-   * @description
-   * - 'none' 
-   * - 'POINTS' 
-   * - 'LINES' 
-   * - 'TRIANGLES' 
-   **/
-  this.type    = options.type || 'none';
-  
-  /** 
-   * The content - A description of all the vertex data in this geometry. For example,
-   *
-   *```javascript
-   * "content" : Shape.XYZ | Shape.RGB | Shape.ST
-   *```
-   * The various available values are:
-   *
-   * - Shape.XYZ
-   * - Shape.XYZW 
-   * - Shape.NXYZ 
-   * - Shape.RGB
-   * - Shape.RGBA
-   * - Shape.ST
-   **/
-  this.content = options.content;
-  
-  /** 
-   * The data - A [Float32Array]{@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Float32Array} array containing the vertex data
-   *
-   * @example
-   * If the content is Shape.XYZ | Shape.RGB, it means that in the same array, one vertex is defined by three X,Y, and Z-coordinates plus 
-   * three Red, Green, and Blue color values like this...
-   * var data [X Y Z R G B X Y Z R G B ... Z R G B ]
-   **/
-  this.data    = options.data;
-  
-  /** 
-   * The attributes - An array of {@link module:graphics.Attribute} used by the shader program
-   *
-   **/
-  this.attributes = options.attributes; // || [];
-
-  /** 
-   * The indices - A [UInt32Array]{@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint32Array} array of indices pointing to the vertex array 
-   *
-   **/
-  this.indices = options.indices;
-  
-  console.log(options);
-  
-  if (this.type === 'indexed') {
-    this._isIndexed = true;
-  }
-  else {
-    this._isIndexed = false;
-  }
-
-    console.log('end create GEOM');
-    console.log(this.attributes);
-}
-
-Geometry.prototype.getBuffer = function(name) {
-  var stop = false;
-  var i=0;
-  while (!stop && i < this.VBO.length) {
-    if (this.VBO[i].type === name) {
-      return this.VBO[i];
-    }
-    i++;
-  }
-  return null;
-}
-
-Geometry.prototype.isIndexed = function() {
-  return this._isIndexed;
-}
-
-
-
-/*
- *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
- *  Copyright (C) 2015  Jean-Christophe Taveau.
- *
- *  This file is part of mowgli
- *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -2012,17 +2007,17 @@ Geometry.prototype.isIndexed = function() {
 
     _Camera.prototype.isDirty = function() {
         return _isDirty;
-    }
+    };
 
 
     _Camera.prototype.setViewport = function (width, height) {
         mat4.perspective(this.sgnode.projMatrix,this.sgnode.fovy * this.sgnode.zoom,width / height,this.sgnode.zNear,this.sgnode.zFar);
-    }
+    };
 
     _Camera.prototype.init = function(context) {
         // Do nothing
         this.isDirty = false;
-    }
+    };
 
     _Camera.prototype.render = function(context) {
         var gl = context;
@@ -2031,7 +2026,7 @@ Geometry.prototype.isIndexed = function() {
         this.setViewport(gl.viewportWidth,gl.viewportHeight);
         this.sgnode.getRenderer().setUniform("uVMatrix", this.sgnode.viewMatrix);
         this.sgnode.getRenderer().setUniform("uPMatrix", this.sgnode.projMatrix);
-    }
+    };
 
 
 
@@ -2147,14 +2142,6 @@ function ShapeGL(node) {
 }
 
 /**
- * Flag indicating if the OpenGL state of this shape is correct
- *
- **/
-ShapeGL.prototype.isDirty = function() {
-    return _isDirty;
-}
-
-/**
  * Init of the OpenGL part: VBO creation
  *
  * @param {number} context - Graphics context
@@ -2183,17 +2170,18 @@ ShapeGL.prototype.init = function(context) {
 
     // All is fine (I hope ?)
     this.isDirty = false;
-}
+};
 
 /**
  * Render this shape; Called by the renderer
  *
  **/
 ShapeGL.prototype.render = function(context) {
+    // HACK console.log('>>> ShapeGL.prototype.render');
     var gl = context;
     // Update matrix
     mat4.multiply(this.workmatrix,this.sgnode.parent.getNodeGL().workmatrix,this.sgnode.matrix);
-    this.sgnode.getRenderer().setUniform("uMMatrix", this.workmatrix);
+    this.sgnode.getRenderer().setUniform('uMMatrix', this.workmatrix);
 
     // Choose shader
     // HACK console.log(this.shaderProgram);
@@ -2203,11 +2191,11 @@ ShapeGL.prototype.render = function(context) {
 
 
     // For this geometry, activate VBO
-    for (var j in this.VBOs) {
+    for (var j=0; j < this.VBOs.length; j++) {
         var vbo = this.VBOs[j];
         if (vbo.type === 'indexed') {
             // HACK console.log('bind buffer '+ vbo.type + ' ' + vbo.ID+ ' ' + vbo.data);
-            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, vbo.IndxID);
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, vbo.ID);
         }
         else {
             // HACK console.log('bind buffer '+ vbo.type + ' ' + vbo.ID);
@@ -2215,7 +2203,7 @@ ShapeGL.prototype.render = function(context) {
         }
         for (var k in vbo.attributes) {
             var attribute = vbo.attributes[k];
-            // TODO console.log('enable ' + attribute.name+' '+attribute.location+' '+attribute.size+' '+attribute.stride+' '+attribute.offset);
+            // HACK console.log('enable ' + k + ':'+ attribute.name+' '+attribute.location+' '+attribute.size+' '+attribute.stride+' '+attribute.offset);
             gl.enableVertexAttribArray(attribute.location );
             gl.vertexAttribPointer(
                 attribute.location,
@@ -2235,17 +2223,15 @@ ShapeGL.prototype.render = function(context) {
             // HACK console.log('Activate tex ' + this.GLTextures[i]);
             gl.activeTexture(gl.TEXTURE0);
             gl.bindTexture(gl.TEXTURE_2D, this.GLTextures[i]);
-            this.sgnode.getRenderer().setUniform("uTexture", 0);
+            this.sgnode.getRenderer().setUniform('uTexture', 0);
         }
     }
     if (this.GLTextures.length > 0) {
         // gl.enable ( gl.TEXTURE_2D );
     }
 
-
     // TODO Update uniforms
     this.shaderProgram.updateUniforms();
-
 
     // Draw ...
     // HACK console.log(this.sgnode.type + ' '+ this.glType +' '+ this.numIndices+' '+ this.numItems);
@@ -2253,11 +2239,41 @@ ShapeGL.prototype.render = function(context) {
         gl.drawElements(this.glType, this.numIndices, gl.UNSIGNED_SHORT, 0);
     }
     else {
-        console.log('drawArrays');
+        // HACK console.log('drawArrays');
         gl.drawArrays(this.glType, 0, this.numItems);
     }
-}
+};
 
+ShapeGL.prototype.removeVBO = function (geom_content) {
+    var gl = this.context;
+
+    // Search VBO...
+    var i = 0;
+    var stop = false;
+    while (!stop) {
+        if (this.VBOs[i].content === geom_content) {
+            stop = true;
+        }
+        i++;
+        if (i >= this.VBOs.length) {
+            stop = true;
+            i = -1;
+        }
+    }
+    // Found it!!
+    if (i !== -1) {
+        var vbo = this.VBOs[i];
+        gl.bindBuffer(gl.ARRAY_BUFFER, vbo.ID);
+        gl.bufferData(gl.ARRAY_BUFFER, 1, gl.STATIC_DRAW);
+        gl.deleteBuffer(vbo.ID);
+        if (vbo.type === 'indexed') {
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, vbo.IndxID);
+            gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, 1, gl.STATIC_DRAW);
+            gl.deleteBuffer(vbo.IndxID);
+        }
+        delete this.VBOs[i];
+    }
+};
 
 // Private
 ShapeGL.prototype._createVBO = function(context,geom) {
@@ -2288,22 +2304,31 @@ ShapeGL.prototype._createVBO = function(context,geom) {
     var vbo = {};
     vbo.attributes = [];
     vbo.type = geom.type;
+    vbo.content = geom.content;
 
     // Create VBO
     vbo.ID = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, vbo.ID);
-    gl.bufferData(gl.ARRAY_BUFFER, geom.data, gl.STATIC_DRAW);
+    if (vbo.type === 'indexed') {
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, vbo.ID);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, geom.data, gl.STATIC_DRAW);
+        this.numIndices = geom.data.length;
+    }
+    else {
+        gl.bindBuffer(gl.ARRAY_BUFFER, vbo.ID);
+        gl.bufferData(gl.ARRAY_BUFFER, geom.data, gl.STATIC_DRAW);
+    }
+
 
     // Update attribute(s) associated to this VBO
     // HACK console.log('VBO attributes');
     // HACK console.log(geom.attributes);
     for (var j=0; j < geom.attributes.length; j++) {
-        if ( (geom.content & Shape.XYZ) == Shape.XYZ) {
-            var n = 32 // Highest value of Shape type(s)
+        if ( (geom.content & mwSG.Shape.XYZ) === mwSG.Shape.XYZ) {
+            var n = 32; // Highest value of Shape type(s) but Shape.INDICES
             var nItems = 0;
             while (n != 0) {
-                if ( (geom.content & n) == n) {
-                    nItems += Shape.itemLength[n];
+                if ( (geom.content & n) === n) {
+                    nItems += mwSG.Shape.itemLength[n];
                 }
                 n/=2;
             }
@@ -2318,16 +2343,10 @@ ShapeGL.prototype._createVBO = function(context,geom) {
         // TODO console.log('location [' + vbo.attributes[j].name + ']= '+ vbo.attributes[j].location + ' '+vbo.attributes[j].size);
     }
 
-    if (vbo.type === 'indexed') {
-        vbo.IndxID = gl.createBuffer();
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, vbo.IndxID);
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, geom.indices, gl.STATIC_DRAW);
-        this.numIndices = geom.indices.length;
-    }
     // HACK console.log('VBO ID: ' + JSON.stringify(vbo) );
     return vbo;
 
-}
+};
 
 // Private
 ShapeGL.prototype._createTexture = function(context, img) {
@@ -2339,8 +2358,7 @@ ShapeGL.prototype._createTexture = function(context, img) {
 
     img.onload = function() {
         newTexture(img,glTex);
-    }
-
+    };
 
 
     function newTexture(img,glTex) {
@@ -2348,7 +2366,7 @@ ShapeGL.prototype._createTexture = function(context, img) {
         // Check dimension
         if (!powerOfTwo(img.width) || !powerOfTwo(img.height) ) {
             // Alert
-            var msg = "ERR: The texture "+img.src+" has non power-of-two dimension"
+            var msg = 'ERR: The texture '+img.src+' has non power-of-two dimension';
             alert(msg);
         }
         else {
@@ -2371,7 +2389,7 @@ ShapeGL.prototype._createTexture = function(context, img) {
         }
     }
 
-}
+};
 
 
 ShapeGL.prototype._updateAttributes = function(context) {
@@ -2391,233 +2409,6 @@ ShapeGL.prototype._updateAttributes = function(context) {
             // HACK console.log('location [' + vbo.attributes[j].name + ']= '+ vbo.attributes[j].location + ' '+vbo.attributes[j].size);
         }
     }
-}
-
-/*
- *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
- *  Copyright (C) 2015  Jean-Christophe Taveau.
- *
- *  This file is part of mowgli
- *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
- *
- *
- * Authors:
- * Jean-Christophe Taveau
- */
-
-
-'use strict';
-
-
-/**
- * Node in the Scene Graph
- *
- * @class Leaf
- * @memberof module:graphics
- * @constructor
- **/
-function Leaf(node) {
-    this._isDirty = true;
-    this.parent = null;
-    this.renderer = null;
-
-    //
-    this.nodeGL = null;
-
-    // Matrix for rotation(s) and translation(s)
-    this.matrix=mat4.create();
-    mat4.identity(this.matrix);
-}
-
-Leaf.prototype.isDirty = function() {
-    return _isDirty;
-}
-
-Leaf.prototype.getNodeGL = function() {
-    return this.nodeGL;
-}
-
-Leaf.prototype.getRenderer = function() {
-    if (this.renderer != null) {
-        return this.renderer;
-    }
-    else if (this.parent instanceof Renderer) {
-        this.renderer = this.parent;
-        return this.renderer;
-    }
-    return this.parent.getRenderer();
-}
-
-/**
- * Init the OpenGL config of this object in the scene graph
- * and traverse its children.
- * Function called by the renderer
- *
- * @param{number} OpenGL context
- **/
-Leaf.prototype.init = function(context) {
-    console.log('INIT leaf ' + this.ID);
-    this.getNodeGL().init(context);
-}
-
-/**
- * Render this object and traverse its children
- * Function called by the renderer
- *
- * @param{number} OpenGL context
- **/
-Leaf.prototype.render = function(context) {
-    // HACK console.log('RENDER_Leaf ' + this.ID);
-    // HACK console.log(this.parent.getNodeGL().workmatrix);
-    // Update matrix
-    mat4.multiply(this.getNodeGL().workmatrix,this.parent.getNodeGL().workmatrix,this.matrix);
-    // OpenGL rendering
-    this.getNodeGL().render(context);
-}
-
-Leaf.prototype.translate = function(tx, ty, tz) {
-    // HACK console.log(this.matrix);
-    mat4.translate(this.matrix,this.matrix,[tx, ty, tz]);
-    // HACK console.log(this.matrix);
-}
-
-Leaf.prototype.graph = function(level) {
-    var str = (this.ID || 'unknown');
-    return str;
-}
-
-/*
- *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
- *  Copyright (C) 2015  Jean-Christophe Taveau.
- *
- *  This file is part of mowgli
- *
- * This program is free software: you can redistribute it and/or modify it 
- * under the terms of the GNU General Public License as published by 
- * the Free Software Foundation, either version 3 of the License, or 
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
- * GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
- *
- *
- * Authors:
- * Jean-Christophe Taveau
- */
-
-"use strict"
-
- 
-/**
- * Light
- *
- * @class Light
- * @memberof module:graphics
- * @constructor
- * @augments Leaf
- **/
-function Light() {
-    Leaf.call(this);
-    this.ID = 'light';
-
-      // NodeGL
-    this.nodeGL = new NodeGL(this);
-}
-
-Light.prototype = new Leaf;
-
-
-
-/*
- *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
- *  Copyright (C) 2015  Jean-Christophe Taveau.
- *
- *  This file is part of mowgli
- *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
- *
- *
- * Authors:
- * Jean-Christophe Taveau
- */
-
-'use strict';
-
-
-/**
- * Scene: Root of the scene graph
- *
- * @class Scene
- * @memberof module:graphics
- * @constructor
- * @augments Composite
- **/
-function Scene() {
-    Composite.call(this);
-
-    this.ID = 'scene';
-    this.nodeGL = new NodeGL();
-
-}
-
-Scene.prototype = Object.create(Composite.prototype);
-
-/**
- * Set default scene with a camera and a light
- *
- **/
-Scene.prototype.setDefault = function() {
-    this.ID = 'scene_default';
-    // Add a camera
-    this.add(new Camera() );
-    // Add a light
-    this.add(new Light()  );
-};
-
-/**
- * Get Camera in the scene
- *
- * @return {Camera} Returns the current camera
- **/
-Scene.prototype.getCamera = function() {
-    // TODO: must be improved if CameraGroup exists for stereo
-    return this.children['camera_0'];
-};
-
-Scene.prototype.toString = function() {
-    var str = this.ID+'\n';
-    for (var i in this.children) {
-        str += '+-'+this.children[i].ID+'\n';
-    }
-    return str;
 };
 
 /*
@@ -2644,178 +2435,82 @@ Scene.prototype.toString = function() {
  * Jean-Christophe Taveau
  */
 
-
 'use strict';
 
+(function(exports) {
 
-/**
- * Shape: Graphical object defined by geometries (Vertex Data) and a rendering style (Shader Program).
- *
- * The classical way to create a shape in Mowgli is:
- *
- * ```javascript
- * var shape = new Shape();
- * shape.type = 'POINTS';
- * var vrtxData = {
- *     'content': Shape.XYZ | Shape.RGB,
- *     'data':vertices,
- *     'attributes': [new Attribute("aVertexPosition",0,6), new Attribute("aVertexColor",3,6)]
- * };
- * shape.addVertexData(vrtxData);
- * shape.setProgram(shaderProgram);
- *
- * ```
- * @class Shape
- * @memberof module:graphics
- * @constructor
- * @augments Leaf
- **/
-function Shape() {
-    Leaf.call(this);
+    /**
+     * Camera
+     *
+     * @class Camera
+     * @memberof module:mwSG
+     * @constructor
+     * @augments Leaf
+     **/
+    function Camera() {
+        mwSG.Leaf.call(this);
 
-    this.ID = 'shape';
-    this.colorMode = 'monochrome';
-    this.shaderProgram = null;
-    this.geometries = [];
-    this.textures   = [];
-    this.uniforms   = [];
+        this.ID = 'camera';
 
-    this.type = 'POINTS';
-    this.glType = 0; // gl.POINTS
-    this.numItems = 0;
-    this.numIndices = 0;
-    this.parent = null;
-    this.cg = {'x':0,'y':0,'z':0};
+        this.projMatrix = mat4.create();
+        this.viewMatrix = mat4.create();
+        mat4.identity(this.viewMatrix);
 
-    this._isIndexed=false;
+        /**
+         * Y-Field of View
+         **/
+        this.fovy = 45.0 * Math.PI/180.0;
 
-    this.nodeGL = new ShapeGL(this);
+        /**
+         * Zoom
+         **/
+        this.zoom = 1.0;
 
+        /**
+         * Z-near Plane
+         **/
+        this.zNear = 0.1;
 
-}
+        /**
+         * Z-far Plane
+         **/
+        this.zFar  = 1000.0;
 
-Shape.prototype = Object.create(Leaf.prototype);
+        // NodeGL
+        this.nodeGL = new mwGL.Camera(this);
 
-
-Shape.XYZ    = 1;
-Shape.XYZW   = 2;
-Shape.NXYZ   = 4;
-Shape.RGB    = 8;
-Shape.RGBA   = 16;
-Shape.ST     = 32;
-
-// Private
-Shape.itemLength = {
-    1  : 3,
-    2  : 4,
-    4  : 3,
-    8  : 3,
-    16 : 4,
-    32 : 2
-}
-
-/**
- * Set Program
- *
- * @param {Program} a_program - A shader program defining the rendering style
- *
- **/
-Shape.prototype.setProgram = function(a_program) {
-  console.log(a_program);
-  this.nodeGL.shaderProgram = a_program;
-}
-
-/**
- * Flag indicating if this shape contains indexed geometries
- *
- * @return {boolean}
- *
- **/
-Shape.prototype.isIndexedGeometry = function() {
-  return this._isIndexed;
-}
-
-/**
- * Add Vertex Data.
- *
- * These data may contain:
- * - Coordinates
- * - Normals
- * - Colors
- * - Indices
- * - And/or texture coordinates.
- *
- * @param {VertexData} a_geom - Contains all the data describing the vertices of this shape
- *
- *
- *
- * @property {VertexData} a_geom
- * @property {number}  a_geom.type
- * @property {number}  a_geom.type.Shape.XYZ - X, Y, Z- Vertex Coordinates
- * @property {number}  a_geom.type.Shape.XYZW - X, Y, Z, W- Vertex Coordinates
- * @property {number}  a_geom.type.Shape.NXYZ - X, Y, Z- Normal Coordinates
- * @property {number}  a_geom.type.Shape.RGB - Red, Green, and Blue Color
- * @property {number}  a_geom.type.Shape.RGBA - Red, Green, Blue, and Alpha Color
- * @property {number}  a_geom.type.Shape.ST - S,T Texture Coordinates
- * @property {Array(number)}  a_geom.data
- * @property {Array(number)}  a_geom.indices
- * @property {Array(Attribute)}  a_geom.attributes
- *
- **/
-Shape.prototype.addVertexData = function(a_geom) {
-    if (a_geom.indices != undefined) {
-        this._isIndexed = true;
-        this.geometries.push(
-            new Geometry({
-                'type'       : 'indexed',
-                'content'    : a_geom.content,
-                'data'       : new Float32Array(a_geom.data),
-                'indices'    : new Uint16Array(a_geom.indices),
-                'attributes' : a_geom.attributes
-            })
-        );
-        this.numIndices = a_geom.indices.length;
-    }
-    else {
-        this.geometries.push(
-            new Geometry( {
-                'type'     : 'vertex',
-                'content'    : a_geom.content,
-                'data'     : new Float32Array(a_geom.data),
-                'attributes' : a_geom.attributes
-            })
-        );
     }
 
-    console.log(this.geometries);
-    // Set the number of items in this shape
-    // this.numItems = a_geom.data.length / itemSize;
-}
+    Camera.prototype = Object.create(mwSG.Leaf.prototype);
+
+    Camera.prototype.constructor = Camera;
+
+    /**
+     * Set the Y-Field of View.
+     *
+     * @param {number} angle_in_degrees - Angle of the Field of View expressed in degrees
+     *
+     **/
+    Camera.prototype.setFovy = function (angle_in_degrees) {
+        this.fovy = angle_in_degrees * Math.PI/180.0;
+    };
+
+    /**
+     * Set the Y-Field of View.
+     *
+     * @param {number} angle_in_degrees - Angle of the Field of View expressed in degrees
+     *
+     **/
+    Camera.prototype.setZoom = function (zoomFactor) {
+        this.zoom = zoomFactor;
+    };
 
 
-Shape.prototype.addTexture = function(image_name) {
-    var image = new Image();
-    image.src = image_name;
-    this.textures.push(image);
-}
 
-Shape.prototype.addUniformData = function(a_uniform) {
-    this.uniforms.push(a_uniform);
-}
+    exports.Camera = Camera;
 
-/**
- * Set centroid
- *
- * @param {Point3D} cg - Centroid
- *
- **/
-Shape.prototype.setCentroid = function(cg) {
-    this.cg = cg;
-}
 
-Shape.prototype.updateUniforms = function (context) {
-
-}
+})(this.mwSG = this.mwSG || {} );
 
 /*
  *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
@@ -2843,30 +2538,605 @@ Shape.prototype.updateUniforms = function (context) {
 
 'use strict';
 
-/**
- * All the classes related to the rendering, scene graph and OpenGL.
- * @module graphics
+(function(exports) {
+
+
+    /**
+     * CameraGroup: A collection of shapes
+     *
+     * @class CameraGroup
+     * @constructor
+     * @memberof module:mwSG
+     * @augments Composite
+     **/
+    function CameraGroup() {
+        mwSG.Composite.call(this);
+
+        this.ID = 'group[camera]';
+        this.nodeGL = new NodeGL(this);
+
+    }
+
+    CameraGroup.prototype = Object.create(mwSG.Composite.prototype);
+
+    CameraGroup.prototype.add = function(an_object) {
+        if (an_object instanceof mwSG.Camera) {
+            Composite.add.call(this,an_object);
+        }
+        else {
+            // ERROR: Do nothing
+        }
+    };
+
+    exports.CameraGroup = CameraGroup;
+})(this.mwSG = this.mwSG || {} );
+
+/*
+ *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
+ *  Copyright (C) 2015  Jean-Christophe Taveau.
+ *
+ *  This file is part of mowgli
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * Authors:
+ * Jean-Christophe Taveau
  */
 
 
-/**
- * ShapeGroup: A collection of shapes
+'use strict';
+
+(function(exports) {
+
+
+    /**
+     * Geometry contains geometrical data like coordinates, normals, texCoords, colors,etc.
+     *
+     * @class Geometry
+     * @memberof module:mwSG
+     * @constructor
+     **/
+    function Geometry (options) {
+
+        /**
+        * The type
+        *
+        * @type {string}
+        *
+        * @description
+        * - 'none'
+        * - 'POINTS'
+        * - 'LINES'
+        * - 'TRIANGLES'
+        **/
+        this.type    = options.type || 'none';
+
+        /**
+        * The content - A description of all the vertex data in this geometry. For example,
+        *
+        *```javascript
+        * "content" : Shape.XYZ | Shape.RGB | Shape.ST
+        *```
+        * The various available values are:
+        *
+        * - Shape.XYZ
+        * - Shape.XYZW
+        * - Shape.NXYZ
+        * - Shape.RGB
+        * - Shape.RGBA
+        * - Shape.ST
+        **/
+        this.content = options.content;
+
+        /**
+        * The data - A [Float32Array]{@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Float32Array} array containing the vertex data
+        *
+        * @example
+        * If the content is Shape.XYZ | Shape.RGB, it means that in the same array, one vertex is defined by three X,Y, and Z-coordinates plus
+        * three Red, Green, and Blue color values like this...
+        * var data [X Y Z R G B X Y Z R G B ... Z R G B ]
+        **/
+        this.data    = options.data;
+
+        /**
+        * The attributes - An array of {@link module:graphics.Attribute} used by the shader program
+        *
+        **/
+        this.attributes = options.attributes; // || [];
+
+        /**
+        * The indices - A [UInt32Array]{@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint32Array} array of indices pointing to the vertex array
+        *
+        **/
+        this.indices = options.indices;
+
+
+        if (this.type === 'indexed') {
+            this._isIndexed = true;
+        }
+        else {
+            this._isIndexed = false;
+        }
+
+        // HACK console.log(this.attributes);
+    }
+
+    Geometry.prototype.getBuffer = function(name) {
+        var stop = false;
+        var i=0;
+        while (!stop && i < this.VBO.length) {
+            if (this.VBO[i].type === name) {
+                return this.VBO[i];
+            }
+            i++;
+        }
+        return null;
+    };
+
+    Geometry.prototype.isIndexed = function() {
+        return this._isIndexed;
+    };
+
+
+    exports.Geometry = Geometry;
+
+
+})(this.mwSG = this.mwSG || {} );
+
+/*
+ *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
+ *  Copyright (C) 2015  Jean-Christophe Taveau.
  *
- * @class ShapeGroup
- * @constructor
- * @memberof module:graphics
- * @augments Composite
- **/
-var ShapeGroup = function () {
-    Composite.call(this);
+ *  This file is part of mowgli
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * Authors:
+ * Jean-Christophe Taveau
+ */
 
-    this.ID = 'group[shape]';
+'use strict';
 
-    this.nodeGL = new NodeGL(this);
+(function(exports) {
 
-}
+    /**
+     * Light
+     *
+     * @class Light
+     * @memberof module:graphics
+     * @constructor
+     * @augments Leaf
+     **/
+    function Light() {
+        mwSG.Leaf.call(this);
+        this.ID = 'light';
 
-ShapeGroup.prototype = Object.create(Composite.prototype);
+          // NodeGL
+        this.nodeGL = new NodeGL(this);
+    }
+
+    Light.prototype = Object.create(mwSG.Leaf.prototype);
+
+    Light.prototype.constructor = Light;
+
+
+    exports.Light = Light;
+
+
+})(this.mwSG = this.mwSG || {} );
+
+/*
+ *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
+ *  Copyright (C) 2015  Jean-Christophe Taveau.
+ *
+ *  This file is part of mowgli
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * Authors:
+ * Jean-Christophe Taveau
+ */
+
+'use strict';
+
+(function(exports) {
+
+    /**
+     * Scene: Root of the scene graph
+     *
+     * @class Scene
+     * @memberof module:mwSG
+     * @constructor
+     * @augments Composite
+     **/
+    function Scene() {
+        mwSG.Composite.call(this);
+
+        this.ID = 'scene';
+        this.nodeGL = new NodeGL(this);
+    }
+
+    Scene.prototype = Object.create(mwSG.Composite.prototype);
+
+    /**
+     * Set default scene with a camera and a light
+     *
+     **/
+    Scene.prototype.setDefault = function() {
+        this.ID = 'scene_default';
+        // Add a camera
+        var cam = new mwSG.Camera();
+        this.add( cam);
+        // Add a light
+        this.add(new mwSG.Light()  );
+    };
+
+    /**
+     * Get Camera in the scene
+     *
+     * @return {Camera} Returns the current camera
+     **/
+    Scene.prototype.getCamera = function() {
+        // TODO: must be improved if CameraGroup exists for stereo
+        return this.children['camera_0'];
+    };
+
+    Scene.prototype.toString = function() {
+        var str = this.ID+'\n';
+        for (var i in this.children) {
+            str += '+-'+this.children[i]+'\n';
+        }
+        return str;
+    };
+
+    exports.Scene = Scene;
+
+
+})(this.mwSG = this.mwSG || {} );
+
+/*
+ *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
+ *  Copyright (C) 2015  Jean-Christophe Taveau.
+ *
+ *  This file is part of mowgli
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * Authors:
+ * Jean-Christophe Taveau
+ */
+
+
+'use strict';
+
+(function (exports) {
+
+    /**
+     * Shape: Graphical object defined by geometries (Vertex Data) and a rendering style (Shader Program).
+     *
+     * The classical way to create a shape in Mowgli is:
+     *
+     * ```javascript
+     * var shape = new Shape();
+     * shape.type = 'POINTS';
+     * var vrtxData = {
+     *     'content': Shape.XYZ | Shape.RGB,
+     *     'data':vertices,
+     *     'attributes': [new Attribute("aVertexPosition",0,6), new Attribute("aVertexColor",3,6)]
+     * };
+     * shape.addVertexData(vrtxData);
+     * shape.setProgram(shaderProgram);
+     *
+     * ```
+     * @class Shape
+     * @memberof module:mw<sg
+     * @constructor
+     * @augments mwSG.Leaf
+     **/
+    function Shape() {
+        mwSG.Leaf.call(this);
+
+        this.ID = 'shape';
+        this.colorMode = 'monochrome';
+        this.shaderProgram = null;
+        this.geometries = [];
+        this.textures   = [];
+        this.uniforms   = [];
+
+        this.type = 'POINTS';
+
+        this.centroid = {
+            x:0,
+            y:0,
+            z:0
+        };
+
+        this._isIndexed=false;
+
+        this.nodeGL = new ShapeGL(this);
+
+
+    }
+
+    Shape.prototype = Object.create(mwSG.Leaf.prototype);
+
+
+    Shape.XYZ    = 1;
+    Shape.XYZW   = 2;
+    Shape.NXYZ   = 4;
+    Shape.RGB    = 8;
+    Shape.RGBA   = 16;
+    Shape.ST     = 32;
+    Shape.INDICES= 64;
+
+    // Private
+    Shape.itemLength = {
+        1  : 3,
+        2  : 4,
+        4  : 3,
+        8  : 3,
+        16 : 4,
+        32 : 2,
+        64 : 1
+    };
+
+    /**
+     * Set Program
+     *
+     * @param {Program} a_program - A shader program defining the rendering style
+     *
+     **/
+    Shape.prototype.setProgram = function(a_program) {
+        this.nodeGL.shaderProgram = a_program;
+    };
+
+    /**
+     * Flag indicating if this shape contains indexed geometries
+     *
+     * @return {boolean}
+     *
+     **/
+    Shape.prototype.isIndexedGeometry = function() {
+        return this._isIndexed;
+    };
+
+    /**
+     * Add Vertex Data.
+     *
+     * These data may contain:
+     * - Coordinates
+     * - Normals
+     * - Colors
+     * - Indices
+     * - And/or texture coordinates.
+     *
+     * @param {VertexData} a_geom - Contains all the data describing the vertices of this shape
+     *
+     *
+     *
+     * @property {VertexData} a_geom
+     * @property {number}  a_geom.type
+     * @property {number}  a_geom.type.Shape.XYZ - X, Y, Z- Vertex Coordinates
+     * @property {number}  a_geom.type.Shape.XYZW - X, Y, Z, W- Vertex Coordinates
+     * @property {number}  a_geom.type.Shape.NXYZ - X, Y, Z- Normal Coordinates
+     * @property {number}  a_geom.type.Shape.RGB - Red, Green, and Blue Color
+     * @property {number}  a_geom.type.Shape.RGBA - Red, Green, Blue, and Alpha Color
+     * @property {number}  a_geom.type.Shape.ST - S,T Texture Coordinates
+     * @property {Array(number)}  a_geom.data
+     * @property {Array(number)}  a_geom.indices
+     * @property {Array(Attribute)}  a_geom.attributes
+     *
+     **/
+    Shape.prototype.addVertexData = function(a_geom) {
+        if ( (a_geom.content & Shape.INDICES) === Shape.INDICES) {
+            this._isIndexed = true;
+            this.geometries.push(
+                new mwSG.Geometry({
+                    'type'       : 'indexed',
+                    'content'    : a_geom.content,
+                    'data'       : new Uint16Array(a_geom.data),
+                    'attributes' : []
+                })
+            );
+        }
+        else {
+            this.geometries.push(
+                new mwSG.Geometry( {
+                    'type'     : 'vertex',
+                    'content'    : a_geom.content,
+                    'data'     : new Float32Array(a_geom.data),
+                    'attributes' : a_geom.attributes
+                })
+            );
+        }
+
+        // HACK console.log(this.geometries);
+        // Set the number of items in this shape
+        // this.numItems = a_geom.data.length / itemSize;
+    };
+
+
+    Shape.prototype.addTexture = function(image_name) {
+        var image = new Image();
+        image.src = image_name;
+        this.textures.push(image);
+    };
+
+    Shape.prototype.addUniformData = function(a_uniform) {
+        this.uniforms.push(a_uniform);
+    };
+
+    /**
+     * Remove Vertex Data (aka geometry).
+     *
+     * These data may contain:
+     * - Coordinates
+     * - Normals
+     * - Colors
+     * - Indices
+     * - And/or texture coordinates.
+     *
+     * @param {number} geom_content - Delete the geometry with the given content
+     *
+
+     *
+     **/
+    Shape.prototype.removeVertexData = function(geom_content) {
+        var i = 0;
+        var stop = false;
+        while (!stop) {
+            if (this.geometries[i].content === geom_content) {
+                stop = true;
+            }
+            i++;
+            if (i >= this.geometries[i].length) {
+                stop = true;
+                i = -1;
+            }
+        }
+        if (i !== -1) {
+            delete this.geometries[i];
+        }
+
+        // Update the OpenGL counterpart
+        this.nodeGL.removeVBO(geom_content);
+
+        // Update status
+        if (((this.type & Shape.XYZ) === Shape.XYZ)
+        || ((this.type & Shape.XYZW) === Shape.XYZW)
+        || ((this.type & Shape.NXYZ) === Shape.NXYZ) ) {
+            this._isDirty &= ~Node.GEOMETRY;
+        }
+        else {
+            // Shape.RGB || Shape.RGBA  || Shape.ST
+            this._isDirty &= ~Node.MATERIAL;
+        }
+
+    };
+
+    /**
+     * Set centroid
+     *
+     * @param {Point3D} cg - Centroid
+     *
+     **/
+    Shape.prototype.setCentroid = function(cg) {
+        this.centroid = cg;
+    };
+
+    Shape.prototype.update = function (context) {
+        // TODO
+    };
+
+    Shape.prototype.updateUniforms = function (context) {
+        // TODO
+    };
+
+
+    exports.Shape = Shape;
+
+
+})(this.mwSG = this.mwSG || {} );
+
+/*
+ *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
+ *  Copyright (C) 2015  Jean-Christophe Taveau.
+ *
+ *  This file is part of mowgli
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * Authors:
+ * Jean-Christophe Taveau
+ */
+
+'use strict';
+
+(function(exports) {
+
+    /**
+     * ShapeGroup: A collection of shapes
+     *
+     * @class ShapeGroup
+     * @constructor
+     * @memberof module:mwSG
+     * @augments Composite
+     **/
+    function ShapeGroup () {
+        mwSG.Composite.call(this);
+
+        this.ID = 'group[shape]';
+
+        this.nodeGL = new NodeGL(this);
+
+    }
+
+    ShapeGroup.prototype = Object.create(mwSG.Composite.prototype);
+    
+    exports.ShapeGroup = ShapeGroup;
+
+
+})(this.mwSG = this.mwSG || {} );
 
 /*
  *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
@@ -2901,7 +3171,7 @@ var ShaderFactory = (function () {
     var shaderProgram = new Program();
 
     var srcVrtxShader = {
-        'minimal' : [
+        'template' : [
             'attribute vec3 aVertexPosition;',
             'attribute vec3 aVertexColor;',
             'uniform mat4 uMMatrix;',
@@ -2909,29 +3179,35 @@ var ShaderFactory = (function () {
             'uniform mat4 uPMatrix;',
             'varying vec3 vColor;',
             'void main(void) {',
-/*
-            'gl_PointSize = 8.0;',
-*/
+            // '#{points}',
             'gl_Position = uPMatrix * uVMatrix * uMMatrix * vec4(aVertexPosition, 1.0);',
             'vColor = aVertexColor;',
             '}'
+        ],
+        'points' :[
+            'gl_PointSize = 8.0;'
         ]
     };
 
     var srcFragShader = {
-        'minimal' : [
+        'template' : [
             'precision mediump float;',
             'varying vec3 vColor;',
+            // '#{func}',
             'void main(void) {',
-/*
-            'vec2 v = gl_PointCoord.xy - vec2(0.5,0.5);',
-            'float d = dot(v,v);',
-            'if (d > 0.25) {',
-            'discard;',
-            '}',
-*/
+            // '#{func_call}',
             'gl_FragColor = vec4( vColor,1.0);',
             '}'
+        ],
+        'disks_func' : [
+            'void drawDisk(xy) {',
+            'vec2 v = xy - vec2(0.5,0.5);',
+            'float d = dot(v,v);',
+            'if (d > 0.25) discard;',
+            '}'
+        ],
+        'disks_call' : [
+            'drawDisk(gl_PointCoord.xy);'
         ]
     };
 
@@ -2950,15 +3226,37 @@ var ShaderFactory = (function () {
             switch (options.displayType) {
             case 'points':
                 // Already compiled?
-                namePrgm = 'minimal';
+                namePrgm = 'disks';
                 if (programs[namePrgm] === undefined) {
                     isUndefined = true;
-                    srcVrtx = srcVrtxShader[namePrgm].join('');
-                    srcFrag = srcFragShader[namePrgm].join('');
+                    srcVrtx = srcVrtxShader['template'].join('');
+                    srcFrag = srcFragShader['template'].join('');
                 }
                 break;
             case 'wireframe':
-                // TODO
+                // Already compiled?
+                namePrgm = 'wireframe';
+                if (programs[namePrgm] === undefined) {
+                    isUndefined = true;
+                    var replacers = [
+                        {
+                            src : '#{func}',
+                            dest: 'disks_func'
+                        },
+                        {
+                            src : '#{func_call}',
+                            dest: 'disks_call'
+                        }
+                    ];
+                    srcVrtx = srcVrtxShader['template'].join('');
+                    srcFrag = srcFragShader['template'].join('');
+                    for (var i=0; i < replacers.length; i++) {
+                        var re = new RegExp(replacers[i].src,'g');
+                        srcVrtx = srcVrtx.replace(re,srcVrtxShader[replacers[i].dest].join(''));
+                        srcFrag = srcFrag.replace(re,srcVrtxShader[replacers[i].dest].join(''));
+                    }
+
+                }
                 break;
             default:
                 // Do nothing ??
@@ -2989,14 +3287,14 @@ var ShaderFactory = (function () {
  *
  *  This file is part of mowgli
  *
- * This program is free software: you can redistribute it and/or modify it 
- * under the terms of the GNU General Public License as published by 
- * the Free Software Foundation, either version 3 of the License, or 
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
@@ -3008,9 +3306,9 @@ var ShaderFactory = (function () {
  */
 
 
-"use strict";
+'use strict';
 
- 
+
 /**
  * Attribute class used by the shader program
  *
@@ -3020,35 +3318,32 @@ var ShaderFactory = (function () {
  **/
 function Attribute (name,offset,stride) {
 
-  /** 
-   * The name
-   * @type {string} 
-   *
-   **/
-  this.name = name;
+    /** 
+    * The name
+    * @type {string}
+    *
+    **/
+    this.name = name;
 
-  /** 
-   * The offset
-   * @type {number}
-   *
-   **/
-  this.offset = offset;
+    /**
+    * The offset
+    * @type {number}
+    *
+    **/
+    this.offset = offset;
 
-  /** 
-   * The stride
-   * @type {number}
-   *
-   **/
-  this.stride = stride;
+    /**
+    * The stride
+    * @type {number}
+    *
+    **/
+    this.stride = stride;
 
-  this.size = -1;
-  
-  this.location = -1;
+    this.size = -1;
+
+    this.location = -1;
 
 }
-
-
-
 
 /*
  *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
@@ -3317,7 +3612,7 @@ Program.prototype._createAttributesAndUniforms=function(source) {
         if (a_row.indexOf('attribute') != -1 || a_row.indexOf('uniform') != -1) {
             var words = a_row.trim().split(re); //  match(/[\S,;]+/g);
             var itemSize = 0;
-            console.log(words);
+            // HACK console.log(words);
             for (var j=0; j < words.length; j++) {
                 switch (words[j]) {
                 case 'attribute':
@@ -3360,11 +3655,11 @@ Program.prototype._createAttributesAndUniforms=function(source) {
                     break;
                 default:
                     if (qualifier == 'a' && words[j] != '') {
-                        console.log('attribute '+ words[j] + ' type '+ type);
+                        // HACK console.log('attribute '+ words[j] + ' type '+ type);
                         this.attributes[words[j]] = {'name':words[j],'type':type,'size':itemSize};
                     }
                     else if (qualifier == 'u' && words[j] != '') {
-                        console.log('uniform '+ words[j] + ' type '+ type);
+                        // HACK console.log('uniform '+ words[j] + ' type '+ type);
                         this.uniforms[words[j]] = {'name':words[j],'type':type,'size':itemSize};
                     }
                     break;
@@ -3455,6 +3750,9 @@ var ShapeFactory = (function () {
             switch (options.displayType) {
             case 'points':
                 // Already computed for the given structure?
+                // Pearson hashing see Wikipedia
+                // pearsonHash(mol.getSequence().join('') );
+                // <molID><chainID><Atom symbol#1><Atom symbol#1><Atom symbol#1>...<Atom symbol#1> selected
                 // var style = types['atoms'] ????
                 // if (style === undefined) then
                 // Basic shape - only for debug
@@ -3520,14 +3818,14 @@ var ShapeFactory = (function () {
  *
  *  This file is part of mowgli
  *
- * This program is free software: you can redistribute it and/or modify it 
- * under the terms of the GNU General Public License as published by 
- * the Free Software Foundation, either version 3 of the License, or 
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
@@ -3538,18 +3836,18 @@ var ShapeFactory = (function () {
  * Jean-Christophe Taveau
  */
 
-"use strict"
+'use strict';
 
 /*
  * Constructor
  */
- 
- var Cube = function() {
-    Shape.call(this);
+
+function Cube() {
+    mwSG.Shape.call(this);
     this.ID = 'cube';
- }
- 
-Cube.prototype = Object.create(Shape.prototype );
+}
+
+Cube.prototype = Object.create(mwSG.Shape.prototype );
 
 /*
  * Set style of this cube:
@@ -3560,14 +3858,14 @@ Cube.prototype.setStyle = function(type) {
     case 'wireframe' :
         this.ID = 'cubeWire';
         // 1- Define geometry
-        var _indices = [0,1,2,3,0,4,5,6,7,4,5,1,2,6,7,3]; 
+        var _indices = [0,1,2,3,0,4,5,6,7,4,5,1,2,6,7,3];
         this.type = 'LINE_STRIP';
-        this.addVertexData( 
+        this.addVertexData(
             {
                 'content'   : Shape.XYZ,
-                'data'      : Cube.verticesWire, 
-                'indices'   :_indices, 
-                'attributes': [new Attribute("aVertexPosition",0,0)] 
+                'data'      : Cube.verticesWire,
+                'indices'   :_indices,
+                'attributes': [new Attribute("aVertexPosition",0,0)]
             }
         );
 /**
@@ -3591,42 +3889,42 @@ Cube.prototype.setStyle = function(type) {
             {
                 'content': Shape.XYZ,
                 'data': Cube.vertices,
-                'indices': Cube.indices, 
-                'attributes': [new Attribute("aVertexPosition",0,0)] 
+                'indices': Cube.indices,
+                'attributes': [new Attribute("aVertexPosition",0,0)]
             }
         );
         this.addVertexData(
             {
                 'content': Shape.RGB,
                 'data': Cube.colors,
-                'attributes': [new Attribute("aVertexColor",0,0)] 
+                'attributes': [new Attribute("aVertexColor",0,0)]
             }
         );
 
-        this.addVertexData( 
+        this.addVertexData(
             {
                 'content'   : Shape.XYZ | Shape.RGBA,
-                'data'      : Cube.vertices, 
-                'indices'   : Cube.indices, 
-                'attributes': [new Attribute("aVertexPosition",0,7), new Attribute("aVertexColor",3,7)] 
+                'data'      : Cube.vertices,
+                'indices'   : Cube.indices,
+                'attributes': [new Attribute("aVertexPosition",0,7), new Attribute("aVertexColor",3,7)]
             }
         );
         this.numItems = Cube.vertices.length / 7;
         break;
     case 'shaded':
-        this.ID = 'cubeShaded'; 
+        this.ID = 'cubeShaded';
         // TODO
         break;
     case 'textured' :
-        this.ID = 'cubeTextured'; 
+        this.ID = 'cubeTextured';
         // TODO
         break;
     default:
-    
+
     }
-}
- 
-  
+};
+
+
 Cube.verticesWire = [
      1, 1,-1,
      1,-1,-1,
@@ -3684,9 +3982,6 @@ Cube.indices = [
     16, 17, 18,   16, 18, 19, // Right face
     20, 21, 22,   20, 22, 23  // Left face
 ];
-
-
- 
 
 function EMDBInfoParser() {
 
@@ -4674,7 +4969,7 @@ StructureReader.prototype.createStructure = function(text,format) {
  * Jean-Christophe Taveau
  */
 
-"use strict";
+'use strict';
 
 
 // class Cube
@@ -4690,57 +4985,57 @@ function IsoCube(x,y,z,size) {
 
 IsoCube.prototype.getVertex = function (index) {
     switch (index) {
-        case 0:
-            return {'x':this.x,           'y':this.y,           'z':this.z, 'voxel':this.voxels[0] }; // v0
-        case 1:
-            return {'x':this.x+this.size, 'y':this.y,           'z':this.z, 'voxel':this.voxels[1] }; // v1
-        case 2:
-            return {'x':this.x+this.size, 'y':this.y+this.size, 'z':this.z, 'voxel':this.voxels[2] }; // v2
-        case 3:
-            return {'x':this.x,           'y':this.y+this.size, 'z':this.z, 'voxel':this.voxels[3] }; // v3
-        case 4:
-            return {'x':this.x,           'y':this.y,           'z':this.z+this.size, 'voxel':this.voxels[4] }; // v4
-        case 5:
-            return {'x':this.x+this.size, 'y':this.y,           'z':this.z+this.size, 'voxel':this.voxels[5] }; // v5
-        case 6:
-            return {'x':this.x+this.size, 'y':this.y+this.size, 'z':this.z+this.size, 'voxel':this.voxels[6] }; // v6
-        case 7:
-            return {'x':this.x,           'y':this.y+this.size, 'z':this.z+this.size, 'voxel':this.voxels[7] }; // v7
+    case 0:
+        return {'x':this.x,           'y':this.y,           'z':this.z, 'voxel':this.voxels[0] }; // v0
+    case 1:
+        return {'x':this.x+this.size, 'y':this.y,           'z':this.z, 'voxel':this.voxels[1] }; // v1
+    case 2:
+        return {'x':this.x+this.size, 'y':this.y+this.size, 'z':this.z, 'voxel':this.voxels[2] }; // v2
+    case 3:
+        return {'x':this.x,           'y':this.y+this.size, 'z':this.z, 'voxel':this.voxels[3] }; // v3
+    case 4:
+        return {'x':this.x,           'y':this.y,           'z':this.z+this.size, 'voxel':this.voxels[4] }; // v4
+    case 5:
+        return {'x':this.x+this.size, 'y':this.y,           'z':this.z+this.size, 'voxel':this.voxels[5] }; // v5
+    case 6:
+        return {'x':this.x+this.size, 'y':this.y+this.size, 'z':this.z+this.size, 'voxel':this.voxels[6] }; // v6
+    case 7:
+        return {'x':this.x,           'y':this.y+this.size, 'z':this.z+this.size, 'voxel':this.voxels[7] }; // v7
     }
-}
+};
 
 IsoCube.prototype.setVoxels = function (stack) {
-    this.voxels[0]=stack.getVoxel(x          ,y          ,z          ); // v0
-    this.voxels[1]=stack.getVoxel(x+this.size,y          ,z          ); // v1
-    this.voxels[2]=stack.getVoxel(x+this.size,y+this.size,z          ); // v2
-    this.voxels[3]=stack.getVoxel(x          ,y+this.size,z          ); // v3
-    this.voxels[4]=stack.getVoxel(x          ,y          ,z+this.size); // v4
-    this.voxels[5]=stack.getVoxel(x+this.size,y          ,z+this.size); // v5
-    this.voxels[6]=stack.getVoxel(x+this.size,y+this.size,z+this.size); // v6
-    this.voxels[7]=stack.getVoxel(x          ,y+this.size,z+this.size); // v7
-    }
+    this.voxels[0]=stack.getVoxel(this.x          ,this.y          ,this.z          ); // v0
+    this.voxels[1]=stack.getVoxel(this.x+this.size,this.y          ,this.z          ); // v1
+    this.voxels[2]=stack.getVoxel(this.x+this.size,this.y+this.size,this.z          ); // v2
+    this.voxels[3]=stack.getVoxel(this.x          ,this.y+this.size,this.z          ); // v3
+    this.voxels[4]=stack.getVoxel(this.x          ,this.y          ,this.z+this.size); // v4
+    this.voxels[5]=stack.getVoxel(this.x+this.size,this.y          ,this.z+this.size); // v5
+    this.voxels[6]=stack.getVoxel(this.x+this.size,this.y+this.size,this.z+this.size); // v6
+    this.voxels[7]=stack.getVoxel(this.x          ,this.y+this.size,this.z+this.size); // v7
+};
 
 IsoCube.prototype.calcKey = function (threshold) {
     var keystr = '';
-    keystr +=(this.voxels[7] > threshold)?"1":"0";
-    keystr +=(this.voxels[6] > threshold)?"1":"0";
-    keystr +=(this.voxels[5] > threshold)?"1":"0";
-    keystr +=(this.voxels[4] > threshold)?"1":"0";
-    keystr +=(this.voxels[3] > threshold)?"1":"0";
-    keystr +=(this.voxels[2] > threshold)?"1":"0";
-    keystr +=(this.voxels[1] > threshold)?"1":"0";
-    keystr +=(this.voxels[0] > threshold)?"1":"0";
+    keystr +=(this.voxels[7] > threshold)?'1':'0';
+    keystr +=(this.voxels[6] > threshold)?'1':'0';
+    keystr +=(this.voxels[5] > threshold)?'1':'0';
+    keystr +=(this.voxels[4] > threshold)?'1':'0';
+    keystr +=(this.voxels[3] > threshold)?'1':'0';
+    keystr +=(this.voxels[2] > threshold)?'1':'0';
+    keystr +=(this.voxels[1] > threshold)?'1':'0';
+    keystr +=(this.voxels[0] > threshold)?'1':'0';
 
     this.key = parseInt(keystr,2);
-}
+};
 
 IsoCube.prototype.toString = function () {
     var str='[';
     for (var i=0;i<12;i++) {
-        str+=(this.edges[i]+"; ");
+        str+=(this.edges[i]+'; ');
     }
-    return ("Cube["+this.key+"]=(" + this.x +" "+this.y+" "+this.z +") "+str+"]");
-}
+    return ('Cube['+this.key+']=(' + this.x +' '+this.y+' '+this.z +') '+str+']');
+};
 
 /*
  *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
@@ -6636,97 +6931,162 @@ EventManager.prototype.add = function(type, a_callback) {
 
 'use strict';
 
-/**
- * MouseSensor
- */
-function MouseSensor(canvas_id) {
-    var mousePosition=[0.0,0.0];
-    var currentAngle=[0.0,0.0];
+(function(exports) {
 
-    var lastX = -1;
-    var lastY = -1;
-    var dragging = false;
+    /**
+     * MouseSensor
+     * @class MouseSensor
+     * @constructor
+     * @memberof module:mwUI
+     */
+    function MouseSensor(canvas_id) {
+        var mousePosition=[0.0,0.0];
+        var currentAngle=[0.0,0.0];
 
-    var zoom = 0;
-    var zoomDelta=0.01;
+        var lastX = -1;
+        var lastY = -1;
+        var dragging = false;
 
-    var canvas = document.getElementById(canvas_id);
+        var zoom = 0;
+        var zoomDelta=0.01;
 
-    var shapes = [];
-    var renderer = null;
+        var canvas = document.getElementById(canvas_id);
 
-/***
-  canvas.onmousewheel = function(event) {
-    console.log(event.wheelDelta);
-    zoom+=(zoomDelta*event.wheelDelta/Math.abs(event.wheelDelta) );
-    // Display
-    renderer.drawScene();
-    event.preventDefault();
-  }
-***/
+        var shapes = [];
+        var renderer = null;
 
-    canvas.onmousedown = function(ev) {
-        //Mouse is pressed
-        var x = ev.clientX;
-        var y = ev.clientY;
+        canvas.onmousedown = function(ev) {
+            //Mouse is pressed
+            var x = ev.clientX;
+            var y = ev.clientY;
 
-        var rect = ev.target.getBoundingClientRect();
-        if(rect.left <= x && x <= rect.right && rect.top <= y && y <= rect.bottom) {
+            var rect = ev.target.getBoundingClientRect();
+            if(rect.left <= x && x <= rect.right && rect.top <= y && y <= rect.bottom) {
+                lastX = x;
+                lastY = y;
+                mousePosition[0] = x;
+                mousePosition[1] = canvas.height - y;
+                dragging = true;
+            }
+        };
+
+        canvas.onmouseup = function(ev){
+            //Mouse is released
+            dragging = false;
+        };
+
+        canvas.onmousemove = function(ev) {
+            //Mouse is moved
+            var x = ev.clientX;
+            var y = ev.clientY;
+            if (dragging) {
+                //put some kind of dragging logic in here
+                //Here is a rotation example
+                var factor = 0.05;
+                var dx = factor * (x - lastX);
+                var dy = factor * (y - lastY);
+                //Limit x-axis rotation angle to -90 to 90 degrees
+                currentAngle[0] = Math.max(Math.min(currentAngle[0] + dy, 90), -90);
+                currentAngle[1] = currentAngle[1] + dx;
+
+                mousePosition[0] = x;
+                mousePosition[1] = canvas.height - y;
+
+                // Update shape(s) matrix
+                // HACK console.log(currentAngle[0]+ ' '+ currentAngle[1])
+                var tmp = mat4.create();
+                mat4.identity(tmp);
+                mat4.rotate(tmp,tmp,dx,[0,1,0]);
+                mat4.rotate(tmp,tmp,dy,[1,0,0]);
+
+                // Apply rotation to each registered shape
+                for (var i in shapes) {
+                    mat4.multiply(shapes[i].matrix,tmp,shapes[i].matrix);
+                }
+                // Update Display
+                renderer.drawScene();
+            }
             lastX = x;
             lastY = y;
-            mousePosition[0] = x;
-            mousePosition[1] = canvas.height - y;
-            dragging = true;
-        }
-    };
+        };
 
-    canvas.onmouseup = function(ev){
-        //Mouse is released
-         dragging = false;
-    };
+        return {
+            attach : function (a_shape) {
+                shapes.push(a_shape);
+            },
 
-    canvas.onmousemove = function(ev) {
-        //Mouse is moved
-        var x = ev.clientX;
-        var y = ev.clientY;
-        if (dragging) {
-            //put some kind of dragging logic in here
-            //Here is a rotation example
-            var factor = 0.05;
-            var dx = factor * (x - lastX);
-            var dy = factor * (y - lastY);
-            //Limit x-axis rotation angle to -90 to 90 degrees
-            currentAngle[0] = Math.max(Math.min(currentAngle[0] + dy, 90), -90);
-            currentAngle[1] = currentAngle[1] + dx;
-
-            mousePosition[0] = x;
-            mousePosition[1] = canvas.height - y;
-
-            // Update shape(s) matrix
-            // HACK console.log(currentAngle[0]+ ' '+ currentAngle[1])
-            var tmp = mat4.create();
-            mat4.identity(tmp);
-            mat4.rotate(tmp,tmp,dx,[0,1,0]);
-            mat4.rotate(tmp,tmp,dy,[1,0,0]);
-
-            // Apply rotation to each registered shape
-            for (var i in shapes) {
-                mat4.multiply(shapes[i].matrix,tmp,shapes[i].matrix);
+            setRenderer : function (a_renderer) {
+                renderer = a_renderer;
             }
-            // Display
-            renderer.drawScene();
+        };
+    }
+
+    exports.MouseSensor = MouseSensor;
+
+})(this.mwUI = this.mwUI || {} );
+
+/*
+ *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
+ *  Copyright (C) 2015  Jean-Christophe Taveau.
+ *
+ *  This file is part of mowgli
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * Authors:
+ * Jean-Christophe Taveau
+ */
+
+
+'use strict';
+
+(function(exports) {
+
+    /**
+     * ZoomSensor
+     * @class ZoomSensor
+     * @constructor
+     * @memberof module:mwUI
+     */
+    function ZoomSensor(canvas_id) {
+        this.nodes = [];
+        this.zoom = 1.0;
+        this.zoomDelta = 0.05;
+
+        this.canvas = document.getElementById(canvas_id);
+
+        this.handleEvent = function(event) {
+            this.zoom += (this.zoomDelta * event.deltaY / Math.abs(event.deltaY) );
+            for (var i=0; i < this.nodes.length; i++) {
+                this.nodes[i].setZoom(this.zoom);
+            }
+            // Update Display
+            this.nodes[0].getRenderer().drawScene();
+            event.preventDefault();
+            return false;
+        };
+
+        this.canvas.addEventListener('wheel',this,false);
+    }
+
+    ZoomSensor.prototype.attach = function(camera) {
+        if (camera instanceof mwSG.Camera) {
+            this.nodes.push(camera);
         }
-        lastX = x;
-        lastY = y;
     };
 
-    return {
-        attach : function (a_shape) {
-            shapes.push(a_shape);
-        },
+    exports.ZoomSensor = ZoomSensor;
 
-        setRenderer : function (a_renderer) {
-            renderer = a_renderer;
-        }
-    };
-}
+})(this.mwUI = this.mwUI || {} );
