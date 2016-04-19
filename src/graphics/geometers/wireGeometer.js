@@ -47,6 +47,7 @@ function WireGeometer(mol,colorer) {
  */
 WireGeometer.prototype.getShape = function () {
     var vertices = [];
+    var colors = [];
     var indices = [];
 
     var createWireframeShape = function(mol,colMaker) {
@@ -59,24 +60,24 @@ WireGeometer.prototype.getShape = function () {
             // First atom
             var rgbAtom1 = colMaker.get(bond.atom1);
             if (alreadyDone[bond.atom1.serial] === undefined) {
-                index = vertices.length / 6.0;
+                index = vertices.length / 3.0;
                 vertices.push(bond.atom1.x);
                 vertices.push(bond.atom1.y);
                 vertices.push(bond.atom1.z);
-                vertices.push(rgbAtom1[0]);
-                vertices.push(rgbAtom1[1]);
-                vertices.push(rgbAtom1[2]);
+                colors.push(rgbAtom1[0]);
+                colors.push(rgbAtom1[1]);
+                colors.push(rgbAtom1[2]);
                 alreadyDone[bond.atom1.serial] = index;
             }
 
             // First half bond
-            index = vertices.length / 6.0;
+            index = vertices.length / 3.0;
             vertices.push(bond.middle.x);
             vertices.push(bond.middle.y);
             vertices.push(bond.middle.z);
-            vertices.push(rgbAtom1[0]);
-            vertices.push(rgbAtom1[1]);
-            vertices.push(rgbAtom1[2]);
+            colors.push(rgbAtom1[0]);
+            colors.push(rgbAtom1[1]);
+            colors.push(rgbAtom1[2]);
 
             indices.push(alreadyDone[bond.atom1.serial]);
             indices.push(index); // middle
@@ -84,24 +85,24 @@ WireGeometer.prototype.getShape = function () {
             // Second half bond
             var rgbAtom2 = colMaker.get(bond.atom2);
             if (alreadyDone[bond.atom2.serial] === undefined) {
-                index = vertices.length / 6.0;
+                index = vertices.length / 3.0;
                 vertices.push(bond.atom2.x);
                 vertices.push(bond.atom2.y);
                 vertices.push(bond.atom2.z);
-                vertices.push(rgbAtom2[0]);
-                vertices.push(rgbAtom2[1]);
-                vertices.push(rgbAtom2[2]);
+                colors.push(rgbAtom2[0]);
+                colors.push(rgbAtom2[1]);
+                colors.push(rgbAtom2[2]);
 
                 alreadyDone[bond.atom2.serial] = index;
             }
 
-            index = vertices.length / 6.0;
+            index = vertices.length / 3.0;
             vertices.push(bond.middle.x);
             vertices.push(bond.middle.y);
             vertices.push(bond.middle.z);
-            vertices.push(rgbAtom2[0]);
-            vertices.push(rgbAtom2[1]);
-            vertices.push(rgbAtom2[2]);
+            colors.push(rgbAtom2[0]);
+            colors.push(rgbAtom2[1]);
+            colors.push(rgbAtom2[2]);
 
             indices.push(alreadyDone[bond.atom2.serial]);
             indices.push(index); // middle
@@ -113,23 +114,36 @@ WireGeometer.prototype.getShape = function () {
         if (this.mol.bonds === undefined || this.mol.bonds.length === 0) {
             BondCalculator(this.mol);
         }
-        console.log('Create wireframe shape');
+        // HACK console.log('Create wireframe shape');
         createWireframeShape(this.mol,this.colorer);
-        console.log(colors);
-        console.log(indices);
+        // HACK console.log(vertices);
+        // HACK console.log(indices);
 
-        this.shape = new Shape();
+        this.shape = new mwSG.Shape();
         this.shape.type = 'LINES';
         this.shape.addVertexData(
             {
-                'content'   : Shape.XYZ | Shape.RGB,
+                'content'   : mwSG.Shape.XYZ,
                 'data'      : vertices,
-                'indices'   : indices,
-                'attributes': [new Attribute('aVertexPosition',0,6), new Attribute('aVertexColor',3,6)]
+                'attributes': [new Attribute('aVertexPosition',0,0)]
             }
         );
+        this.shape.addVertexData(
+            {
+                'content'   : mwSG.Shape.RGB,
+                'data'      : colors,
+                'attributes': [new Attribute('aVertexColor',0,0)]
+            }
+        );
+        this.shape.addVertexData(
+            {
+                'content'   : mwSG.Shape.INDICES,
+                'data'      : indices
+            }
+        );
+
         this.shape.translate(-this.mol.centroid.x, -this.mol.centroid.y, -this.mol.centroid.z);
     }
-    console.log(this.shape);
+    // HACK console.log(this.shape);
     return this.shape;
 };
