@@ -25,97 +25,96 @@
 
 'use strict';
 
-/**
- * MouseSensor
- */
-function MouseSensor(canvas_id) {
-    var mousePosition=[0.0,0.0];
-    var currentAngle=[0.0,0.0];
+(function(exports) {
 
-    var lastX = -1;
-    var lastY = -1;
-    var dragging = false;
+    /**
+     * MouseSensor
+     * @class MouseSensor
+     * @constructor
+     * @memberof module:mwUI
+     */
+    function MouseSensor(canvas_id) {
+        var mousePosition=[0.0,0.0];
+        var currentAngle=[0.0,0.0];
 
-    var zoom = 0;
-    var zoomDelta=0.01;
+        var lastX = -1;
+        var lastY = -1;
+        var dragging = false;
 
-    var canvas = document.getElementById(canvas_id);
+        var zoom = 0;
+        var zoomDelta=0.01;
 
-    var shapes = [];
-    var renderer = null;
+        var canvas = document.getElementById(canvas_id);
 
-/***
-  canvas.onmousewheel = function(event) {
-    console.log(event.wheelDelta);
-    zoom+=(zoomDelta*event.wheelDelta/Math.abs(event.wheelDelta) );
-    // Display
-    renderer.drawScene();
-    event.preventDefault();
-  }
-***/
+        var shapes = [];
+        var renderer = null;
 
-    canvas.onmousedown = function(ev) {
-        //Mouse is pressed
-        var x = ev.clientX;
-        var y = ev.clientY;
+        canvas.onmousedown = function(ev) {
+            //Mouse is pressed
+            var x = ev.clientX;
+            var y = ev.clientY;
 
-        var rect = ev.target.getBoundingClientRect();
-        if(rect.left <= x && x <= rect.right && rect.top <= y && y <= rect.bottom) {
+            var rect = ev.target.getBoundingClientRect();
+            if(rect.left <= x && x <= rect.right && rect.top <= y && y <= rect.bottom) {
+                lastX = x;
+                lastY = y;
+                mousePosition[0] = x;
+                mousePosition[1] = canvas.height - y;
+                dragging = true;
+            }
+        };
+
+        canvas.onmouseup = function(ev){
+            //Mouse is released
+            dragging = false;
+        };
+
+        canvas.onmousemove = function(ev) {
+            //Mouse is moved
+            var x = ev.clientX;
+            var y = ev.clientY;
+            if (dragging) {
+                //put some kind of dragging logic in here
+                //Here is a rotation example
+                var factor = 0.05;
+                var dx = factor * (x - lastX);
+                var dy = factor * (y - lastY);
+                //Limit x-axis rotation angle to -90 to 90 degrees
+                currentAngle[0] = Math.max(Math.min(currentAngle[0] + dy, 90), -90);
+                currentAngle[1] = currentAngle[1] + dx;
+
+                mousePosition[0] = x;
+                mousePosition[1] = canvas.height - y;
+
+                // Update shape(s) matrix
+                // HACK console.log(currentAngle[0]+ ' '+ currentAngle[1])
+                var tmp = mat4.create();
+                mat4.identity(tmp);
+                mat4.rotate(tmp,tmp,dx,[0,1,0]);
+                mat4.rotate(tmp,tmp,dy,[1,0,0]);
+
+                // Apply rotation to each registered shape
+                for (var i in shapes) {
+                    mat4.multiply(shapes[i].matrix,tmp,shapes[i].matrix);
+                }
+                // Update Display
+                renderer.drawScene();
+            }
             lastX = x;
             lastY = y;
-            mousePosition[0] = x;
-            mousePosition[1] = canvas.height - y;
-            dragging = true;
-        }
-    };
+        };
 
-    canvas.onmouseup = function(ev){
-        //Mouse is released
-         dragging = false;
-    };
+        return {
+            attach : function (a_shape) {
+                shapes.push(a_shape);
+            },
 
-    canvas.onmousemove = function(ev) {
-        //Mouse is moved
-        var x = ev.clientX;
-        var y = ev.clientY;
-        if (dragging) {
-            //put some kind of dragging logic in here
-            //Here is a rotation example
-            var factor = 0.05;
-            var dx = factor * (x - lastX);
-            var dy = factor * (y - lastY);
-            //Limit x-axis rotation angle to -90 to 90 degrees
-            currentAngle[0] = Math.max(Math.min(currentAngle[0] + dy, 90), -90);
-            currentAngle[1] = currentAngle[1] + dx;
-
-            mousePosition[0] = x;
-            mousePosition[1] = canvas.height - y;
-
-            // Update shape(s) matrix
-            // HACK console.log(currentAngle[0]+ ' '+ currentAngle[1])
-            var tmp = mat4.create();
-            mat4.identity(tmp);
-            mat4.rotate(tmp,tmp,dx,[0,1,0]);
-            mat4.rotate(tmp,tmp,dy,[1,0,0]);
-
-            // Apply rotation to each registered shape
-            for (var i in shapes) {
-                mat4.multiply(shapes[i].matrix,tmp,shapes[i].matrix);
+            setRenderer : function (a_renderer) {
+                renderer = a_renderer;
             }
-            // Display
-            renderer.drawScene();
-        }
-        lastX = x;
-        lastY = y;
-    };
+        };
+    }
 
-    return {
-        attach : function (a_shape) {
-            shapes.push(a_shape);
-        },
+    exports.MouseSensor = MouseSensor;
 
-        setRenderer : function (a_renderer) {
-            renderer = a_renderer;
-        }
-    };
-}
+})(this.mwUI = this.mwUI || {} );

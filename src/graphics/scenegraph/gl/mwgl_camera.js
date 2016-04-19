@@ -70,17 +70,17 @@
 
     _Camera.prototype.isDirty = function() {
         return _isDirty;
-    }
+    };
 
 
     _Camera.prototype.setViewport = function (width, height) {
         mat4.perspective(this.sgnode.projMatrix,this.sgnode.fovy * this.sgnode.zoom,width / height,this.sgnode.zNear,this.sgnode.zFar);
-    }
+    };
 
     _Camera.prototype.init = function(context) {
         // Do nothing
         this.isDirty = false;
-    }
+    };
 
     _Camera.prototype.render = function(context) {
         var gl = context;
@@ -89,7 +89,7 @@
         this.setViewport(gl.viewportWidth,gl.viewportHeight);
         this.sgnode.getRenderer().setUniform("uVMatrix", this.sgnode.viewMatrix);
         this.sgnode.getRenderer().setUniform("uPMatrix", this.sgnode.projMatrix);
-    }
+    };
 
 
 

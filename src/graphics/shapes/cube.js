@@ -4,14 +4,14 @@
  *
  *  This file is part of mowgli
  *
- * This program is free software: you can redistribute it and/or modify it 
- * under the terms of the GNU General Public License as published by 
- * the Free Software Foundation, either version 3 of the License, or 
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
@@ -22,18 +22,18 @@
  * Jean-Christophe Taveau
  */
 
-"use strict"
+'use strict';
 
 /*
  * Constructor
  */
- 
- var Cube = function() {
-    Shape.call(this);
+
+function Cube() {
+    mwSG.Shape.call(this);
     this.ID = 'cube';
- }
- 
-Cube.prototype = Object.create(Shape.prototype );
+}
+
+Cube.prototype = Object.create(mwSG.Shape.prototype );
 
 /*
  * Set style of this cube:
@@ -44,14 +44,14 @@ Cube.prototype.setStyle = function(type) {
     case 'wireframe' :
         this.ID = 'cubeWire';
         // 1- Define geometry
-        var _indices = [0,1,2,3,0,4,5,6,7,4,5,1,2,6,7,3]; 
+        var _indices = [0,1,2,3,0,4,5,6,7,4,5,1,2,6,7,3];
         this.type = 'LINE_STRIP';
-        this.addVertexData( 
+        this.addVertexData(
             {
                 'content'   : Shape.XYZ,
-                'data'      : Cube.verticesWire, 
-                'indices'   :_indices, 
-                'attributes': [new Attribute("aVertexPosition",0,0)] 
+                'data'      : Cube.verticesWire,
+                'indices'   :_indices,
+                'attributes': [new Attribute("aVertexPosition",0,0)]
             }
         );
 /**
@@ -75,42 +75,42 @@ Cube.prototype.setStyle = function(type) {
             {
                 'content': Shape.XYZ,
                 'data': Cube.vertices,
-                'indices': Cube.indices, 
-                'attributes': [new Attribute("aVertexPosition",0,0)] 
+                'indices': Cube.indices,
+                'attributes': [new Attribute("aVertexPosition",0,0)]
             }
         );
         this.addVertexData(
             {
                 'content': Shape.RGB,
                 'data': Cube.colors,
-                'attributes': [new Attribute("aVertexColor",0,0)] 
+                'attributes': [new Attribute("aVertexColor",0,0)]
             }
         );
 
-        this.addVertexData( 
+        this.addVertexData(
             {
                 'content'   : Shape.XYZ | Shape.RGBA,
-                'data'      : Cube.vertices, 
-                'indices'   : Cube.indices, 
-                'attributes': [new Attribute("aVertexPosition",0,7), new Attribute("aVertexColor",3,7)] 
+                'data'      : Cube.vertices,
+                'indices'   : Cube.indices,
+                'attributes': [new Attribute("aVertexPosition",0,7), new Attribute("aVertexColor",3,7)]
             }
         );
         this.numItems = Cube.vertices.length / 7;
         break;
     case 'shaded':
-        this.ID = 'cubeShaded'; 
+        this.ID = 'cubeShaded';
         // TODO
         break;
     case 'textured' :
-        this.ID = 'cubeTextured'; 
+        this.ID = 'cubeTextured';
         // TODO
         break;
     default:
-    
+
     }
-}
- 
-  
+};
+
+
 Cube.verticesWire = [
      1, 1,-1,
      1,-1,-1,
@@ -168,6 +168,3 @@ Cube.indices = [
     16, 17, 18,   16, 18, 19, // Right face
     20, 21, 22,   20, 22, 23  // Left face
 ];
-
-
- 

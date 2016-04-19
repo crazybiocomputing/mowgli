@@ -45,14 +45,6 @@ function ShapeGL(node) {
 }
 
 /**
- * Flag indicating if the OpenGL state of this shape is correct
- *
- **/
-ShapeGL.prototype.isDirty = function() {
-    return _isDirty;
-}
-
-/**
  * Init of the OpenGL part: VBO creation
  *
  * @param {number} context - Graphics context
@@ -81,17 +73,18 @@ ShapeGL.prototype.init = function(context) {
 
     // All is fine (I hope ?)
     this.isDirty = false;
-}
+};
 
 /**
  * Render this shape; Called by the renderer
  *
  **/
 ShapeGL.prototype.render = function(context) {
+    // HACK console.log('>>> ShapeGL.prototype.render');
     var gl = context;
     // Update matrix
     mat4.multiply(this.workmatrix,this.sgnode.parent.getNodeGL().workmatrix,this.sgnode.matrix);
-    this.sgnode.getRenderer().setUniform("uMMatrix", this.workmatrix);
+    this.sgnode.getRenderer().setUniform('uMMatrix', this.workmatrix);
 
     // Choose shader
     // HACK console.log(this.shaderProgram);
@@ -101,11 +94,11 @@ ShapeGL.prototype.render = function(context) {
 
 
     // For this geometry, activate VBO
-    for (var j in this.VBOs) {
+    for (var j=0; j < this.VBOs.length; j++) {
         var vbo = this.VBOs[j];
         if (vbo.type === 'indexed') {
             // HACK console.log('bind buffer '+ vbo.type + ' ' + vbo.ID+ ' ' + vbo.data);
-            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, vbo.IndxID);
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, vbo.ID);
         }
         else {
             // HACK console.log('bind buffer '+ vbo.type + ' ' + vbo.ID);
@@ -113,7 +106,7 @@ ShapeGL.prototype.render = function(context) {
         }
         for (var k in vbo.attributes) {
             var attribute = vbo.attributes[k];
-            // TODO console.log('enable ' + attribute.name+' '+attribute.location+' '+attribute.size+' '+attribute.stride+' '+attribute.offset);
+            // HACK console.log('enable ' + k + ':'+ attribute.name+' '+attribute.location+' '+attribute.size+' '+attribute.stride+' '+attribute.offset);
             gl.enableVertexAttribArray(attribute.location );
             gl.vertexAttribPointer(
                 attribute.location,
@@ -133,17 +126,15 @@ ShapeGL.prototype.render = function(context) {
             // HACK console.log('Activate tex ' + this.GLTextures[i]);
             gl.activeTexture(gl.TEXTURE0);
             gl.bindTexture(gl.TEXTURE_2D, this.GLTextures[i]);
-            this.sgnode.getRenderer().setUniform("uTexture", 0);
+            this.sgnode.getRenderer().setUniform('uTexture', 0);
         }
     }
     if (this.GLTextures.length > 0) {
         // gl.enable ( gl.TEXTURE_2D );
     }
 
-
     // TODO Update uniforms
     this.shaderProgram.updateUniforms();
-
 
     // Draw ...
     // HACK console.log(this.sgnode.type + ' '+ this.glType +' '+ this.numIndices+' '+ this.numItems);
@@ -151,11 +142,41 @@ ShapeGL.prototype.render = function(context) {
         gl.drawElements(this.glType, this.numIndices, gl.UNSIGNED_SHORT, 0);
     }
     else {
-        console.log('drawArrays');
+        // HACK console.log('drawArrays');
         gl.drawArrays(this.glType, 0, this.numItems);
     }
-}
+};
 
+ShapeGL.prototype.removeVBO = function (geom_content) {
+    var gl = this.context;
+
+    // Search VBO...
+    var i = 0;
+    var stop = false;
+    while (!stop) {
+        if (this.VBOs[i].content === geom_content) {
+            stop = true;
+        }
+        i++;
+        if (i >= this.VBOs.length) {
+            stop = true;
+            i = -1;
+        }
+    }
+    // Found it!!
+    if (i !== -1) {
+        var vbo = this.VBOs[i];
+        gl.bindBuffer(gl.ARRAY_BUFFER, vbo.ID);
+        gl.bufferData(gl.ARRAY_BUFFER, 1, gl.STATIC_DRAW);
+        gl.deleteBuffer(vbo.ID);
+        if (vbo.type === 'indexed') {
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, vbo.IndxID);
+            gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, 1, gl.STATIC_DRAW);
+            gl.deleteBuffer(vbo.IndxID);
+        }
+        delete this.VBOs[i];
+    }
+};
 
 // Private
 ShapeGL.prototype._createVBO = function(context,geom) {
@@ -186,22 +207,31 @@ ShapeGL.prototype._createVBO = function(context,geom) {
     var vbo = {};
     vbo.attributes = [];
     vbo.type = geom.type;
+    vbo.content = geom.content;
 
     // Create VBO
     vbo.ID = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, vbo.ID);
-    gl.bufferData(gl.ARRAY_BUFFER, geom.data, gl.STATIC_DRAW);
+    if (vbo.type === 'indexed') {
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, vbo.ID);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, geom.data, gl.STATIC_DRAW);
+        this.numIndices = geom.data.length;
+    }
+    else {
+        gl.bindBuffer(gl.ARRAY_BUFFER, vbo.ID);
+        gl.bufferData(gl.ARRAY_BUFFER, geom.data, gl.STATIC_DRAW);
+    }
+
 
     // Update attribute(s) associated to this VBO
     // HACK console.log('VBO attributes');
     // HACK console.log(geom.attributes);
     for (var j=0; j < geom.attributes.length; j++) {
-        if ( (geom.content & Shape.XYZ) == Shape.XYZ) {
-            var n = 32 // Highest value of Shape type(s)
+        if ( (geom.content & mwSG.Shape.XYZ) === mwSG.Shape.XYZ) {
+            var n = 32; // Highest value of Shape type(s) but Shape.INDICES
             var nItems = 0;
             while (n != 0) {
-                if ( (geom.content & n) == n) {
-                    nItems += Shape.itemLength[n];
+                if ( (geom.content & n) === n) {
+                    nItems += mwSG.Shape.itemLength[n];
                 }
                 n/=2;
             }
@@ -216,16 +246,10 @@ ShapeGL.prototype._createVBO = function(context,geom) {
         // TODO console.log('location [' + vbo.attributes[j].name + ']= '+ vbo.attributes[j].location + ' '+vbo.attributes[j].size);
     }
 
-    if (vbo.type === 'indexed') {
-        vbo.IndxID = gl.createBuffer();
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, vbo.IndxID);
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, geom.indices, gl.STATIC_DRAW);
-        this.numIndices = geom.indices.length;
-    }
     // HACK console.log('VBO ID: ' + JSON.stringify(vbo) );
     return vbo;
 
-}
+};
 
 // Private
 ShapeGL.prototype._createTexture = function(context, img) {
@@ -237,8 +261,7 @@ ShapeGL.prototype._createTexture = function(context, img) {
 
     img.onload = function() {
         newTexture(img,glTex);
-    }
-
+    };
 
 
     function newTexture(img,glTex) {
@@ -246,7 +269,7 @@ ShapeGL.prototype._createTexture = function(context, img) {
         // Check dimension
         if (!powerOfTwo(img.width) || !powerOfTwo(img.height) ) {
             // Alert
-            var msg = "ERR: The texture "+img.src+" has non power-of-two dimension"
+            var msg = 'ERR: The texture '+img.src+' has non power-of-two dimension';
             alert(msg);
         }
         else {
@@ -269,7 +292,7 @@ ShapeGL.prototype._createTexture = function(context, img) {
         }
     }
 
-}
+};
 
 
 ShapeGL.prototype._updateAttributes = function(context) {
@@ -289,4 +312,4 @@ ShapeGL.prototype._updateAttributes = function(context) {
             // HACK console.log('location [' + vbo.attributes[j].name + ']= '+ vbo.attributes[j].location + ' '+vbo.attributes[j].size);
         }
     }
-}
+};
