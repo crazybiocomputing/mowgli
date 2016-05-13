@@ -6,11 +6,10 @@
     <link href="http://fonts.googleapis.com/css?family=Lato:300,400,700,300italic,400italic" rel="stylesheet" type="text/css">
     <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/mowgli.css">
     <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/modal.css">
-    <title>Mowgli</title>
+    <title>Mowgli: Molecule WeGL Viewer</title>
     <script src="javascripts/gl-matrix-min.js"></script>
     <script src="javascripts/mowgli-core.js"></script>
     <script src="javascripts/mowgli.js"></script>
-    <title>Mowgli</title>
   </head>
   <body>
     <header>
@@ -213,6 +212,85 @@
           </form>
         </div>
       </div>
+    </section>
+    <!-- Sidebar-->
+    <section class="sticky-container">
+      <ul class="sticky">
+        <li id="loader" title="World" class="topmenu">
+          <ul>
+            <li id="world" title="Download" class="item"><a href="#"><img src="images/svg/download.svg" width="32" height="32"/></a>
+            </li>
+            <li id="PDB" title="PDB" class="item"><a href="#"><img src="images/svg/database_pdb.svg" width="32" height="32"/></a>
+            </li>
+            <li id="EMDB" title="EMDB" class="item"><a href="#"><img src="images/svg/database.svg" width="32" height="32"/></a>
+            </li>
+            <li id="close" title="Close Active Structure" class="item"><a href="#"><img src="images/svg/times.svg" width="32" height="32"/></a>
+            </li>
+          </ul><img src="images/svg/globe.svg" width="32" height="32" class="active"/>
+        </li>
+        <li id="subsets" title="Subset" class="topmenu">
+          <ul>
+            <li id="add_subset" title="Add Subset" class="item"><a href="#"><img src="images/svg/plus-circle.svg" width="32" height="32"/></a>
+            </li>
+            <li id="del_subset" title="Remove Subset" class="item"><a href="#"><img src="images/svg/trash-o.svg" width="32" height="32"/></a>
+            </li>
+          </ul><img src="images/svg/stack-overflow.svg" width="32" height="32" class="active"/>
+        </li>
+        <li id="displayMode" title="Wireframe" class="topmenu">
+          <ul>
+            <li id="wireframe" title="Wireframe" class="item"><a href="#"><img src="images/svg/cube-simple.svg" width="32" height="32"/></a>
+            </li>
+            <li id="sticks" title="Sticks" class="item"><a href="#"><img src="images/svg/sticks.svg" width="32" height="32"/></a>
+            </li>
+            <li id="BS" title="Ball &amp; Sticks" class="item"><a href="#"><img src="images/svg/share-alt.svg" width="32" height="32"/></a>
+            </li>
+            <li id="spacefill" title="Spacefill" class="item"><a href="#"><img src="images/svg/spacefill.svg" width="32" height="32"/></a>
+            </li>
+            <li id="backbone" title="Backbone" class="item"><a href="#"><img src="images/svg/backbone.svg" width="32" height="32"/></a>
+            </li>
+            <li id="trace" title="Trace" class="item"><a href="#"><img src="images/svg/trace.svg" width="32" height="32"/></a>
+            </li>
+            <li id="strands" title="Strands" class="item"><a href="#"><img src="images/svg/rss.svg" width="32" height="32"/></a>
+            </li>
+            <li id="ribbons" title="Ribbons" class="item"><a href="#"><img src="images/svg/map-o.svg" width="32" height="32"/></a>
+            </li>
+            <li id="cartoon" title="Cartoon" class="item"><a href="#"><img src="images/svg/exchange.svg" width="32" height="32"/></a>
+            </li>
+            <li id="surface" title="Surface" class="item"><a href="#"><img src="images/svg/certificate.svg" width="32" height="32"/></a>
+            </li>
+            <li id="debug_mode" title="Points(Debug mode)" class="item"><a href="#"><img src="images/svg/bug.svg" width="32" height="32"/></a>
+            </li>
+          </ul><img src="images/svg/cube-simple.svg" width="32" height="32" class="active"/>
+        </li>
+        <li id="colorMode" title="CPK" class="topmenu">
+          <ul>
+            <li id="CPK" title="CPK" class="item"><a href="#"><img src="images/svg/database.svg" width="32" height="32"/></a>
+            </li>
+            <li id="close" title="Close Active Structure" class="item"><a href="#"><img src="images/svg/times.svg" width="32" height="32"/></a>
+            </li>
+          </ul><img src="images/svg/flask.svg" width="32" height="32" class="active"/>
+        </li>
+        <li id="selection" title="Atom Selection" class="topmenu">
+          <ul>
+          </ul><img src="images/svg/cogs.svg" width="32" height="32" class="active"/>
+        </li>
+        <li id="show" title="File" class="topmenu">
+          <ul>
+            <li id="show" title="Show" class="item"><a href="#"><img src="images/svg/eye.svg" width="32" height="32"/></a>
+            </li>
+            <li id="hide" title="Hide" class="item"><a href="#"><img src="images/svg/eye-slash.svg" width="32" height="32"/></a>
+            </li>
+          </ul><img src="images/svg/eye.svg" width="32" height="32" class="active"/>
+        </li>
+        <li id="settings" title="File" class="topmenu">
+          <ul>
+            <li id="lights" title="Light(s)" class="item"><a href="#"><img src="images/svg/lightbulb-o.svg" width="32" height="32"/></a>
+            </li>
+            <li id="cameras" title="Camera(s)" class="item"><a href="#"><img src="images/svg/camera.svg" width="32" height="32"/></a>
+            </li>
+          </ul><img src="images/svg/sliders.svg" width="32" height="32" class="active"/>
+        </li>
+      </ul>
     </section>
     <!-- Modal window-->
     <section id="modal" class="mwModal">

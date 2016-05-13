@@ -399,5 +399,204 @@
                 ]
             }
         ]
+    },
+    "sidebar" : {
+        "id"      :"sidebar",
+        "type"    :"sticky",
+        "children": [
+            {
+                "id":"loader",
+                "title":"World",
+                "type": "topmenu",
+                "img":"globe.svg",
+                "children": [
+                    {
+                        "id":"world",
+                        "title":"Download",
+                        "type": "item",
+                        "img":"download.svg"
+                    },
+                    {
+                        "id":"PDB",
+                        "title":"PDB",
+                        "type": "item",
+                        "img":"database_pdb.svg"
+                    },
+                    {
+                        "id":"EMDB",
+                        "title":"EMDB",
+                        "type": "item",
+                        "img":"database.svg"
+                    },
+                    {
+                        "id":"close",
+                        "title":"Close Active Structure",
+                        "type": "item",
+                        "img":"times.svg"
+                    }
+                ]
+            },
+            {
+                "id":"subsets",
+                "title":"Subset",
+                "type": "topmenu",
+                "img": "stack-overflow.svg",
+                "children": [
+                    {
+                        "id":"add_subset",
+                        "title":"Add Subset",
+                        "type": "item",
+                        "img":"plus-circle.svg"
+                    },
+                    {
+                        "id":"del_subset",
+                        "title":"Remove Subset",
+                        "type": "item",
+                        "img":"trash-o.svg"
+                    }
+                ]
+            },
+            {
+                "id":"displayMode",
+                "title":"Wireframe",
+                "type": "topmenu",
+                "img": "cube-simple.svg",
+                "children": [
+                    {
+                        "id":"wireframe",
+                        "title":"Wireframe",
+                        "type": "item",
+                        "img":"cube-simple.svg"
+                    },
+                    {
+                        "id":"sticks",
+                        "title":"Sticks",
+                        "type": "item",
+                        "img":"sticks.svg"
+                    },
+                    {
+                        "id":"BS",
+                        "title":"Ball & Sticks",
+                        "type": "item",
+                        "img":"share-alt.svg"
+                    },
+                    {
+                        "id":"spacefill",
+                        "title":"Spacefill",
+                        "type": "item",
+                        "img":"spacefill.svg"
+                    },
+                    {
+                        "id":"backbone",
+                        "title":"Backbone",
+                        "type": "item",
+                        "img":"backbone.svg"
+                    },
+                    {
+                        "id":"trace",
+                        "title":"Trace",
+                        "type": "item",
+                        "img":"trace.svg"
+                    },
+                    {
+                        "id":"strands",
+                        "title":"Strands",
+                        "type": "item",
+                        "img":"rss.svg"
+                    },
+                    {
+                        "id":"ribbons",
+                        "title":"Ribbons",
+                        "type": "item",
+                        "img":"map-o.svg"
+                    },
+                    {
+                        "id":"cartoon",
+                        "title":"Cartoon",
+                        "type": "item",
+                        "img":"exchange.svg"
+                    },
+                    {
+                        "id":"surface",
+                        "title":"Surface",
+                        "type": "item",
+                        "img":"certificate.svg"
+                    },
+                    {
+                        "id":"debug_mode",
+                        "title":"Points(Debug mode)",
+                        "type": "item",
+                        "img":"bug.svg"
+                    }
+                ]
+            },
+            {
+                "id":"colorMode",
+                "title":"CPK",
+                "type": "topmenu",
+                "img": "flask.svg",
+                "children": [
+                    {
+                        "id":"CPK",
+                        "title":"CPK",
+                        "type": "item",
+                        "img":"database.svg"
+                    },
+                    {
+                        "id":"close",
+                        "title":"Close Active Structure",
+                        "type": "item",
+                        "img":"times.svg"
+                    }
+                ]
+            },
+            {
+                "id":"selection",
+                "title":"Atom Selection",
+                "type": "topmenu",
+                "img":"cogs.svg",
+                "children": []
+            },
+            {
+                "id":"show",
+                "title":"File",
+                "type": "topmenu",
+                "img":"eye.svg",
+                "children": [
+                    {
+                        "id":"show",
+                        "title":"Show",
+                        "type": "item",
+                        "img":"eye.svg"
+                    },
+                    {
+                        "id":"hide",
+                        "title":"Hide",
+                        "type": "item",
+                        "img":"eye-slash.svg"
+                    }
+                ]
+            },
+            {
+                "id":"settings",
+                "title":"File",
+                "type": "topmenu",
+                "img":"sliders.svg",
+                "children": [
+                    {
+                        "id":"lights",
+                        "title":"Light(s)",
+                        "type": "item",
+                        "img":"lightbulb-o.svg"
+                    },
+                    {
+                        "id":"cameras",
+                        "title":"Camera(s)",
+                        "type": "item",
+                        "img":"camera.svg"
+                    }
+                ]
+            }
+        ]
     }
 }

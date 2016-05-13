@@ -11,6 +11,28 @@ mixin menu_item(menu)
                         a(href="#")=item.title
                     +menu_item(item)
 
+mixin toolbar_item(menu)
+    if menu.children
+        if menu.type == "topmenu"
+            ul
+                each item in menu.children
+                    li(id=item.id, class=item.type,title=item.title)
+                        if item.type=="item"
+                             a(href="#")
+                                img(src='images/svg/' + item.img,width=32,height=32)
+                        +toolbar_item(item)
+            img.active(src='images/svg/' + menu.img,width=32,height=32)
+        else
+            ul(class=menu.type)
+                each item in menu.children
+                    li(id=item.id, class=item.type,title=item.title)
+                        if item.type=="item"
+                             a(href="#")
+                                img(src='images/svg/' + item.img,width=32,height=32)
+                        +toolbar_item(item)
+
+
+
 
 doctype html
 html
@@ -21,14 +43,12 @@ html
         link(rel="stylesheet", type="text/css", media="screen", href="stylesheets/mowgli.css")
         link(rel="stylesheet", type="text/css", media="screen", href="stylesheets/modal.css")
 
-        title Mowgli
+        title Mowgli: Molecule WeGL Viewer
 
         script(src="javascripts/gl-matrix-min.js")
         script(src="javascripts/mowgli-core.js")
         script(src="javascripts/mowgli.js")
 
-
-        title Mowgli
     body
         header
             nav
@@ -48,6 +68,10 @@ html
                     form
                         input(type="text")
                         input(type="submit", name="go", value="Submit", style="display:none;")
+        // Sidebar
+        section.sticky-container
+            +toolbar_item(sidebar)
+            
         // Modal window
         section#modal.mwModal
             input.modal-open#modal-one(type="checkbox",hidden)
