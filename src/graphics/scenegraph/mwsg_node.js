@@ -112,12 +112,15 @@
     };
 
     /**
-     * Render this object and traverse its children
+     * Render this object
      * Function called by the renderer
      *
      * @param{number} OpenGL context
      **/
     Node.prototype.render = function(context) {
+        this.nodeGL.pre_render(context);
+        this.nodeGL.render(context);
+        this.nodeGL.post_render(context);
     };
 
     Node.prototype.translate = function(tx, ty, tz) {

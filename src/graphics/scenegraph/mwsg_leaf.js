@@ -68,8 +68,13 @@
         // HACK console.log(this.parent.getNodeGL().workmatrix);
         // Update matrix
         mat4.multiply(this.getNodeGL().workmatrix,this.parent.getNodeGL().workmatrix,this.matrix);
+
+        console.log(this.getNodeGL());
+        
         // OpenGL rendering
+        this.getNodeGL().pre_render(context);
         this.getNodeGL().render(context);
+        this.getNodeGL().post_render(context);
     };
 
     /**

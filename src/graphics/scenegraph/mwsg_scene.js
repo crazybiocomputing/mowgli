@@ -38,7 +38,14 @@
         mwSG.Composite.call(this);
 
         this.ID = 'scene';
-        this.nodeGL = new NodeGL(this);
+        this.cameras = [];
+        this.backgroundColor = {
+            r:0.0,
+            g:0.0,
+            b:0.0,
+            a:1.0
+        };
+        this.nodeGL = new mwGL.Scene(this);
     }
 
     Scene.prototype = Object.create(mwSG.Composite.prototype);
@@ -51,9 +58,18 @@
         this.ID = 'scene_default';
         // Add a camera
         var cam = new mwSG.Camera();
-        this.add( cam);
+        this.add(cam);
         // Add a light
         this.add(new mwSG.Light()  );
+    };
+
+    Scene.prototype.add = function(an_object) {
+        mwSG.Composite.prototype.add.call(this,an_object);
+
+        // Special case of the camera
+        if (an_object.ID === 'camera') {
+            this.cameras.push(an_object);
+        }
     };
 
     /**
@@ -64,6 +80,51 @@
     Scene.prototype.getCamera = function() {
         // TODO: must be improved if CameraGroup exists for stereo
         return this.children['camera_0'];
+    };
+
+    /**
+     * Render this object and traverse its children
+     * Function called by the renderer
+     *
+     * @param{number} OpenGL context
+     **/
+    Scene.prototype.render = function(context) {
+        console.log('RENDER_Scene ' + this.ID );// HACK
+        // HACK console.log(this.parent);
+        // Update matrix
+        if (!(this.parent instanceof Renderer) ) {
+            mat4.multiply(this.getNodeGL().workmatrix,this.parent.getNodeGL().workmatrix,this.matrix);
+        }
+
+        // Sort children
+        this.children.sort(
+            function (a, b) {
+                if (a.ID > b.ID) {
+                    return 1;
+                }
+                if (a.ID < b.ID) {
+                    return -1;
+                }
+                // a.ID === b.ID
+                return 0;
+            }
+        );
+
+        // Render Scene...
+        this.getNodeGL().render(context);
+
+        // For each camera in scene...
+        for (var i = 0; i < this.cameras.length; i++) {
+            // Clear screen & buffers, update cam matrices, etc.
+            this.cameras[i].render(context);
+            // Propagate to children
+            for (var j in this.children) {
+                if (this.children[j].ID !== 'camera') {
+                    this.children[j].render(context);
+                }
+            }
+        }
+
     };
 
     Scene.prototype.toString = function() {

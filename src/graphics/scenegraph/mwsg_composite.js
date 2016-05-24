@@ -39,12 +39,17 @@
         mwSG.Node.call(this);
         this.ID = 'composite';
 
-        this.children = {};
+        this.children = [];
     }
 
     Composite.prototype = Object.create(mwSG.Node.prototype);
     Composite.prototype.constructor = Composite;
 
+    /**
+     * Add an object in the scene graph
+     *
+     * @param{object} A 3D graphics object
+     **/
     Composite.prototype.add = function(an_object) {
         // Modify ID if duplicates
         an_object.name = an_object.ID + '_' + size(this.children);

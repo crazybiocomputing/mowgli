@@ -39,7 +39,7 @@
         this.ID = 'light';
 
           // NodeGL
-        this.nodeGL = new NodeGL(this);
+        this.nodeGL = new mwGL.Node(this);
     }
 
     Light.prototype = Object.create(mwSG.Leaf.prototype);

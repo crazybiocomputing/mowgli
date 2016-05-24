@@ -39,12 +39,12 @@
 
         this.ID = 'group[shape]';
 
-        this.nodeGL = new NodeGL(this);
+        this.nodeGL = new mwGL.Node(this);
 
     }
 
     ShapeGroup.prototype = Object.create(mwSG.Composite.prototype);
-    
+
     exports.ShapeGroup = ShapeGroup;
 
 
