@@ -59,22 +59,29 @@
  **/
 (function(exports) {
     function _Camera(node) {
-        this.sgnode = node;
-        this.glType = -1;
-        this._isDirty = true;
+        mwGL.Node.call(this,node);
 
-        // Matrix for rotation(s) and translation(s)
-        this.workmatrix= mat4.create();
-        mat4.identity(this.workmatrix);
+        this.backgroundColor = {
+            r:0.0,
+            g:0.0,
+            b:0.0,
+            a:1.0
+        };
+
     }
+
+    _Camera.prototype = Object.create(mwGL.Node.prototype);
+
 
     _Camera.prototype.isDirty = function() {
         return _isDirty;
     };
 
-
-    _Camera.prototype.setViewport = function (width, height) {
-        mat4.perspective(this.sgnode.projMatrix,this.sgnode.fovy * this.sgnode.zoom,width / height,this.sgnode.zNear,this.sgnode.zFar);
+    _Camera.prototype.setViewport = function (x,y,width,height) {
+        this.viewport.x = x;
+        this.viewport.y = y;
+        this.viewport.width  = width;
+        this.viewport.height = height;
     };
 
     _Camera.prototype.init = function(context) {
@@ -86,11 +93,21 @@
         var gl = context;
         // HACK console.log('RENDER CAM++ ' ,gl.viewportWidth,gl.viewportHeight);
         // HACK console.log(context);
-        this.setViewport(gl.viewportWidth,gl.viewportHeight);
-        this.sgnode.getRenderer().setUniform("uVMatrix", this.sgnode.viewMatrix);
-        this.sgnode.getRenderer().setUniform("uPMatrix", this.sgnode.projMatrix);
-    };
 
+        // Update viewport...
+        var viewport = this.sgnode.callback.call(this,gl.viewportWidth,gl.viewportHeight);
+
+        // Update Projection Matrix
+        //mat4.perspective(this.sgnode.projMatrix,this.sgnode.fovy * this.sgnode.zoom,viewport.width / viewport.height,this.sgnode.zNear,this.sgnode.zFar);
+
+        // Update uniforms
+        this.sgnode.getRenderer().setUniform('uVMatrix', this.sgnode.viewMatrix);
+        this.sgnode.getRenderer().setUniform('uPMatrix', this.sgnode.projMatrix);
+
+        // Update GL viewport
+        console.log(this.sgnode.name+' '+viewport.x+' '+viewport.y+' '+viewport.width+' '+viewport.height);
+        gl.viewport(viewport.x, viewport.y, viewport.width, viewport.height);
+    };
 
 
     exports.Camera = _Camera;
