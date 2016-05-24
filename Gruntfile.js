@@ -15,7 +15,13 @@ module.exports = function(grunt) {
             },
             concat: {
                 js: {
-                    src: ['src/**/*.js'],
+                    src: [
+                        'src/graphics/scenegraph/mwsg_node.js',
+                        'src/graphics/scenegraph/mwsg_leaf.js',
+                        'src/graphics/scenegraph/mwsg_composite.js',
+                        'src/graphics/scenegraph/gl/mwgl_node.js',
+                        'src/**/*.js'
+                    ],
                     dest: 'dist/<%= pkg.name %>.js'
                 },
                 dist: {

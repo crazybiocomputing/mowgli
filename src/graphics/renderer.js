@@ -167,10 +167,6 @@ Renderer.prototype.init = function () {
 Renderer.prototype.drawScene = function () {
     var gl = this.context;
 
-    // Clear Screen And Depth Buffer
-    gl.viewport(0.0, 0.0, gl.viewportWidth, gl.viewportHeight);
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
     // Traverse scene graph
     console.log('*************** RENDER ***************');
     this.scene.render(gl);
@@ -196,6 +192,6 @@ Renderer.prototype._initGL = function() {
         alert('Extension frag_depth not supported');
     }
 
-    // Default shader program
+    // HACK Default shader program???
     this.program = new Program();
 };

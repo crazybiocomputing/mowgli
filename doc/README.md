@@ -1,7 +1,12 @@
 This folder **src** contains all the codes required for mowgli-core.
+
 - graphics
-  - shaders
-  - shapes
+  - colorers
+  - geometers
+  - scenegraph
+    - gl
+ -  shaders
+ -  shapes
 - mol
 - parser
 - styles
@@ -42,7 +47,7 @@ Various objects required to build the scene graph.
     shape.setStyle('wireframe');
     console.log(shape);
 
-  // 2ter- Define shader program by hand 
+  // 2ter- Define shader program by hand
   var shaderProgram = new Program(renderer.getContext(),'wireframe-cpk');
   shaderProgram.loadDOM("vertex"  ,"wireframe-vs");
   shaderProgram.loadDOM("fragment","wireframe-fs");
@@ -55,7 +60,7 @@ Various objects required to build the scene graph.
   shape.setProgram(shaderProgram);
 
   scene.add(shape);
-  
+
   // Move camera to see the structure in its entirety
   mat4.translate(scene.getCamera().viewMatrix,scene.getCamera().viewMatrix,[0.0,0.0,-5.0]);
 
@@ -67,25 +72,70 @@ Various objects required to build the scene graph.
 
   // 4- Init renderer
   renderer.init();
-  
+
   // 5- Draw Scene
   renderer.drawScene();
 }
 
 ```
 
-
-
-
 ## 2. graphics
 
-This directory contains all the nodes of the scene graph. 
+This directory contains all the classes dedicated to WebGL graphics
 
-Each node is split in two parts: 
-1. the pure javascript is located in this directory. 
+- colorers
+- geometers
+- scenegraph
+  - gl
+- shaders
+- shapes
+
+### 2.1. colorers
+
+The folder contains all the various color schemes used by any Molecule Viewer. The color tables are those described in the [wiki of JMol](http://jmol.sourceforge.net/jscolors/index.en.html).
+
+Color schemes:
+- CPK (Corey, Pauling, Koltun)
+- chain
+- structure based on the secondary structures
+- monochrome (user-defined color)
+- amino or nucleic
+- rainbow: a gradient from N-term &rarr; C-term peptidic or 5' &rarr; 3' nucleic chains.
+
+-
+
+## 5. styles
+
+This folder contains all the drawing styles of mowgli
+<ul>
+<li>Vectorial approaches (points, lines, triangles)</li>
+  <ul>
+    <li>Points (points only for debug)</li>
+    <li>Wireframe (lines)</li>
+    <li>Dots (points along spheres)</li>
+    <li>Strands (lines)</li>
+    <li>Ribbon (triangles)</li>
+    <li>Cartoon (triangles)</li>
+</ul>
+<li>Impostor approaches (spheres, cylinders)</li>
+  <ul>
+    <li>SpaceFill (spheres)</li>
+    <li>Sticks (cylinders)</li>
+    <li>Backbone (cylinders)</li>
+    <li>Trace (cylinders)</li>
+    <li>Ball & Sticks (spheres + cylinders)</li>
+    <li>Wireframe</li>
+</ul>
+
+</ul>
+
+### 2.3. graphics/scenegraph
+
+This directory contains all the nodes of the scene graph.
+
+Each node is split in two parts:
+1. the pure javascript is located in this directory.
 2. All the WebGL code is located in **gl** directory.
-
-
 
 ### 2.1. shaders
 
@@ -110,27 +160,3 @@ Source of all the objects related to a structure (aka molecule).
 
 
 
-
-## 5. styles
-
-This folder contains all the drawing styles of mowgli
-<ul>
-<li>Vectorial approaches (points, lines, triangles)</li>
-  <ul>
-    <li>Wireframe (lines)</li>
-    <li>Dots (points)</li>
-    <li>Strands (lines)</li>
-    <li>Ribbon (triangles)</li>
-    <li>Cartoon (triangles)</li>
-</ul>
-<li>Impostor approaches (spheres, cylinders)</li>
-  <ul>
-    <li>SpaceFill (spheres)</li>
-    <li>Sticks (cylinders)</li>
-    <li>Backbone (cylinders)</li>
-    <li>Trace (cylinders)</li>
-    <li>Ball & Sticks (spheres + cylinders)</li>
-    <li>Wireframe</li>
-</ul>
-
-</ul>
