@@ -537,16 +537,58 @@
                 "img": "flask.svg",
                 "children": [
                     {
-                        "id":"CPK",
+                        "id":"CPKcolor",
                         "title":"CPK",
                         "type": "item",
-                        "img":"database.svg"
+                        "img":"flask.svg"
                     },
                     {
-                        "id":"close",
-                        "title":"Close Active Structure",
+                        "id":"chaincolor",
+                        "title":"Chain",
                         "type": "item",
-                        "img":"times.svg"
+                        "img":"chain.svg"
+                    },
+                    {
+                        "id":"structcolor",
+                        "title":"Structure",
+                        "type": "item",
+                        "img":"tint.svg"
+                    },
+                    {
+                        "id":"rainbowcolor",
+                        "title":"Rainbow",
+                        "type": "item",
+                        "img":"wifi.svg"
+                    },
+                    {
+                        "id":"groupscolor",
+                        "title":"Groups",
+                        "type": "item",
+                        "img":"tags.svg"
+                    },
+                    {
+                        "id":"usercolor",
+                        "title":"User-defined",
+                        "type": "item",
+                        "img":"pencil-square-o.svg"
+                    },
+                    {
+                        "id":"monocolor",
+                        "title":"Monochrome",
+                        "type": "item",
+                        "img":"adjust.svg"
+                    },
+                    {
+                        "id":"modelcolor",
+                        "title":"Model",
+                        "type": "item",
+                        "img":"dashboard.svg"
+                    },
+                    {
+                        "id":"altcolor",
+                        "title":"Alt",
+                        "type": "item",
+                        "img":"usb.svg"
                     }
                 ]
             },

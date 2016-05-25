@@ -112,12 +112,15 @@
     };
 
     /**
-     * Render this object and traverse its children
+     * Render this object
      * Function called by the renderer
      *
      * @param{number} OpenGL context
      **/
     Node.prototype.render = function(context) {
+        this.nodeGL.pre_render(context);
+        this.nodeGL.render(context);
+        this.nodeGL.post_render(context);
     };
 
     Node.prototype.translate = function(tx, ty, tz) {
@@ -203,8 +206,13 @@
         // HACK console.log(this.parent.getNodeGL().workmatrix);
         // Update matrix
         mat4.multiply(this.getNodeGL().workmatrix,this.parent.getNodeGL().workmatrix,this.matrix);
+
+        console.log(this.getNodeGL());
+        
         // OpenGL rendering
+        this.getNodeGL().pre_render(context);
         this.getNodeGL().render(context);
+        this.getNodeGL().post_render(context);
     };
 
     /**
@@ -277,12 +285,17 @@
         mwSG.Node.call(this);
         this.ID = 'composite';
 
-        this.children = {};
+        this.children = [];
     }
 
     Composite.prototype = Object.create(mwSG.Node.prototype);
     Composite.prototype.constructor = Composite;
 
+    /**
+     * Add an object in the scene graph
+     *
+     * @param{object} A 3D graphics object
+     **/
     Composite.prototype.add = function(an_object) {
         // Modify ID if duplicates
         an_object.name = an_object.ID + '_' + size(this.children);
@@ -425,6 +438,91 @@ Composite.prototype._updateAttributes = function(context) {
 
 
 })(this.mwSG = this.mwSG || {});
+
+/*
+ *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
+ *  Copyright (C) 2015  Jean-Christophe Taveau.
+ *
+ *  This file is part of mowgli
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * Authors:
+ * Jean-Christophe Taveau
+ */
+
+
+/**
+ * @module mwGL
+ */
+
+
+/**
+ * OpenGL node of the scene graph
+ *
+ * @class Node
+ * @memberof module:mwGL
+ *
+ **/
+
+
+/**
+ * @constructor
+ * @param {Node} node - Object belonging to the scene graph
+ * @extends module:mwGL.Node
+ * @author Jean-Christophe Taveau
+ **/
+
+(function(exports) {
+
+    function NodeGL(node) {
+        this.sgnode = node;
+        this.glType = -1;
+        this._isDirty = true;
+
+        // Matrix for rotation(s) and translation(s)
+        this.workmatrix= mat4.create();
+        mat4.identity(this.workmatrix);
+    };
+
+    NodeGL.prototype.isDirty = function() {
+        return this._isDirty;
+    };
+
+    NodeGL.prototype.init = function(context) {
+        // Do nothing
+        this.isDirty = false;
+    };
+
+    NodeGL.prototype.pre_render = function(context) {
+        // Do nothing
+    };
+
+    NodeGL.prototype.render = function(context) {
+        // Do nothing
+    };
+
+    NodeGL.prototype.post_render = function(context) {
+        // Do nothing
+    };
+
+
+    exports.Node = NodeGL;
+
+
+})(this.mwGL = this.mwGL || {} );
 
 /*
  *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
@@ -1902,10 +2000,6 @@ Renderer.prototype.init = function () {
 Renderer.prototype.drawScene = function () {
     var gl = this.context;
 
-    // Clear Screen And Depth Buffer
-    gl.viewport(0.0, 0.0, gl.viewportWidth, gl.viewportHeight);
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
     // Traverse scene graph
     console.log('*************** RENDER ***************');
     this.scene.render(gl);
@@ -1931,7 +2025,7 @@ Renderer.prototype._initGL = function() {
         alert('Extension frag_depth not supported');
     }
 
-    // Default shader program
+    // HACK Default shader program???
     this.program = new Program();
 };
 
@@ -1996,22 +2090,29 @@ Renderer.prototype._initGL = function() {
  **/
 (function(exports) {
     function _Camera(node) {
-        this.sgnode = node;
-        this.glType = -1;
-        this._isDirty = true;
+        mwGL.Node.call(this,node);
 
-        // Matrix for rotation(s) and translation(s)
-        this.workmatrix= mat4.create();
-        mat4.identity(this.workmatrix);
+        this.backgroundColor = {
+            r:0.0,
+            g:0.0,
+            b:0.0,
+            a:1.0
+        };
+
     }
+
+    _Camera.prototype = Object.create(mwGL.Node.prototype);
+
 
     _Camera.prototype.isDirty = function() {
         return _isDirty;
     };
 
-
-    _Camera.prototype.setViewport = function (width, height) {
-        mat4.perspective(this.sgnode.projMatrix,this.sgnode.fovy * this.sgnode.zoom,width / height,this.sgnode.zNear,this.sgnode.zFar);
+    _Camera.prototype.setViewport = function (x,y,width,height) {
+        this.viewport.x = x;
+        this.viewport.y = y;
+        this.viewport.width  = width;
+        this.viewport.height = height;
     };
 
     _Camera.prototype.init = function(context) {
@@ -2023,11 +2124,21 @@ Renderer.prototype._initGL = function() {
         var gl = context;
         // HACK console.log('RENDER CAM++ ' ,gl.viewportWidth,gl.viewportHeight);
         // HACK console.log(context);
-        this.setViewport(gl.viewportWidth,gl.viewportHeight);
-        this.sgnode.getRenderer().setUniform("uVMatrix", this.sgnode.viewMatrix);
-        this.sgnode.getRenderer().setUniform("uPMatrix", this.sgnode.projMatrix);
-    };
 
+        // Update viewport...
+        var viewport = this.sgnode.callback.call(this,gl.viewportWidth,gl.viewportHeight);
+
+        // Update Projection Matrix
+        //mat4.perspective(this.sgnode.projMatrix,this.sgnode.fovy * this.sgnode.zoom,viewport.width / viewport.height,this.sgnode.zNear,this.sgnode.zFar);
+
+        // Update uniforms
+        this.sgnode.getRenderer().setUniform('uVMatrix', this.sgnode.viewMatrix);
+        this.sgnode.getRenderer().setUniform('uPMatrix', this.sgnode.projMatrix);
+
+        // Update GL viewport
+        console.log(this.sgnode.name+' '+viewport.x+' '+viewport.y+' '+viewport.width+' '+viewport.height);
+        gl.viewport(viewport.x, viewport.y, viewport.width, viewport.height);
+    };
 
 
     exports.Camera = _Camera;
@@ -2062,38 +2173,49 @@ Renderer.prototype._initGL = function() {
 
 'use strict';
 
+/**
+ * @module mwGL
+ */
 
 
 /**
- * OpenGL node of the scene graph
+ * WebGL part of Camera class
  *
- * @class NodeGL
+ * @class Scene
+ * @memberof module:mwGL
  *
  *
- * @constructor
  **/
-function NodeGL(node) {
-    this.sgnode = node;
-    this.glType = -1;
-    this._isDirty = true;
 
-    // Matrix for rotation(s) and translation(s)
-    this.workmatrix= mat4.create();
-    mat4.identity(this.workmatrix);
-}
 
-NodeGL.prototype.isDirty = function() {
-    return _isDirty;
-}
+/**
+ * @constructor
+ * @param {Node} node - Scene belonging to the scene graph
+ * @extends module:mwGL.Node
+ * @author Jean-Christophe Taveau
+ **/
 
-NodeGL.prototype.init = function(context) {
-    // Do nothing
-    this.isDirty = false;
-}
 
-NodeGL.prototype.render = function(context) {
-    // Do nothing
-}
+(function(exports) {
+    function _Scene(node) {
+        mwGL.Node.call(this,node);
+    }
+
+    _Scene.prototype = Object.create(mwGL.Node.prototype);
+
+    _Scene.prototype.render = function(context) {
+        var gl = context;
+
+        // Clear Screen And Depth Buffer
+        gl.clearColor(this.sgnode.backgroundColor.r,this.sgnode.backgroundColor.g,this.sgnode.backgroundColor.b,this.sgnode.backgroundColor.a);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    };
+
+
+    exports.Scene = _Scene;
+
+
+})(this.mwGL = this.mwGL || {} );
 
 /*
  *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
@@ -2132,7 +2254,7 @@ NodeGL.prototype.render = function(context) {
  * @constructor
  **/
 function ShapeGL(node) {
-    NodeGL.call(this,node);
+    mwGL.Node.call(this,node);
 
     this.numIndices = 0;
     this.numItems = 0;
@@ -2140,6 +2262,8 @@ function ShapeGL(node) {
     this.GLTextures = [];
     this.shaderProgram = null;
 }
+
+ShapeGL.prototype = Object.create(mwGL.Node.prototype);
 
 /**
  * Init of the OpenGL part: VBO creation
@@ -2451,7 +2575,23 @@ ShapeGL.prototype._updateAttributes = function(context) {
         mwSG.Leaf.call(this);
 
         this.ID = 'camera';
+        this.eye = {x:0.0, y: 0.0, z:0.0}; // View position
+        this.vd  = {x:0.0, y: 0.0, z:0.0}; // View direction vector
+        this.up  = {x:0.0, y: 1.0, z:0.0}; // View up direction
 
+        this.focallength;  // Focal Length along vd = distance between cam and objects center
+
+        this.screenwidth,
+        this.screenheight;
+
+        this.callback = function(viewportW,viewportH) {
+            return {
+                x: 0,
+                y: 0,
+                width: viewportW,
+                height: viewportH
+            };
+        };
         this.projMatrix = mat4.create();
         this.viewMatrix = mat4.create();
         mat4.identity(this.viewMatrix);
@@ -2486,6 +2626,24 @@ ShapeGL.prototype._updateAttributes = function(context) {
     Camera.prototype.constructor = Camera;
 
     /**
+     * Camera position.
+     *
+     * @type {number}
+     *
+     */
+    Object.defineProperty(Camera.prototype, 'position', {
+        get: function() {
+            return this.eye;
+        },
+        set: function(pos) {
+            this.eye.x = pos.x;
+            this.eye.y = pos.y;
+            this.eye.z = pos.z;
+        }
+    });
+
+
+    /**
      * Set the Y-Field of View.
      *
      * @param {number} angle_in_degrees - Angle of the Field of View expressed in degrees
@@ -2493,6 +2651,64 @@ ShapeGL.prototype._updateAttributes = function(context) {
      **/
     Camera.prototype.setFovy = function (angle_in_degrees) {
         this.fovy = angle_in_degrees * Math.PI/180.0;
+    };
+
+
+    /**
+     * Set the Camera position.
+     *
+     * @param {number} posX - X-coordinate of the camera position in world
+     * @param {number} posY - Y-coordinate of the camera position in world
+     * @param {number} posZ - Z-coordinate of the camera position in world
+     *
+     **/
+    Camera.prototype.setPosition = function (posX, posY, posZ) {
+        this.eye.x = posX;
+        this.eye.y = posY;
+        this.eye.z = posZ;
+    };
+
+	/**
+	 * Calculates a look-at matrix with the given camera position, focal point, and up axis
+	 *
+	 * @param {vec3} center Point the viewer is looking at
+     *
+	 */
+    Camera.prototype.lookAt = function (center) {
+        mat4.lookAt(
+            this.viewMatrix,
+            [this.eye.x, this.eye.y, this.eye.z],
+            [center.x  , center.y  , center.z  ],
+            [this.up.x , this.up.y , this.up.z ] );
+    };
+
+	/**
+	 * Calculates a perspective projection matrix with the given bounds for this camera
+	 *
+	 * @param {mat4} out mat4 frustum matrix will be written into
+	 * @param {number} fovy Vertical field of view in radians
+	 * @param {number} aspect Aspect ratio. typically viewport width/height
+	 * @param {number} near Near bound of the frustum
+	 * @param {number} far Far bound of the frustum
+	 * @returns {mat4} out
+	 */
+    Camera.prototype.perspective = function (fovy, aspect, near, far) {
+        mat4.perspective(this.projMatrix, fovy, aspect, near, far);
+    };
+
+    /**
+	 * Calculates a frustum projection matrix with the given bounds for this camera
+	 *
+	 * @param {Number} left Left bound of the frustum
+	 * @param {Number} right Right bound of the frustum
+	 * @param {Number} bottom Bottom bound of the frustum
+	 * @param {Number} top Top bound of the frustum
+	 * @param {Number} near Near bound of the frustum
+	 * @param {Number} far Far bound of the frustum
+     *
+     **/
+    Camera.prototype.frustum = function (left,right,bottom,top,near,far) {
+        mat4.frustum(this.projMatrix, left, right, bottom, top, near, far);
     };
 
     /**
@@ -2505,6 +2721,9 @@ ShapeGL.prototype._updateAttributes = function(context) {
         this.zoom = zoomFactor;
     };
 
+    Camera.prototype.setViewportFunc = function(callback) {
+        this.callback = callback;
+    }
 
 
     exports.Camera = Camera;
@@ -2736,7 +2955,7 @@ ShapeGL.prototype._updateAttributes = function(context) {
         this.ID = 'light';
 
           // NodeGL
-        this.nodeGL = new NodeGL(this);
+        this.nodeGL = new mwGL.Node(this);
     }
 
     Light.prototype = Object.create(mwSG.Leaf.prototype);
@@ -2789,7 +3008,14 @@ ShapeGL.prototype._updateAttributes = function(context) {
         mwSG.Composite.call(this);
 
         this.ID = 'scene';
-        this.nodeGL = new NodeGL(this);
+        this.cameras = [];
+        this.backgroundColor = {
+            r:0.0,
+            g:0.0,
+            b:0.0,
+            a:1.0
+        };
+        this.nodeGL = new mwGL.Scene(this);
     }
 
     Scene.prototype = Object.create(mwSG.Composite.prototype);
@@ -2802,9 +3028,18 @@ ShapeGL.prototype._updateAttributes = function(context) {
         this.ID = 'scene_default';
         // Add a camera
         var cam = new mwSG.Camera();
-        this.add( cam);
+        this.add(cam);
         // Add a light
         this.add(new mwSG.Light()  );
+    };
+
+    Scene.prototype.add = function(an_object) {
+        mwSG.Composite.prototype.add.call(this,an_object);
+
+        // Special case of the camera
+        if (an_object.ID === 'camera') {
+            this.cameras.push(an_object);
+        }
     };
 
     /**
@@ -2815,6 +3050,51 @@ ShapeGL.prototype._updateAttributes = function(context) {
     Scene.prototype.getCamera = function() {
         // TODO: must be improved if CameraGroup exists for stereo
         return this.children['camera_0'];
+    };
+
+    /**
+     * Render this object and traverse its children
+     * Function called by the renderer
+     *
+     * @param{number} OpenGL context
+     **/
+    Scene.prototype.render = function(context) {
+        console.log('RENDER_Scene ' + this.ID );// HACK
+        // HACK console.log(this.parent);
+        // Update matrix
+        if (!(this.parent instanceof Renderer) ) {
+            mat4.multiply(this.getNodeGL().workmatrix,this.parent.getNodeGL().workmatrix,this.matrix);
+        }
+
+        // Sort children
+        this.children.sort(
+            function (a, b) {
+                if (a.ID > b.ID) {
+                    return 1;
+                }
+                if (a.ID < b.ID) {
+                    return -1;
+                }
+                // a.ID === b.ID
+                return 0;
+            }
+        );
+
+        // Render Scene...
+        this.getNodeGL().render(context);
+
+        // For each camera in scene...
+        for (var i = 0; i < this.cameras.length; i++) {
+            // Clear screen & buffers, update cam matrices, etc.
+            this.cameras[i].render(context);
+            // Propagate to children
+            for (var j in this.children) {
+                if (this.children[j].ID !== 'camera') {
+                    this.children[j].render(context);
+                }
+            }
+        }
+
     };
 
     Scene.prototype.toString = function() {
@@ -3127,12 +3407,12 @@ ShapeGL.prototype._updateAttributes = function(context) {
 
         this.ID = 'group[shape]';
 
-        this.nodeGL = new NodeGL(this);
+        this.nodeGL = new mwGL.Node(this);
 
     }
 
     ShapeGroup.prototype = Object.create(mwSG.Composite.prototype);
-    
+
     exports.ShapeGroup = ShapeGroup;
 
 
@@ -7088,5 +7368,119 @@ EventManager.prototype.add = function(type, a_callback) {
     };
 
     exports.ZoomSensor = ZoomSensor;
+
+})(this.mwUI = this.mwUI || {} );
+
+/*
+ *  mowgli: Molecule WebGL Viewer in JavaScript, html5, css3, and WebGL
+ *  Copyright (C) 2015  Jean-Christophe Taveau.
+ *
+ *  This file is part of mowgli
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with mowgli.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * Authors:
+ * Jean-Christophe Taveau
+ */
+
+
+'use strict';
+
+(function(exports) {
+
+    /**
+     * ZoomToucher    pinch-zoom gesture
+     * Think about what a pinch event is: two fingers on an element, moving toward or away from each other. 
+     * Gesture events are, to my knowledge, a fairly new standard, so probably the safest way to go about 
+     * this is to use touch events like so:
+
+     * @class ZoomToucher
+     * @constructor
+     * @memberof module:mwUI
+     */
+    function ZoomToucher(canvas_id) {
+
+
+/*
+(ontouchstart event)
+
+if(e.touches.length == 2) {
+    scaling = true;
+    pinchStart(e);
+}
+
+(ontouchmove event)
+
+if(scaling) {
+    pinchMove(e);
+}
+(ontouchend event)
+
+if(scaling) {
+    pinchEnd(e);
+    scaling = false;
+}
+To get the distance between the two fingers, use pythagorean theorem:
+
+var dist = Math.sqrt(
+    (e.touches[0].x-e.touches[1].x) * (e.touches[0].x-e.touches[1].x) +
+    (e.touches[0].y-e.touches[1].y) * (e.touches[0].y-e.touches[1].y));
+*/
+
+
+        canvas.addEventListener("touchstart", startZoom, false);
+        canvas.addEventListener("touchstart", startZoom, false);
+
+        function pinchStart(e) {
+            if (e.targetTouches.length != 2) {
+                return;
+            }
+
+            var touch1 = e.targetTouches[0],
+                touch2 = e.targetTouches[1],
+                dX = touch1.clientX - touch2.clientX,
+                dY = touch1.clientY - touch2.clientY,
+                startDist = Math.sqrt(dX * dX + dY * dY),
+                scale = +this.getAttribute("data-scale") || 1;
+
+            function pinchMove(e) {
+                if (e.targetTouches.length != 2) {
+                    return;
+                }
+
+                var touch1 = e.targetTouches[0],
+                    touch2 = e.targetTouches[1],
+                    dX = touch1.clientX - touch2.clientX,
+                    dY = touch1.clientY - touch2.clientY,
+                    newDist = Math.sqrt(dX * dX + dY * dY),
+                    newScale = scale * newDist / startDist;
+                this.style.webkitTransform = "scale(" + newScale + ")";
+                this.setAttribute("data-scale", newScale);
+                e.preventDefault();
+            }
+
+            function pinchEnd() {
+                this.removeEventListener("touchmove", pinchMove);
+                this.removeEventListener("touchend", pinchEnd);
+            }
+
+            this.addEventListener("touchmove", pinchMove, false);
+            this.addEventListener("touchend", pinchEnd, false);
+        };
+    }
+    
+    exports.ZoomToucher = ZoomToucher;
 
 })(this.mwUI = this.mwUI || {} );
