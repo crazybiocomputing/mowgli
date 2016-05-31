@@ -2122,21 +2122,22 @@ Renderer.prototype._initGL = function() {
 
     _Camera.prototype.render = function(context) {
         var gl = context;
-        // HACK console.log('RENDER CAM++ ' ,gl.viewportWidth,gl.viewportHeight);
+
         // HACK console.log(context);
 
         // Update viewport...
-        var viewport = this.sgnode.callback.call(this,gl.viewportWidth,gl.viewportHeight);
+        console.log('RENDER CAM++ ' ,gl.viewportWidth,gl.viewportHeight);
+        var viewport = this.sgnode.viewportFunc(gl.viewportWidth,gl.viewportHeight);
 
-        // Update Projection Matrix
-        //mat4.perspective(this.sgnode.projMatrix,this.sgnode.fovy * this.sgnode.zoom,viewport.width / viewport.height,this.sgnode.zNear,this.sgnode.zFar);
+        // ... and update Projection matrix
+        this.sgnode.projectionFunc(viewport.width / viewport.height);
+        console.log(this.sgnode.projMatrix);
 
         // Update uniforms
         this.sgnode.getRenderer().setUniform('uVMatrix', this.sgnode.viewMatrix);
         this.sgnode.getRenderer().setUniform('uPMatrix', this.sgnode.projMatrix);
 
         // Update GL viewport
-        console.log(this.sgnode.name+' '+viewport.x+' '+viewport.y+' '+viewport.width+' '+viewport.height);
         gl.viewport(viewport.x, viewport.y, viewport.width, viewport.height);
     };
 
@@ -2581,17 +2582,6 @@ ShapeGL.prototype._updateAttributes = function(context) {
 
         this.focallength;  // Focal Length along vd = distance between cam and objects center
 
-        this.screenwidth,
-        this.screenheight;
-
-        this.callback = function(viewportW,viewportH) {
-            return {
-                x: 0,
-                y: 0,
-                width: viewportW,
-                height: viewportH
-            };
-        };
         this.projMatrix = mat4.create();
         this.viewMatrix = mat4.create();
         mat4.identity(this.viewMatrix);
@@ -2609,15 +2599,23 @@ ShapeGL.prototype._updateAttributes = function(context) {
         /**
          * Z-near Plane
          **/
-        this.zNear = 0.1;
+        this.near = 0.1;
 
         /**
          * Z-far Plane
          **/
-        this.zFar  = 1000.0;
+        this.far  = 1000.0;
 
         // NodeGL
         this.nodeGL = new mwGL.Camera(this);
+
+
+        // Projection Func
+        var that = this;
+        this.proj_callback = function(aspect) {
+            console.log('this/that '+ aspect + ' ' + that.fovy +' '+ that.zoom+' '+ that.near+' '+ that.far);
+            mat4.perspective(that.projMatrix,that.fovy * that.zoom,aspect,that.near,that.far);
+        };
 
     }
 
@@ -2722,7 +2720,20 @@ ShapeGL.prototype._updateAttributes = function(context) {
     };
 
     Camera.prototype.setViewportFunc = function(callback) {
-        this.callback = callback;
+        this.viewport_callback = callback;
+    }
+
+    Camera.prototype.viewportFunc = function(viewportWidth,viewportHeight) {
+        return {
+            x: 0,
+            y: 0,
+            width: viewportWidth,
+            height: viewportHeight
+        };
+    };
+
+    Camera.prototype.projectionFunc = function(aspect_ratio) {
+        mat4.perspective(this.projMatrix, this.fovy * this.zoom, aspect_ratio, this.near, this.far);
     }
 
 
