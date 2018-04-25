@@ -44,17 +44,13 @@
 
         this.focallength;  // Focal Length along vd = distance between cam and objects center
 
-        this.screenwidth,
-        this.screenheight;
-
-        this.callback = function(viewportW,viewportH) {
-            return {
-                x: 0,
-                y: 0,
-                width: viewportW,
-                height: viewportH
-            };
+        this.viewport = {
+            x:0,
+            y:0,
+            width:0,
+            height:0
         };
+
         this.projMatrix = mat4.create();
         this.viewMatrix = mat4.create();
         mat4.identity(this.viewMatrix);
@@ -72,15 +68,23 @@
         /**
          * Z-near Plane
          **/
-        this.zNear = 0.1;
+        this.near = 0.1;
 
         /**
          * Z-far Plane
          **/
-        this.zFar  = 1000.0;
+        this.far  = 1000.0;
 
         // NodeGL
         this.nodeGL = new mwGL.Camera(this);
+
+
+        // Projection Func
+        var that = this;
+        this.proj_callback = function(aspect) {
+            console.log('this/that '+ aspect + ' ' + that.fovy +' '+ that.zoom+' '+ that.near+' '+ that.far);
+            mat4.perspective(that.projMatrix,that.fovy * that.zoom,aspect,that.near,that.far);
+        };
 
     }
 
@@ -185,8 +189,25 @@
     };
 
     Camera.prototype.setViewportFunc = function(callback) {
-        this.callback = callback;
+        this.viewport_callback = callback;
     }
+
+    Camera.prototype.viewportFunc = function(viewportWidth,viewportHeight) {
+        return {
+            x: 0,
+            y: 0,
+            width: viewportWidth,
+            height: viewportHeight
+        };
+    };
+
+    Camera.prototype.handle = function(rendr) {
+        console.log('handle');
+        console.log(rendr.canvasWidth+' '+rendr.canvasHeight);
+        this.viewport = this.viewportFunc(rendr.canvasWidth,rendr.canvasHeight);
+        var aspect_ratio = rendr.canvasWidth / rendr.canvasHeight;
+        mat4.perspective(this.projMatrix, this.fovy * this.zoom, aspect_ratio, this.near, this.far);
+    };
 
 
     exports.Camera = Camera;

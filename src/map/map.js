@@ -27,15 +27,19 @@
 
 /**
  * Voxels maps
- * @class Raster
+ * @class Map
  * @memberof module:structure
- * @constructor
+ *
  * @extends module:structure.Structure
  * @author Jean-Christophe Taveau
  **/
-function Raster(other) {
-    // super()
-    Structure.call(this,other);
+class Map extends Structure {
+  /**
+   * @constructor
+   */
+  constructor(pixelData,nx,ny,nz=1,mode='8-bit') {
+    // Structure constructor
+    super(other);
 
    /**
     * Pixels/Voxels
@@ -54,35 +58,63 @@ function Raster(other) {
     this.width = this.information.width;
     this.height = this.information.height;
     this.depth = this.information.depth;
+    
+    // Histogram
+    this.bins;
+    
+    // Init
+    this.init();
 
+  }
+
+  /**
+   * Preprocess Map
+   *
+   */
+  init() {
     this.bbox = {
-        'min': {'x': 0,'y': 0,'z': 0},
-        'max': {'x': this.width,'y': this.height,'z': this.depth},
-        'center':  {'x': this.width/2.0,'y': this.height/2.0,'z': this.depth/2.0},
-        'radius': Math.sqrt(this.width * this.width + this.height * this.height + this.depth * this.depth)/2.0
+      min: {
+        x: 0,
+        y: 0,
+        z: 0
+      },
+      max: {
+        x: this.width,
+        y: this.height,
+        z: this.depth
+      },
+      center:  {
+        x: this.width/2.0,
+        y: this.height/2.0,
+        z: this.depth/2.0
+      },
+      radius: Math.sqrt(this.width * this.width + this.height * this.height + this.depth * this.depth) / 2.0
     };
 
-    this.centroid = {'x': this.width/2.0,'y': this.height/2.0,'z': this.depth/2.0};
-
-    this.bins;
-}
-
-Raster.prototype = Object.create(Structure.prototype);
-
-Raster.prototype.getPixel = function(x,y) {
+    this.centroid = {
+      x: this.width/2.0,
+      y: this.height/2.0,
+      z: this.depth/2.0
+    };
+  }
+  
+  getPixel(x,y) {
     return this.data(x + this.width * y);
-};
+  };
 
-Raster.prototype.getVoxel = function(x,y,z) {
+  getVoxel(x,y,z) {
     return this.data(x + this.width * y + this.width * this.height * z);
-};
+  };
 
-Raster.prototype.histogram = function() {
+  histogram() {
     if (this.bins === undefined) {
-        this.bins = [];
-        for (var i=0; i < this.data.length; i++) {
-            this.bins[this.data[i]]++;
-        }
+      this.bins = [];
+      for (let i=0; i < this.data.length; i++) {
+        this.bins[this.data[i]]++;
+      }
     }
     return this.bins;
-};
+  };
+  
+}
+

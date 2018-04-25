@@ -22,334 +22,252 @@
  * Jean-Christophe Taveau
  */
 
-"use strict";
+'use strict';
 
 /**
  * IsoSurface Generator based on the Marching Cubes algorithm
  * All the details explained in http://crazybiocomputing.blogspot.fr/2014/11/graphics-marching-cubes-implementation.html
  *
  * @class IsoSurfacer
- * @constructor
  *
  * @author Jean-Christophe Taveau
  */
-function IsoSurfacer(maps) {
-    if (maps instanceof Raster) {
-        this.voxels = maps.data;
-        this.mesh = {};
-        this.mesh.vertices = [];
-        this.mesh.faces = [];
+class IsoSurfacer {
+  /**
+   * @constructor
+   */
+  constructor(volume, threshold = 128, cubeSize = 2, mode = 0) {
+    if (map instanceof Map) {
+      this.map = volume;
+      this.mesh = {};
+      this.mesh.vertices = [];
+      this.mesh.triangles = [];
+      this.mesh.normals = [];
 
-        // Default Marching Cubes Parameters
-        this.threshold = 128;
-        this.cubeSize = 2;
-        this.interpolate = function (v0,v1) {
-            var x = ( v0.x + v1.x )/2.0;
-            var y = ( v0.y + v1.y )/2.0;
-            var z = ( v0.z + v1.z )/2.0;
-            return {"x":x,"y":y,"z":z};
-        };
+      // Default Marching Cubes Parameters
+      this.threshold = threshold;
+      this.cubeSize = cubeSize;
+      this.interpolate = (mode === 1) ? IsoSurfacer.interpolateBilinear : IsoSurfacer.interpolateNone;
     }
     else {
-        MOWGLI.alert("This structure is not a raster/map");
+      MOWGLI.alert('This structure is not a voxels raster/map');
     }
-}
+  }
 
-IsoSurfacer.prototype.setInterpolation = function(mode) {
-    function interpolateNone(v0,v1) {
-        var x = ( v0.x + v1.x )/2.0;
-        var y = ( v0.y + v1.y )/2.0;
-        var z = ( v0.z + v1.z )/2.0;
-        return {"x":x,"y":y,"z":z};
+  static interpolateNone(v0,v1) {
+    return {
+      x : ( v0.x + v1.x ) / 2.0,
+      y : ( v0.y + v1.y ) / 2.0,
+      z : ( v0.z + v1.z ) / 2.0
     }
+  };
 
-    function interpolateBilinear(v0,v1) {
-        var k = (this.threshold - v0.voxel)/(v1.voxel - v0.voxel);
-        var x = v0.x + (v1.x - v0.x) * k;
-        var y = v0.y + (v1.y - v0.y) * k;
-        var z = v0.z + (v1.z - v0.z) * k;
-        return {x:x, y:y, z:z};
-    }
-    if (mode === 'None') {
-        this.interpolate = interpolateNone;
-    }
-    else if (mode === 'Bilinear') {
-        this.interpolate = interpolateBilinear;
-    }
-}
+  static interpolateBilinear(v0,v1) => {
+    let k = (threshold - v0.voxel)/(v1.voxel - v0.voxel);
+    return {
+      x : v0.x + (v1.x - v0.x) * k,
+      y : v0.y + (v1.y - v0.y) * k,
+      z : v0.z + (v1.z - v0.z) * k
+    } 
+  };
+    
+  setInterpolation(mode) {
+    this.interpolate = (mode === 1) ? IsoSurfacer.interpolateBilinear : IsoSurfacer.interpolateNone;
+  };
 
-IsoSurfacer.prototype.compute = function(threshold) {
+  getMesh() {
+    return this.mesh;
+  };
 
-    var slice= new IsoSlice(Math.floor( (nx -1)/this.cubeSize ),Math.floor( (ny-1)/this.cubeSize ) );
-
-    // M a i n   L o o p
-    console.log("Start of the main loop... Please wait.");
-    for (var z=0; z < nz-this.cubeSize; z+=this.cubeSize) {
-        slice.reset_count();
-        for (var y=0; y < ny-this.cubeSize; y+=this.cubeSize) {
-            for (var x=0; x < nx-this.cubeSize; x+=this.cubeSize) {
-                // 1- Create a new marching cube
-                var cube = new IsoCube(x,y,z,this.cubeSize);
-                // 2- Set voxels in the cube
-                cube.setVoxels(stack);
-                // 3- Calc configuration
-                cube.calcKey(threshold);
-                // 4- Create vertices and triangles
-                if (cube.key != 0 && cube.key != 255) {
-                    createTriangles(cube);
-                }
-                // 5- Update slice
-                slice.push(cube);
-            }
-        }
-        if ( (z%10) == 0) IJ.log("z="+z);
-    }
-
+  /**
+   * Compute Triangle Mesh
+   *
+   * @author
+   */
+  compute(threshold) {
+  // Private
     function createTriangles(probe) {
-      //console.log("key "+probe.key+" "+ probe.x +" "+probe.y+" "+probe.z);
-      var vertices=[];
-      var vertex = null;
-      var edges=triangles[probe.key];
-      for (var i=0;i<edges.length;i++) {
-        var index=-1;
-        var edge = edges[i];
-        //IJ.log("edge "+edge);
-        if (probe.edges[edge] != -1) {
+      //console.log('key '+probe.key+' '+ probe.x +' '+probe.y+' '+probe.z);
+      let vertex;
+      let edges = IsoSurfacer.triangles[probe.key];
+      for (let i=0;i<edges.length;i++) {
+        let index=-1;
+        let edge = edges[i];
+
+        if (probe.edges[edge] !== -1) {
           // Edge already calculated
           index = probe.edges[edge];
         }
         else {
           switch (edge) {
           case 0:
-            if (probe.y != 0) {
-              probe.edges[edge] = slice.above().edges[2];
+            if (probe.y !== 0) {
+              probe.edges[edge] = slab.above().edges[2];
               index = probe.edges[edge];
             }
             else {
-              vertex=interpolate(probe.getVertex(0),probe.getVertex(1) );
+              vertex = this.interpolate(probe.getVertex(0),probe.getVertex(1) );
               this.mesh.vertices.push(vertex);
               index = this.mesh.vertices.length-1;
               probe.edges[edge]= index;
             }
             break;
           case 1:
-            if (probe.z != 0) {
-              probe.edges[edge] = slice.back().edges[5];
+            if (probe.z !== 0) {
+              probe.edges[edge] = slab.back().edges[5];
               index = probe.edges[edge];
             }
             else {
-              vertex=interpolate(probe.getVertex(1),probe.getVertex(2) );
+              vertex= this.interpolate(probe.getVertex(1),probe.getVertex(2) );
               this.mesh.vertices.push(vertex);
               index = this.mesh.vertices.length-1;
               probe.edges[edge]= index;
             }
             break;
           case 2:
-            if (probe.z != 0) {
-              probe.edges[edge] = slice.back().edges[6];
+            if (probe.z !== 0) {
+              probe.edges[edge] = slab.back().edges[6];
               index = probe.edges[edge];
             }
             else {
-              vertex=interpolate(probe.getVertex(2),probe.getVertex(3) );
+              vertex=this.interpolate(probe.getVertex(2),probe.getVertex(3) );
               this.mesh.vertices.push(vertex);
               index = this.mesh.vertices.length-1;
               probe.edges[edge]= index;
             }
             break;
           case 3:
-            if (probe.x != 0) {
-              probe.edges[edge] = slice.previous().edges[1];
+            if (probe.x !== 0) {
+              probe.edges[edge] = slab.previous().edges[1];
               index = probe.edges[edge];
             }
             else {
-              vertex=interpolate(probe.getVertex(0),probe.getVertex(3) );
+              vertex=this.interpolate(probe.getVertex(0),probe.getVertex(3) );
               this.mesh.vertices.push(vertex);
               index = this.mesh.vertices.length-1;
               probe.edges[edge]= index;
             }
             break;
           case 4:
-            if (probe.y != 0) {
-              probe.edges[edge] = slice.above().edges[6];
+            if (probe.y !== 0) {
+              probe.edges[edge] = slab.above().edges[6];
               index = probe.edges[edge];
             }
             else {
-              vertex=interpolate(probe.getVertex(4),probe.getVertex(5) );
+              vertex=this.interpolate(probe.getVertex(4),probe.getVertex(5) );
               this.mesh.vertices.push(vertex);
               index = this.mesh.vertices.length-1;
               probe.edges[edge]= index;
             }
             break;
           case 5:
-            vertex=interpolate(probe.getVertex(5),probe.getVertex(6) );
+            vertex=this.interpolate(probe.getVertex(5),probe.getVertex(6) );
             this.mesh.vertices.push(vertex);
             index = this.mesh.vertices.length-1;
             probe.edges[edge]= index;
             break;
           case 6:
-            vertex=interpolate(probe.getVertex(6),probe.getVertex(7) );
+            vertex=this.interpolate(probe.getVertex(6),probe.getVertex(7) );
             this.mesh.vertices.push(vertex);
             index = this.mesh.vertices.length-1;
             probe.edges[edge]= index;
             break;
           case 7:
-            if (probe.x != 0) {
-              probe.edges[edge] = slice.previous().edges[5];
+            if (probe.x !== 0) {
+              probe.edges[edge] = slab.previous().edges[5];
               index = probe.edges[edge];
             }
             else {
-              vertex=interpolate(probe.getVertex(4),probe.getVertex(7) );
+              vertex = this.interpolate(probe.getVertex(4),probe.getVertex(7) );
               this.mesh.vertices.push(vertex);
               index = this.mesh.vertices.length-1;
               probe.edges[edge]= index;
             }
             break;
           case 8:
-            if (probe.x != 0) {
-              probe.edges[edge] = slice.previous().edges[9];
+            if (probe.x !== 0) {
+              probe.edges[edge] = slab.previous().edges[9];
               index = probe.edges[edge];
             }
             else {
-              vertex=interpolate(probe.getVertex(0),probe.getvertex(4) );
+              vertex = this.interpolate(probe.getVertex(0),probe.getvertex(4) );
               this.mesh.vertices.push(vertex);
               index = this.mesh.vertices.length-1;
               probe.edges[edge]= index;
             }
             break;
           case 9:
-            if (probe.y != 0) {
-              probe.edges[edge] = slice.above().edges[11];
+            if (probe.y !== 0) {
+              probe.edges[edge] = slab.above().edges[11];
               index = probe.edges[edge];
             }
             else {
-              vertex=interpolate(probe.getVertex(1),probe.getVertex(5) );
+              vertex = this.interpolate(probe.getVertex(1),probe.getVertex(5) );
               this.mesh.vertices.push(vertex);
               index = this.mesh.vertices.length-1;
               probe.edges[edge]= index;
             }
             break;
           case 10:
-            if (probe.x != 0) {
-              probe.edges[edge] = slice.previous().edges[11];
+            if (probe.x !== 0) {
+              probe.edges[edge] = slab.previous().edges[11];
               index = probe.edges[edge];
             }
             else {
-              vertex = interpolate(probe.getVertex(3),probe.getVertex(7) );
+              vertex  = this.interpolate(probe.getVertex(3),probe.getVertex(7) );
               this.mesh.vertices.push(vertex);
               index = this.mesh.vertices.length-1;
               probe.edges[edge]= index;
             }
             break;
           case 11:
-            vertex=interpolate(probe.getVertex(2),probe.getVertex(6) );
+            vertex = this.interpolate(probe.getVertex(2),probe.getVertex(6) );
             this.mesh.vertices.push(vertex);
             index = this.mesh.vertices.length-1;
             probe.edges[edge]= index;
             break;
           }
-        //IJ.log ("faces["+(mesh.faces.length-1)+"]= "+index);
         }
-        this.mesh.faces.push(index);
+        this.mesh.triangles.push(index);
       }
     }
+    
+    // M A I N
+    let slab = new IsoSlab(Math.floor( (nx -1)/this.cubeSize ),Math.floor( (ny-1)/this.cubeSize ) );
 
-}
-
-
-
-/*
-
-// F U N C T I O N S
-
-function dialog() {
-  var gd = new GenericDialog("Marching Cubes");
-  gd.addNumericField("Threshold: ", threshold, 0);
-  gd.addNumericField("Cube Size: ", this.cubeSize, 0);
-  gd.addChoice("Interpolation: ", ["None","Bilinear"], 0);
-  gd.showDialog();
-  if (gd.wasCanceled()) {
-    return;
-  }
-  threshold = gd.getNextNumber();
-  this.cubeSize = gd.getNextNumber();
-  mode = gd.getNextChoiceIndex();
-
-  if (mode ==0) {
-    interpolate = function (v0,v1) {
-      return interpolateNone(v0,v1);
+    let nx = this.map.width;
+    let ny = this.map.height;
+    let nz = this.map.depth;
+    
+    // M a i n   L o o p
+    console.log('Start of the main loop... Please wait.');
+    for (let z = 0; z < nz-this.cubeSize; z+= this.cubeSize) {
+      slab.reset_count();
+      for (let y = 0; y < ny-this.cubeSize; y += this.cubeSize) {
+        for (let x = 0; x < nx-this.cubeSize; x += this.cubeSize) {
+          // 1- Create a new marching cube
+          let cube = new IsoCube(x,y,z,this.cubeSize);
+          // 2- Set voxels in the cube
+          cube.setVoxels(this.map.data);
+          // 3- Calc configuration
+          cube.calcKey(threshold);
+          // 4- Create vertices and triangles
+          if (cube.key != 0 && cube.key != 255) {
+              createTriangles(cube);
+          }
+          // 5- Update slab
+          slab.push(cube);
+        }
+      }
+      if ( (z%10) === 0) {
+        console.log('z=' + z);
+      }
     }
-  }
-  else {
-    interpolate = function (v0,v1) {
-      return interpolateBilinear(v0,v1);
-    }
-  }
-
-  var saveDialog = new SaveDialog("Save OBJ File As ...","Untitled",".obj");
-  filename=saveDialog.getDirectory()+saveDialog.getFileName();
-
-  IJ.log(filename);
-
-}
+  };
 
 
-
-
-
-function interpolateBilinear(v0,v1) {
-  var k = (threshold - v0)/(v1 - v0);
-  var x = x0 + (x1 - x0) * k;
-  var y = y0 + (y1 - y0) * k;
-  var z = z0 + (z1 - z0) * k;
-  return {"x":x,"y":y,"z":z};
-}
-
-
-function saveAsOBJ() {
-  IJ.log("Preparing file ...");
-  var text='';
-  // Header
-  text+="# Marching Cubes\n";
-  text+="# Jean-Christophe Taveau\n";
-  text+="# CrazyBioComputing\n";
-  text+="# WaveFront OBJ File Format\n";
-  text+="# Vertices: "+mesh.vertices.length+"\n";
-  text+="\n";
-  text+="o "+imp.getTitle()+"\n";
-  text+="\n";
-
-  // Write output text in file
-  var file = new java.io.File(filename);
-  var  printWriter = new java.io.PrintWriter (filename);
-
-  IJ.log("Writing header...");
-  printWriter.println (text);
-
-  // Vertices
-  for (var i=0;i<mesh.vertices.length;i++) {
-    printWriter.println ("v "+ (mesh.vertices[i].x - center.x)+" "+ (mesh.vertices[i].y - center.y) + " " + (mesh.vertices[i].z - center.z) );
-  }
-  IJ.log("Writing vertices...");
-  printWriter.println (" ");
-
-  // Faces (aka lines)
-  // *Note*: The first vertex in OBJ format has the index 1 (and not 0).
-  for (var i=0;i<mesh.faces.length;i+=3)
-    printWriter.println ("f "+(mesh.faces[i]+1) +" "+ (mesh.faces[i+1]+1) +" "+ (mesh.faces[i+2]+1) );
-
-  IJ.log("Writing faces...");
-
-  // Close file
-  printWriter.close ();
-}
-
-
-}
-*/
-
-
-// triangles to be drawn in each case
-IsoSurfacer.triangles = [
+  // triangles to be drawn in each case
+  static triangles = [
     [],
     [0,8,3],
     [0,1,9],
@@ -606,4 +524,8 @@ IsoSurfacer.triangles = [
     [0,9,1],
     [0,3,8],
     []
-];
+  ];
+
+
+} // End of class IsoSurfacer
+

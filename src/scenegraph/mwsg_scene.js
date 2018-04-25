@@ -69,6 +69,8 @@
         // Special case of the camera
         if (an_object.ID === 'camera') {
             this.cameras.push(an_object);
+            // Observe the renderer for canvas resize
+            this.parent.subscribe(an_object);
         }
     };
 

@@ -21,22 +21,24 @@
  * Authors:
  * Jean-Christophe Taveau
  */
+ 
+import *  from './mwsg_cameraGroup.js';
+import *  from './mwsg_camera.js';
+import *  from './mwsg_composite.js';
+import *  from './mwsg_geometry.js';
+import *  from './mwsg_leaf.js';
+import *  from './mwsg_light.js';
+import *  from './mwsg_node.js';
+import *  from './mwsg_scene.js';
+import *  from './mwsg_shapeGroup.js';
+import *  from './mwsg_shape.js';
+import *  from './shape/cube.js';
+import *  from './shape/mesh.js';
 
-'use strict';
 
-/**
- * 3D Vectorial Object
- * @class VecObj
- * @memberof module:structure
- * @constructor
- *
- * @author Jean-Christophe Taveau
- **/
-function VecObj() {
-    // super()
-    Structure.call(this);
+export {
+  Camera,Composite,Geometry,Leaf,Light,Node,Scene,Shape,Cube,Mesh
+};
 
-    // TODO Is it redundant with the Shape class?????
-}
 
-VecObj.prototype = Object.create(Structure.prototype);
+

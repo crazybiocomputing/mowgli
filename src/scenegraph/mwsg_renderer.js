@@ -43,33 +43,39 @@
  * // Run infinite loop
  * renderer.drawScene();
  */
-function Renderer(canvas_id) {
-    this.scene = null;
+class Renderer {
+
+  constructor(w,h,className = 'mowgli3D') {
 
     // Get A WebGL context
     function createWebGLContext(canvas, opt_attribs) {
-        var names = ['webgl', 'experimental-webgl'];
-        var context = null;
-        for (var ii in names) {
-            try {
-                context = canvas.getContext(names[ii], opt_attribs);
-            } catch(e) {
-                // TODO
-            }
-            if (context) {
-                break;
-            }
-        }
-        return context;
+      var context = null;
+      try {
+          context = canvas.getContext('webgl2', opt_attribs);
+      } catch(e) {
+          // TODO
+      }
+      if (context) {
+          break;
+      }
+      return context;
     }
 
-    var canvas = document.getElementById(canvas_id);
-    this.context = createWebGLContext(canvas);
+    this.scene = null;
+    this.handlers = [];
 
+    this.canvas = document.createElement('canvas');
+    this.canvas.width  = w;
+    this.canvas.height = h;
+
+    this.context = createWebGLContext(canvas);
+    
     if (!this.context) {
+        MOWGLI.alert('ERR:context');
         return;
     }
 
+/*
     // Properties
     var displayWidth  = canvas.clientWidth;
     var displayHeight = canvas.clientHeight;
@@ -85,101 +91,135 @@ function Renderer(canvas_id) {
     this.context.viewportWidth  = canvas.width;
     this.context.viewportHeight = canvas.height;
 
+*/
 
     this.shaders=[];
     this.shaderProgram=null; //Active program ID
 
-    // Init GL
-    this._initGL();
-}
+  }
 
-/**
- * Get graphics context
- *
- * @return {number} - Reference of the OpenGL graphics context
- *
- **/
-Renderer.prototype.getContext = function () {
+  /**
+   * Get graphics context
+   *
+   * @return {number} - Reference of the OpenGL graphics context
+   *
+   **/
+  getContext() {
     return this.context;
-};
+  };
 
-/**
- * Add scene
- *
- * @param {Scene} - Add a scene which is the root of the scene graph.
- *
- **/
-Renderer.prototype.addScene = function (a_scene) {
+  /**
+   * Add scene
+   *
+   * @param {Scene} - Add a scene which is the root of the scene graph.
+   *
+   **/
+  addScene(a_scene) {
     this.scene = a_scene;
     a_scene.parent = this;
-};
+  };
 
-/**
- * Get scene
- *
- * @return {Scene} - Get the scene which is the root of the scene graph.
- *
- **/
-Renderer.prototype.getScene = function () {
+  /**
+   * Get scene
+   *
+   * @return {Scene} - Get the scene which is the root of the scene graph.
+   *
+   **/
+  getScene() {
     return this.scene;
-};
+  };
 
 
-Renderer.prototype.addShader = function (a_shaderprogram) {
+  addShader(a_shaderprogram) {
     this.shaders.push(a_shaderprogram);
-};
+  };
 
-/**
- * Add sensor
- *
- * @param {Sensor} - Add a sensor or an object interacting with the scene graph
- *
- **/
-Renderer.prototype.addSensor = function (a_sensor) {
+  /**
+   * Add sensor
+   *
+   * @param {Sensor} - Add a sensor or an object interacting with the scene graph
+   *
+   **/
+  addSensor(a_sensor) {
     this.sensor = a_sensor;
     this.sensor.setRenderer(this);
-};
+  };
 
-Renderer.prototype.setUniform = function (name,value) {
+  setUniform(name,value) {
     for (var i in this.shaders) {
         var shader = this.shaders[i];
         shader.uniforms[name].value = value;
     }
-};
+  };
 
 
-/**
- * Initialize the renderer.
- *
- *
- **/
-Renderer.prototype.init = function () {
-    var gl = this.context;
+  /**
+   * Initialize the renderer.
+   *
+   *
+   **/
+  init() {
+    const gl = this.context;
+
+    // Force resize...
+    window.resizeCanvas();
+
+    // Init GL
+    this._initGL();
+
+    // Propagate to scene(s)
     this.scene.init(gl);
-  // TODO
-};
+  };
 
-/**
- * Draw the scene. This function triggers the OpenGL rendering in an infinite loop.
- *
- *
- **/
-Renderer.prototype.drawScene = function () {
-    var gl = this.context;
+  /**
+   * Draw the scene. This function triggers the OpenGL rendering in an infinite loop.
+   *
+   *
+   **/
+  drawScene() {
+    const gl = this.context;
 
     // Traverse scene graph
-    console.log('*************** RENDER ***************');
+    // Properties
+
+    console.log('*************** RENDER:'+ this.canvasWidth +' '+ this.canvasHeight +' ***************');
+
     this.scene.render(gl);
-};
-/*
- * Private
- */
+  };
 
-Renderer.FLOAT_IN_BYTES = 4;
+  subscribe(obj) {
+    this.handlers.push(obj);
+  };
 
-Renderer.prototype._initGL = function() {
+  unsubscribe(obj) {
+    this.handlers = this.handlers.filter(
+      function(item) {
+        if (item !== obj) {
+            return item;
+        }
+      }
+    );
+  };
+
+  fire() {
+    var self = this;
+
+    this.handlers.forEach(function(item) {
+        console.log('fire');
+        console.log(item);
+        item.handle(self);
+    });
+  };
+
+
+  /*
+   * Private
+   */
+  static FLOAT_IN_BYTES = 4;
+
+  _initGL() {
     // Init GL stuff
-    var gl = this.context;
+    const gl = this.context;
     // TODO
     // Default clearColor
     gl.clearColor(0.1,0.1,0.1,1.0);
@@ -194,4 +234,8 @@ Renderer.prototype._initGL = function() {
 
     // HACK Default shader program???
     this.program = new Program();
-};
+  };
+
+} // End of class Renderer
+
+
