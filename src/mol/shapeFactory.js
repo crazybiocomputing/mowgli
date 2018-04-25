@@ -41,6 +41,9 @@ var ShapeFactory = (function () {
             switch (options.displayType) {
             case 'points':
                 // Already computed for the given structure?
+                // Pearson hashing see Wikipedia
+                // pearsonHash(mol.getSequence().join('') );
+                // <molID><chainID><Atom symbol#1><Atom symbol#1><Atom symbol#1>...<Atom symbol#1> selected
                 // var style = types['atoms'] ????
                 // if (style === undefined) then
                 // Basic shape - only for debug

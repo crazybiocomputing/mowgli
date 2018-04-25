@@ -30,8 +30,36 @@ var ShaderFactory = (function () {
     var programs = {};
     var shaderProgram = new Program();
 
+    var wireframe = {
+        src : {
+            // Literal strings in ES6
+            vs : `
+                attribute vec3 aVertexPosition;
+                attribute vec3 aVertexColor;
+                uniform mat4 uMMatrix;
+                uniform mat4 uVMatrix;
+                uniform mat4 uPMatrix;
+                varying vec3 vColor;
+
+                void main(void) {
+                    gl_Position = uPMatrix * uVMatrix * uMMatrix * vec4(aVertexPosition, 1.0);
+                    vColor = aVertexColor;
+                }
+            `,
+            fs : `
+                precision mediump float;
+                varying vec3 vColor;
+
+                void main(void) {
+                    gl_FragColor = vec4( vColor,1.0);
+                }`
+        },
+        attributes : [],
+        uniforms : []
+    };
+
     var srcVrtxShader = {
-        'minimal' : [
+        'template' : [
             'attribute vec3 aVertexPosition;',
             'attribute vec3 aVertexColor;',
             'uniform mat4 uMMatrix;',
@@ -39,29 +67,35 @@ var ShaderFactory = (function () {
             'uniform mat4 uPMatrix;',
             'varying vec3 vColor;',
             'void main(void) {',
-/*
-            'gl_PointSize = 8.0;',
-*/
+            // '#{points}',
             'gl_Position = uPMatrix * uVMatrix * uMMatrix * vec4(aVertexPosition, 1.0);',
             'vColor = aVertexColor;',
             '}'
+        ],
+        'points' :[
+            'gl_PointSize = 8.0;'
         ]
     };
 
     var srcFragShader = {
-        'minimal' : [
+        'template' : [
             'precision mediump float;',
             'varying vec3 vColor;',
+            // '#{func}',
             'void main(void) {',
-/*
-            'vec2 v = gl_PointCoord.xy - vec2(0.5,0.5);',
-            'float d = dot(v,v);',
-            'if (d > 0.25) {',
-            'discard;',
-            '}',
-*/
+            // '#{func_call}',
             'gl_FragColor = vec4( vColor,1.0);',
             '}'
+        ],
+        'disks_func' : [
+            'void drawDisk(xy) {',
+            'vec2 v = xy - vec2(0.5,0.5);',
+            'float d = dot(v,v);',
+            'if (d > 0.25) discard;',
+            '}'
+        ],
+        'disks_call' : [
+            'drawDisk(gl_PointCoord.xy);'
         ]
     };
 
@@ -80,15 +114,37 @@ var ShaderFactory = (function () {
             switch (options.displayType) {
             case 'points':
                 // Already compiled?
-                namePrgm = 'minimal';
+                namePrgm = 'disks';
                 if (programs[namePrgm] === undefined) {
                     isUndefined = true;
-                    srcVrtx = srcVrtxShader[namePrgm].join('');
-                    srcFrag = srcFragShader[namePrgm].join('');
+                    srcVrtx = srcVrtxShader['template'].join('');
+                    srcFrag = srcFragShader['template'].join('');
                 }
                 break;
             case 'wireframe':
-                // TODO
+                // Already compiled?
+                namePrgm = 'wireframe';
+                if (programs[namePrgm] === undefined) {
+                    isUndefined = true;
+                    var replacers = [
+                        {
+                            src : '#{func}',
+                            dest: 'disks_func'
+                        },
+                        {
+                            src : '#{func_call}',
+                            dest: 'disks_call'
+                        }
+                    ];
+                    srcVrtx = srcVrtxShader['template'].join('');
+                    srcFrag = srcFragShader['template'].join('');
+                    for (var i=0; i < replacers.length; i++) {
+                        var re = new RegExp(replacers[i].src,'g');
+                        srcVrtx = srcVrtx.replace(re,srcVrtxShader[replacers[i].dest].join(''));
+                        srcFrag = srcFrag.replace(re,srcVrtxShader[replacers[i].dest].join(''));
+                    }
+
+                }
                 break;
             default:
                 // Do nothing ??

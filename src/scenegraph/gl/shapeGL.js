@@ -35,7 +35,7 @@
  * @constructor
  **/
 function ShapeGL(node) {
-    NodeGL.call(this,node);
+    mwGL.Node.call(this,node);
 
     this.numIndices = 0;
     this.numItems = 0;
@@ -43,6 +43,8 @@ function ShapeGL(node) {
     this.GLTextures = [];
     this.shaderProgram = null;
 }
+
+ShapeGL.prototype = Object.create(mwGL.Node.prototype);
 
 /**
  * Init of the OpenGL part: VBO creation
@@ -82,8 +84,9 @@ ShapeGL.prototype.init = function(context) {
 ShapeGL.prototype.render = function(context) {
     // HACK console.log('>>> ShapeGL.prototype.render');
     var gl = context;
-    // Update matrix
+    // Update matrix: multiply current matrix with parent matrix
     mat4.multiply(this.workmatrix,this.sgnode.parent.getNodeGL().workmatrix,this.sgnode.matrix);
+    console.log('matrix ' + this.workmatrix);
     this.sgnode.getRenderer().setUniform('uMMatrix', this.workmatrix);
 
     // Choose shader

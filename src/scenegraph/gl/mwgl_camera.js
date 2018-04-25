@@ -91,22 +91,24 @@
 
     _Camera.prototype.render = function(context) {
         var gl = context;
-        // HACK console.log('RENDER CAM++ ' ,gl.viewportWidth,gl.viewportHeight);
+
         // HACK console.log(context);
 
         // Update viewport...
-        var viewport = this.sgnode.callback.call(this,gl.viewportWidth,gl.viewportHeight);
+        console.log('RENDER CAM++ ');
 
-        // Update Projection Matrix
-        //mat4.perspective(this.sgnode.projMatrix,this.sgnode.fovy * this.sgnode.zoom,viewport.width / viewport.height,this.sgnode.zNear,this.sgnode.zFar);
+
+        // ... and update Projection matrix
+        //this.sgnode.projectionFunc(this.viewport.width / viewport.height);
+        console.log(this.sgnode.viewMatrix);
+        console.log(this.sgnode.projMatrix);
 
         // Update uniforms
         this.sgnode.getRenderer().setUniform('uVMatrix', this.sgnode.viewMatrix);
         this.sgnode.getRenderer().setUniform('uPMatrix', this.sgnode.projMatrix);
 
         // Update GL viewport
-        console.log(this.sgnode.name+' '+viewport.x+' '+viewport.y+' '+viewport.width+' '+viewport.height);
-        gl.viewport(viewport.x, viewport.y, viewport.width, viewport.height);
+        gl.viewport(this.sgnode.viewport.x, this.sgnode.viewport.y, this.sgnode.viewport.width, this.sgnode.viewport.height);
     };
 
 
