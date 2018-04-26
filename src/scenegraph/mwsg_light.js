@@ -39,11 +39,11 @@ export class Light extends Leaf {
    * @constructor
    */
   constructor() {
-    super(this);
+    super();
     this.ID = 'light';
 
       // NodeGL
-    this.nodeGL = new mwGL.Node(this);
+    this.nodeGL = new mwgl.Node(this);
   }
 
 } // End of class Light

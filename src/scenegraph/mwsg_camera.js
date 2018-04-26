@@ -39,7 +39,7 @@ export class Camera extends Leaf {
    * @constructor
    */
   constructor() {
-    super(this);
+    super();
 
     this.ID = 'camera';
     this.eye = {x:0.0, y: 0.0, z:0.0}; // View position
@@ -80,8 +80,7 @@ export class Camera extends Leaf {
     this.far  = 1000.0;
 
     // NodeGL
-    this.nodeGL = new mwGL.Camera(this);
-
+    this.nodeGL = new mwgl.Camera(this);
 
     // Projection Func
     var that = this;
@@ -116,8 +115,8 @@ export class Camera extends Leaf {
    *
    **/
   setFovy(angle_in_degrees) {
-        this.fovy = angle_in_degrees * Math.PI/180.0;
-    };
+    this.fovy = angle_in_degrees * Math.PI/180.0;
+  };
 
 
   /**
@@ -202,9 +201,9 @@ export class Camera extends Leaf {
 
   handle(rendr) {
     console.log('handle');
-    console.log(rendr.canvasWidth+' '+rendr.canvasHeight);
-    this.viewport = this.viewportFunc(rendr.canvasWidth,rendr.canvasHeight);
-    var aspect_ratio = rendr.canvasWidth / rendr.canvasHeight;
+    console.log(rendr.canvasWidth+' '+rendr.canvas.height);
+    this.viewport = this.viewportFunc(rendr.canvas.width,rendr.canvas.height);
+    var aspect_ratio = rendr.canvas.width / rendr.canvas.height;
     mat4.perspective(this.projMatrix, this.fovy * this.zoom, aspect_ratio, this.near, this.far);
   };
 

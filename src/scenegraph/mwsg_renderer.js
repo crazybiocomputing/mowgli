@@ -58,6 +58,7 @@ export class Renderer {
       return context;
     }
 
+    this.ID = 'renderer';
     this.scene = null;
     this.handlers = [];
 
@@ -65,7 +66,7 @@ export class Renderer {
     this.canvas.width  = w;
     this.canvas.height = h;
 
-    this.context = createWebGLContext(canvas);
+    this.context = createWebGLContext(this.canvas);
     
     if (!this.context) {
         MOWGLI.alert('ERR:context');
@@ -94,6 +95,16 @@ export class Renderer {
     this.shaderProgram=null; //Active program ID
 
   }
+
+  /**
+   * Get HTML5 Canvas
+   *
+   * @return {number} - Reference of the Canvas
+   *
+   **/
+  getCanvas() {
+    return this.canvas;
+  };
 
   /**
    * Get graphics context
@@ -126,7 +137,11 @@ export class Renderer {
     return this.scene;
   };
 
-
+  /**
+   * 
+   *
+   * @author Jean-Christophe Taveau
+   **/
   addShader(a_shaderprogram) {
     this.shaders.push(a_shaderprogram);
   };
@@ -142,10 +157,15 @@ export class Renderer {
     this.sensor.setRenderer(this);
   };
 
+  /**
+   * 
+   *
+   * @author Jean-Christophe Taveau
+   **/
   setUniform(name,value) {
     for (var i in this.shaders) {
-        var shader = this.shaders[i];
-        shader.uniforms[name].value = value;
+      var shader = this.shaders[i];
+      shader.uniforms[name].value = value;
     }
   };
 
@@ -159,7 +179,7 @@ export class Renderer {
     const gl = this.context;
 
     // Force resize...
-    window.resizeCanvas();
+    // TODO Fix Bug window.resizeCanvas();
 
     // Init GL
     this._initGL();
@@ -179,15 +199,25 @@ export class Renderer {
     // Traverse scene graph
     // Properties
 
-    console.log('*************** RENDER:'+ this.canvasWidth +' '+ this.canvasHeight +' ***************');
+    console.log('*************** RENDER:'+ this.canvas.width +' '+ this.canvas.height +' ***************');
 
     this.scene.render(gl);
   };
 
+  /**
+   * 
+   *
+   * @author Jean-Christophe Taveau
+   **/
   subscribe(obj) {
     this.handlers.push(obj);
   };
 
+  /**
+   * 
+   *
+   * @author Jean-Christophe Taveau
+   **/
   unsubscribe(obj) {
     // TODO Fix
     this.handlers = this.handlers.filter(
@@ -199,6 +229,11 @@ export class Renderer {
     );
   };
 
+  /**
+   * 
+   *
+   * @author Jean-Christophe Taveau
+   **/
   fire() {
     var self = this;
 
@@ -227,13 +262,10 @@ export class Renderer {
     gl.enable(gl.DEPTH_TEST);
 
     // Check extension...
-    gl.getExtension('EXT_frag_depth');
-    if (gl.getSupportedExtensions().indexOf('EXT_frag_depth') < 0 ) {
-        alert('Extension frag_depth not supported');
-    }
+    // If required ?
 
     // HACK Default shader program???
-    this.program = new Program();
+    this.program = new gpu.Program();
   };
 
 } // End of class Renderer

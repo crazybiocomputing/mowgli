@@ -118,8 +118,8 @@ export class Shape extends Node {
                 attribute.size,
                 gl.FLOAT,
                 false,
-                attribute.stride * Renderer.FLOAT_IN_BYTES,
-                attribute.offset * Renderer.FLOAT_IN_BYTES
+                attribute.stride * mwsg.Renderer.FLOAT_IN_BYTES,
+                attribute.offset * mwsg.Renderer.FLOAT_IN_BYTES
             );
         }
     }
@@ -231,12 +231,12 @@ export class Shape extends Node {
     // HACK console.log('VBO attributes');
     // HACK console.log(geom.attributes);
     for (var j=0; j < geom.attributes.length; j++) {
-        if ( (geom.content & mwSG.Shape.XYZ) === mwSG.Shape.XYZ) {
+        if ( (geom.content & mwsg.Shape.XYZ) === mwsg.Shape.XYZ) {
             var n = 32; // Highest value of Shape type(s) but Shape.INDICES
             var nItems = 0;
             while (n != 0) {
                 if ( (geom.content & n) === n) {
-                    nItems += mwSG.Shape.itemLength[n];
+                    nItems += mwsg.Shape.itemLength[n];
                 }
                 n/=2;
             }

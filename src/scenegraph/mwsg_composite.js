@@ -121,7 +121,7 @@ export class Composite extends Node {
     // HACK console.log('RENDER_Composite ' + this.ID );
     // HACK console.log(this.parent);
     // Update matrix
-    if (!(this.parent instanceof Renderer) ) {
+    if (!(this.parent.Id === 'renderer') ) {
       mat4.multiply(this.getNodeGL().workmatrix,this.parent.getNodeGL().workmatrix,this.matrix);
     }
     // Render

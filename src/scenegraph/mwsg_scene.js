@@ -56,14 +56,18 @@ export class Scene extends Composite {
   setDefault() {
     this.ID = 'scene_default';
     // Add a camera
-    var cam = new mwSG.Camera();
+    var cam = new mwsg.Camera();
     this.add(cam);
     // Add a light
-    this.add(new mwSG.Light()  );
+    this.add(new mwsg.Light()  );
   };
 
+  /**
+   * Add a node/object in this scene
+   *
+   **/
   add(an_object) {
-    super.add(this,an_object);
+    super.add(an_object);
 
     // Special case of the camera
     if (an_object.ID === 'camera') {
@@ -93,7 +97,7 @@ export class Scene extends Composite {
     console.log('RENDER_Scene ' + this.ID );// HACK
     // HACK console.log(this.parent);
     // Update matrix
-    if (!(this.parent instanceof Renderer) ) {
+    if (!(this.parent.ID === 'renderer') ) {
         mat4.multiply(this.getNodeGL().workmatrix,this.parent.getNodeGL().workmatrix,this.matrix);
     }
 
@@ -118,12 +122,16 @@ export class Scene extends Composite {
   };
 
   toString() {
-        var str = this.ID+'\n';
-        for (var i in this.children) {
-            str += '+-'+this.children[i]+'\n';
-        }
-        return str;
-    };
+    let str = this.children.reduce( (accu,child,index) => `${accu}+-${index}: ${child.toString()}\n`, `${this.ID}\n`);
+    console.log('str: ',str);
+
+    str = this.ID+'\n';
+    for (var i in this.children) {
+      str += '+-'+this.children[i].toString()+'\n';
+    }
+    return str;
+
+  };
 
 
 

@@ -24,22 +24,24 @@
 
 'use strict';
 
+import {Shape} from '../mwsg_shape.js';
+
 /*
- * Constructor
+ * @class
  */
 
-function Cube() {
-    mwSG.Shape.call(this);
+export class Cube extends Shape {
+  constructor() {
+    super();
     this.ID = 'cube';
-}
+  }
 
-Cube.prototype = Object.create(mwSG.Shape.prototype );
 
 /*
  * Set style of this cube:
  * @param{string} 'wireframe','solid','shaded','textured'
  */
-Cube.prototype.setStyle = function(type) {
+  setStyle(type) {
     switch (type) {
     case 'wireframe' :
         this.ID = 'cubeWire';
@@ -51,7 +53,7 @@ Cube.prototype.setStyle = function(type) {
                 'content'   : Shape.XYZ,
                 'data'      : Cube.verticesWire,
                 'indices'   :_indices,
-                'attributes': [new Attribute("aVertexPosition",0,0)]
+                'attributes': [new gpu.Attribute("aVertexPosition",0,0)]
             }
         );
 /**
@@ -76,14 +78,14 @@ Cube.prototype.setStyle = function(type) {
                 'content': Shape.XYZ,
                 'data': Cube.vertices,
                 'indices': Cube.indices,
-                'attributes': [new Attribute("aVertexPosition",0,0)]
+                'attributes': [new gpu.Attribute("aVertexPosition",0,0)]
             }
         );
         this.addVertexData(
             {
                 'content': Shape.RGB,
                 'data': Cube.colors,
-                'attributes': [new Attribute("aVertexColor",0,0)]
+                'attributes': [new gpu.Attribute("aVertexColor",0,0)]
             }
         );
 
@@ -92,7 +94,7 @@ Cube.prototype.setStyle = function(type) {
                 'content'   : Shape.XYZ | Shape.RGBA,
                 'data'      : Cube.vertices,
                 'indices'   : Cube.indices,
-                'attributes': [new Attribute("aVertexPosition",0,7), new Attribute("aVertexColor",3,7)]
+                'attributes': [new gpu.Attribute("aVertexPosition",0,7), new Attribute("aVertexColor",3,7)]
             }
         );
         this.numItems = Cube.vertices.length / 7;
@@ -111,7 +113,8 @@ Cube.prototype.setStyle = function(type) {
 };
 
 
-Cube.verticesWire = [
+  static get verticesWire() {
+    return [
      1, 1,-1,
      1,-1,-1,
     -1,-1,-1,
@@ -120,9 +123,11 @@ Cube.verticesWire = [
      1,-1, 1,
     -1,-1, 1,
     -1, 1, 1
-];
+    ];
+  }
 
-Cube.vertices = [
+  static get vertices() {
+    return [
     // Front face
     -1.0, -1.0,  1.0, 1.0, 0.0, 0.0, 1.0,
      1.0, -1.0,  1.0, 1.0, 0.0, 0.0, 1.0,
@@ -158,13 +163,20 @@ Cube.vertices = [
     -1.0, -1.0,  1.0, 0.0, 0.0, 1.0, 1.0,
     -1.0,  1.0,  1.0, 0.0, 0.0, 1.0, 1.0,
     -1.0,  1.0, -1.0, 0.0, 0.0, 1.0, 1.0
-];
+    ];
+  }
+  
 
-Cube.indices = [
+  static get indices() {
+    return [
      0, 1, 2,      0, 2, 3,    // Front face
      4, 5, 6,      4, 6, 7,    // Back face
      8, 9, 10,     8, 10, 11,  // Top face
     12, 13, 14,   12, 14, 15, // Bottom face
     16, 17, 18,   16, 18, 19, // Right face
     20, 21, 22,   20, 22, 23  // Left face
-];
+    ];
+  }
+
+}
+

@@ -47,7 +47,7 @@ import {Leaf} from './mwsg_leaf.js';
  * @class Shape
  * @memberof module:mw<sg
  * 
- * @augments mwSG.Leaf
+ * @augments mwsg.Leaf
  **/
 export class Shape extends Leaf {
   /**
@@ -163,7 +163,7 @@ export class Shape extends Leaf {
       if ( (a_geom.content & Shape.INDICES) === Shape.INDICES) {
           this._isIndexed = true;
           this.geometries.push(
-              new mwSG.Geometry({
+              new mwsg.Geometry({
                   'type'       : 'indexed',
                   'content'    : a_geom.content,
                   'data'       : new Uint16Array(a_geom.data),
@@ -173,7 +173,7 @@ export class Shape extends Leaf {
       }
       else {
           this.geometries.push(
-              new mwSG.Geometry( {
+              new mwsg.Geometry( {
                   'type'     : 'vertex',
                   'content'    : a_geom.content,
                   'data'     : new Float32Array(a_geom.data),

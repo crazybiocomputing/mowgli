@@ -24,12 +24,14 @@
 
 'use strict';
 
+import {Shape} from '../mwsg_shape.js';
+
 /**
  * Triangle Mesh
  *
  * @class Mesh
  */
-class Mesh extends Shape {
+export class Mesh extends Shape {
 
   /**
    * @constructor
@@ -44,7 +46,7 @@ class Mesh extends Shape {
    * Set style of this mesh:
    * @param{string} 'wireframe','solid'
    */
-  setStyle = function(type) {
+  setStyle(type) {
     switch (type) {
     case 'wireframe' :
       this.ID = 'meshWire';

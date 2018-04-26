@@ -22,48 +22,10 @@
  * Jean-Christophe Taveau
  */
 
-
 'use strict';
 
+import {Attribute} from './attribute.js';
+import {Program} from './program.js';
+import {Uniform} from './uniform.js';
 
-/**
- * Attribute class used by the shader program
- *
- * @class Attribute
- * @memberof module:graphics
- * 
- **/
-export class Attribute {
-  /**
-   * @constructor
-   */
-  constructor(name,offset,stride) {
-
-    /** 
-    * The name
-    * @type {string}
-    *
-    **/
-    this.name = name;
-
-    /**
-    * The offset
-    * @type {number}
-    *
-    **/
-    this.offset = offset;
-
-    /**
-    * The stride
-    * @type {number}
-    *
-    **/
-    this.stride = stride;
-
-    this.size = -1;
-
-    this.location = -1;
-  }
-} // End of class Attribute
-
-
+export {Attribute, Program, Uniform};

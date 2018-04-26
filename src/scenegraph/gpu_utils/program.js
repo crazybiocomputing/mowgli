@@ -30,7 +30,7 @@
  *
  * @class Program
  * @memberof module:graphics
- * @constructor
+ * 
  *
  * @example
   * // 1- Create a new shader program termed 'cel-shading' from the current graphics context
@@ -49,7 +49,11 @@
  * @author Jean-Christophe Taveau
  *
  **/
-function Program(context,name) {
+export class Program {
+  /**
+   * @constructor
+   */
+  constructor(context,name) {
     this.ctx = context;
     this.name = name;
     this.vertex_shader   = null;
@@ -59,29 +63,29 @@ function Program(context,name) {
     this.uniforms = [];
     this.attribLocation = {};
     this.uniformLocation = {};
-}
+  }
 
-/**
- * Get OpenGL ID of this shader program
- *
- **/
-Program.prototype.getID=function() {
+  /**
+   * Get OpenGL ID of this shader program
+   *
+   **/
+  getID() {
     return this.shaderProgram;
-};
+  };
 
-/**
- * Load vertex or fragment source files for compilation and link
- *
- * @param {string} type: Source file types - **'vertex'** or **'fragment'**
- * @param {string} name: Source filename
- **/
-Program.prototype.load = function(type,src) {
+  /**
+   * Load vertex or fragment source files for compilation and link
+   *
+   * @param {string} type: Source file types - **'vertex'** or **'fragment'**
+   * @param {string} name: Source filename
+   **/
+  load(type,src) {
     var gl = this.ctx;
 
-    if (type === 'x-shader/x-fragment') {
+    if (type === 'fragment') {
         this.fragment_shader = this._compile(gl.FRAGMENT_SHADER,src);
     }
-    else if (type === 'x-shader/x-vertex') {
+    else if (type === 'vertex') {
         this.vertex_shader = this._compile(gl.VERTEX_SHADER,src);
     }
     else {
@@ -91,16 +95,16 @@ Program.prototype.load = function(type,src) {
     // Extract attribute(s) and uniform(s) from shader sources and create objects
     this._createAttributesAndUniforms(src);
 
-};
+  };
 
 
-/**
- * Load vertex or fragment source files for compilation and link via http
- *
- * @param {string} type: Source file types - 'vertex' or 'fragment'
- * @param {string} name: Source filename
- **/
-Program.prototype.loadHTTP = function(type,name) {
+  /**
+   * Load vertex or fragment source files for compilation and link via http
+   *
+   * @param {string} type: Source file types - 'vertex' or 'fragment'
+   * @param {string} name: Source filename
+   **/
+  loadHTTP(type,name) {
     var gl = this.ctx;
     // From http://www.html5rocks.com/en/tutorials/file/xhr2/
     // XMLHttpRequest()
@@ -115,16 +119,16 @@ Program.prototype.loadHTTP = function(type,name) {
         }
     };
     req.send();
-};
+  };
 
-/**
- * Load vertex or fragment source files for compilation and link from the DOM.
- * From Learning WEBGL.
- *
- * @param {string} type: Source file types - 'vertex' or 'fragment'
- * @param {string} name: ID of the html div
- **/
-Program.prototype.loadDOM = function(type,name) {
+  /**
+   * Load vertex or fragment source files for compilation and link from the DOM.
+   * From Learning WEBGL.
+   *
+   * @param {string} type: Source file types - 'vertex' or 'fragment'
+   * @param {string} name: ID of the html div
+   **/
+  loadDOM(type,name) {
     var gl = this.ctx;
 
     var shaderScript = document.getElementById(name);
@@ -155,10 +159,10 @@ Program.prototype.loadDOM = function(type,name) {
     // Extract attribute from shader text and create objects
     this._createAttributesAndUniforms(str);
 
-};
+  };
 
 
-Program.prototype.link = function() {
+  link() {
     var gl = this.ctx;
     this.shaderProgram = gl.createProgram();
     gl.attachShader(this.shaderProgram, this.vertex_shader);
@@ -168,50 +172,51 @@ Program.prototype.link = function() {
     if (!gl.getProgramParameter(this.shaderProgram, gl.LINK_STATUS)) {
         throw new ShaderLinkException('Could not link shaders');
     }
-};
+  };
 
-/**
- * Activate this shader program for rendering
- *
- **/
-Program.prototype.use = function() {
+  /**
+   * Activate this shader program for rendering
+   *
+   **/
+  use() {
     var gl = this.ctx;
     gl.useProgram(this.shaderProgram);
-};
+  };
 
 
-Program.prototype.getAttribLocation = function(attrib_name) {
+  getAttribLocation(attrib_name) {
     var gl = this.ctx;
     gl.useProgram(this.getID());
     return gl.getAttribLocation(this.getID(),attrib_name);
-};
+  };
 
-/**
- *  Get uniform location and set up the corresponding array.
- * The method's name is not really appropriate (set/getUniform[...])
- *
- *
- **/
-Program.prototype.setUniformLocation=function(name) {
+  /**
+   *  Get uniform location and set up the corresponding array.
+   * The method's name is not really appropriate (set/getUniform[...])
+   *
+   *
+   **/
+  setUniformLocation(name) {
     var gl = this.ctx;
     gl.useProgram(this.getID());
     this.uniformLocation[name]=gl.getUniformLocation(this.getID(),name);
-};
+  };
 
-Program.prototype.getUniformLocation=function(name) {
+  getUniformLocation(name) {
     //var gl = this.ctx;
     return this.uniformLocation[name];
-};
+  };
 
-/**
- *  Update all the uniforms. This function is called by the ShapeGL.render().
- *
- *
- **/
-Program.prototype.updateUniforms = function () {
+  /**
+   *  Update all the uniforms. This function is called by the ShapeGL.render().
+   *
+   *
+   **/
+  updateUniforms () {
     var gl = this.ctx;
     for (var i in this.uniforms) {
         var uniform = this.uniforms[i];
+        console.log(uniform);
         switch (uniform.type) {
         case 'mat4' :
             gl.uniformMatrix4fv(this.getUniformLocation(uniform.name), false, uniform.value);
@@ -227,13 +232,13 @@ Program.prototype.updateUniforms = function () {
             break;
         }
     }
-};
+  };
 
-/**
- * Private method for compiling shader
- *
- */
-Program.prototype._compile = function(type,text) {
+  /**
+   * Private method for compiling shader
+   *
+   */
+  _compile(type,text) {
     var gl = this.ctx;
     var shader = gl.createShader(type);
     gl.shaderSource(shader, text);
@@ -244,14 +249,14 @@ Program.prototype._compile = function(type,text) {
     }
 
     return shader;
-};
+  };
 
-/**
- * Private method to automatically detect in the shader source files the attribute(s) and uniform(s).
- * TODO - Must be improved to remove commented lines containing attributes and/or uniforms
- *
- */
-Program.prototype._createAttributesAndUniforms=function(source) {
+  /**
+   * Private method to automatically detect in the shader source files the attribute(s) and uniform(s).
+   * TODO - Must be improved to remove commented lines containing attributes and/or uniforms
+   *
+   */
+  _createAttributesAndUniforms(source) {
     // Remove comments
     // Works in most cases. However, does not take into account weird cases :-)
     var text = source.replace(/\/\*[\s\S]*?\*\/|([^:]|^)\/\/.*$/gm, '');
@@ -265,7 +270,7 @@ Program.prototype._createAttributesAndUniforms=function(source) {
         if (a_row.indexOf('attribute') != -1 || a_row.indexOf('uniform') != -1) {
             var words = a_row.trim().split(re); //  match(/[\S,;]+/g);
             var itemSize = 0;
-            console.log(words);
+            // HACK console.log(words);
             for (var j=0; j < words.length; j++) {
                 switch (words[j]) {
                 case 'attribute':
@@ -308,11 +313,11 @@ Program.prototype._createAttributesAndUniforms=function(source) {
                     break;
                 default:
                     if (qualifier == 'a' && words[j] != '') {
-                        console.log('attribute '+ words[j] + ' type '+ type);
+                        // HACK console.log('attribute '+ words[j] + ' type '+ type);
                         this.attributes[words[j]] = {'name':words[j],'type':type,'size':itemSize};
                     }
                     else if (qualifier == 'u' && words[j] != '') {
-                        console.log('uniform '+ words[j] + ' type '+ type);
+                        // HACK console.log('uniform '+ words[j] + ' type '+ type);
                         this.uniforms[words[j]] = {'name':words[j],'type':type,'size':itemSize};
                     }
                     break;
@@ -320,4 +325,8 @@ Program.prototype._createAttributesAndUniforms=function(source) {
             }
         }
     }
-};
+  };
+  
+} // End of class Program
+
+

@@ -92,7 +92,7 @@ export class Geometry {
     **/
     this.indices = options.indices;
 
-    this._isIndexed (this.type === 'indexed') ? true : false;
+    this._isIndexed = (this.type === 'indexed') ? true : false;
     
 
     // HACK console.log(this.attributes);

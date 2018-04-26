@@ -105,10 +105,10 @@ export class Node {
   };
 
   getRenderer() {
-    if (this.renderer != null) {
+    if (this.renderer !== null) {
       return this.renderer;
     }
-    else if (this.parent instanceof Renderer) {
+    else if (this.parent.ID === 'renderer') {
       this.renderer = this.parent;
       return this.renderer;
     }
