@@ -26,26 +26,10 @@
 'use strict';
 
 /**
- * @module mwGL
+ * @module mwgl
  */
 
-
-/**
- * WebGL part of Camera class
- *
- * @class Camera
- * @memberof module:mwGL
- *
- *
- **/
-
-
-/**
- * @constructor
- * @param {Node} node - Camera Object belonging to the scene graph
- * @extends module:mwGL.Node
- * @author Jean-Christophe Taveau
- **/
+import {Node} from './mwgl_node.js';
 
 /**
  *
@@ -57,62 +41,61 @@
  *
  * @author Jean-Christophe Taveau
  **/
-(function(exports) {
-    function _Camera(node) {
-        mwGL.Node.call(this,node);
+export class Camera extends Node {
+  /**
+   * @constructor
+   * @param {Node} node - Camera Object belonging to the scene graph
+   * @extends module:mwGL.Node
+   * @author Jean-Christophe Taveau
+   **/
+   constructor(node) {
+      super(node);
 
-        this.backgroundColor = {
-            r:0.0,
-            g:0.0,
-            b:0.0,
-            a:1.0
-        };
-
+      this.backgroundColor = {
+        r:0.0,
+        g:0.0,
+        b:0.0,
+        a:1.0
+      };
     }
 
-    _Camera.prototype = Object.create(mwGL.Node.prototype);
+  isDirty() {
+    return _isDirty;
+  };
+
+  setViewport (x,y,width,height) {
+    this.viewport.x = x;
+    this.viewport.y = y;
+    this.viewport.width  = width;
+    this.viewport.height = height;
+  };
+
+  init(context) {
+    // Do nothing
+    this.isDirty = false;
+  };
+
+  render(context) {
+    var gl = context;
+
+    // HACK console.log(context);
+
+    // Update viewport...
+    console.log('RENDER CAM++ ');
+
+    // ... and update Projection matrix
+    //this.sgnode.projectionFunc(this.viewport.width / viewport.height);
+    console.log(this.sgnode.viewMatrix);
+    console.log(this.sgnode.projMatrix);
+
+    // Update uniforms
+    this.sgnode.getRenderer().setUniform('uVMatrix', this.sgnode.viewMatrix);
+    this.sgnode.getRenderer().setUniform('uPMatrix', this.sgnode.projMatrix);
+
+    // Update GL viewport
+    gl.viewport(this.sgnode.viewport.x, this.sgnode.viewport.y, this.sgnode.viewport.width, this.sgnode.viewport.height);
+  };
 
 
-    _Camera.prototype.isDirty = function() {
-        return _isDirty;
-    };
+} // End of class Camera
 
-    _Camera.prototype.setViewport = function (x,y,width,height) {
-        this.viewport.x = x;
-        this.viewport.y = y;
-        this.viewport.width  = width;
-        this.viewport.height = height;
-    };
-
-    _Camera.prototype.init = function(context) {
-        // Do nothing
-        this.isDirty = false;
-    };
-
-    _Camera.prototype.render = function(context) {
-        var gl = context;
-
-        // HACK console.log(context);
-
-        // Update viewport...
-        console.log('RENDER CAM++ ');
-
-
-        // ... and update Projection matrix
-        //this.sgnode.projectionFunc(this.viewport.width / viewport.height);
-        console.log(this.sgnode.viewMatrix);
-        console.log(this.sgnode.projMatrix);
-
-        // Update uniforms
-        this.sgnode.getRenderer().setUniform('uVMatrix', this.sgnode.viewMatrix);
-        this.sgnode.getRenderer().setUniform('uPMatrix', this.sgnode.projMatrix);
-
-        // Update GL viewport
-        gl.viewport(this.sgnode.viewport.x, this.sgnode.viewport.y, this.sgnode.viewport.width, this.sgnode.viewport.height);
-    };
-
-
-    exports.Camera = _Camera;
-
-
-})(this.mwGL = this.mwGL || {} );

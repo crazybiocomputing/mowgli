@@ -29,6 +29,7 @@
  * @module mwGL
  */
 
+import {Node} from './mwgl_node.js';
 
 /**
  * WebGL part of Camera class
@@ -38,33 +39,26 @@
  *
  *
  **/
+export class Scene extends Node {
+  /**
+   * @constructor
+   * @param {Node} node - Scene belonging to the scene graph
+   * @extends module:mwGL.Node
+   * @author Jean-Christophe Taveau
+   **/
+  constructor(node) {
+    super(node);
+  }
+
+  render(context) {
+    const gl = context;
+
+    // Clear Screen And Depth Buffer
+    gl.clearColor(this.sgnode.backgroundColor.r,this.sgnode.backgroundColor.g,this.sgnode.backgroundColor.b,this.sgnode.backgroundColor.a);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+  };
 
 
-/**
- * @constructor
- * @param {Node} node - Scene belonging to the scene graph
- * @extends module:mwGL.Node
- * @author Jean-Christophe Taveau
- **/
+} // End of class mwgl.Scene
 
 
-(function(exports) {
-    function _Scene(node) {
-        mwGL.Node.call(this,node);
-    }
-
-    _Scene.prototype = Object.create(mwGL.Node.prototype);
-
-    _Scene.prototype.render = function(context) {
-        var gl = context;
-
-        // Clear Screen And Depth Buffer
-        gl.clearColor(this.sgnode.backgroundColor.r,this.sgnode.backgroundColor.g,this.sgnode.backgroundColor.b,this.sgnode.backgroundColor.a);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    };
-
-
-    exports.Scene = _Scene;
-
-
-})(this.mwGL = this.mwGL || {} );

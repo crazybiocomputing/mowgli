@@ -24,30 +24,28 @@
 
 'use strict';
 
-(function(exports) {
+import {Leaf} from './mwsg_leaf.js';
 
-    /**
-     * Light
-     *
-     * @class Light
-     * @memberof module:graphics
-     * @constructor
-     * @augments Leaf
-     **/
-    function Light() {
-        mwSG.Leaf.call(this);
-        this.ID = 'light';
+/**
+ * Light
+ *
+ * @class Light
+ * @memberof module:graphics
+ * @constructor
+ * @augments Leaf
+ **/
+export class Light extends Leaf {
+  /**
+   * @constructor
+   */
+  constructor() {
+    super(this);
+    this.ID = 'light';
 
-          // NodeGL
-        this.nodeGL = new mwGL.Node(this);
-    }
+      // NodeGL
+    this.nodeGL = new mwGL.Node(this);
+  }
 
-    Light.prototype = Object.create(mwSG.Leaf.prototype);
-
-    Light.prototype.constructor = Light;
+} // End of class Light
 
 
-    exports.Light = Light;
-
-
-})(this.mwSG = this.mwSG || {} );

@@ -25,6 +25,7 @@
 
 'use strict';
 
+import {Leaf} from './mwsg_leaf.js';
 
 /**
  * Shape: Graphical object defined by geometries (Vertex Data) and a rendering style (Shader Program).
@@ -45,43 +46,62 @@
  * ```
  * @class Shape
  * @memberof module:mw<sg
- * @constructor
+ * 
  * @augments mwSG.Leaf
  **/
 export class Shape extends Leaf {
+  /**
+   * @constructor
+   */
   constructor() {
-      super(this);
+    super();
 
-      this.ID = 'shape';
-      this.colorMode = 'monochrome';
-      this.shaderProgram = null;
-      this.geometries = [];
-      this.textures   = [];
-      this.uniforms   = [];
+    this.ID = 'shape';
+    this.colorMode = 'monochrome';
+    this.shaderProgram = null;
+    this.geometries = [];
+    this.textures   = [];
+    this.uniforms   = [];
 
-      this.type = 'POINTS';
+    this.type = 'POINTS';
 
-      this.centroid = {
-          x:0,
-          y:0,
-          z:0
-      };
+    this.centroid = {
+      x:0,
+      y:0,
+      z:0
+    };
 
-      this._isIndexed=false;
+    this._isIndexed=false;
 
-      this.nodeGL = new ShapeGL(this);
+    this.nodeGL = new mwgl.Shape(this);
   }
 
-  static XYZ    = 1;
-  static XYZW   = 2;
-  static NXYZ   = 4;
-  static RGB    = 8;
-  static RGBA   = 16;
-  static ST     = 32;
-  static INDICES= 64;
+  static get XYZ() {
+    return 1;
+  }
+  
+  static get XYZW() {
+    return 2;
+  }
+  static get NXYZ() {
+    return 4;
+  }
+  static get RGB() {
+    return 8;
+  }
+  static get RGBA() {
+    return 16;
+  }
+  static get ST() {
+    return 32;
+  }
+  static get INDICES() {
+    return 64;
+  }
 
   // Private
-  static itemLength = {
+  static get itemLength() {
+    return {
       1  : 3,
       2  : 4,
       4  : 3,
@@ -89,7 +109,8 @@ export class Shape extends Leaf {
       16 : 4,
       32 : 2,
       64 : 1
-  };
+    };
+  } 
 
   /**
    * Set Program

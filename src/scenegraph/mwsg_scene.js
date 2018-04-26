@@ -24,112 +24,100 @@
 
 'use strict';
 
-(function(exports) {
+import {Composite} from './mwsg_composite.js';
 
-    /**
-     * Scene: Root of the scene graph
-     *
-     * @class Scene
-     * @memberof module:mwSG
-     * @constructor
-     * @augments Composite
-     **/
-    function Scene() {
-        mwSG.Composite.call(this);
+/**
+ * Scene: Root of the scene graph
+ *
+ * @class Scene
+ * @memberof module:mwSG
+ * @constructor
+ * @augments Composite
+ **/
+export class Scene extends Composite {
+  constructor() {
+    super();
+    this.ID = 'scene';
+    this.cameras = [];
+    this.backgroundColor = {
+      r:0.0,
+      g:0.0,
+      b:0.0,
+      a:1.0
+    };
+    this.nodeGL = new mwgl.Scene(this);
+  }
 
-        this.ID = 'scene';
-        this.cameras = [];
-        this.backgroundColor = {
-            r:0.0,
-            g:0.0,
-            b:0.0,
-            a:1.0
-        };
-        this.nodeGL = new mwGL.Scene(this);
+
+  /**
+   * Set default scene with a camera and a light
+   *
+   **/
+  setDefault() {
+    this.ID = 'scene_default';
+    // Add a camera
+    var cam = new mwSG.Camera();
+    this.add(cam);
+    // Add a light
+    this.add(new mwSG.Light()  );
+  };
+
+  add(an_object) {
+    super.add(this,an_object);
+
+    // Special case of the camera
+    if (an_object.ID === 'camera') {
+      this.cameras.push(an_object);
+      // Observe the renderer for canvas resize
+      this.parent.subscribe(an_object);
+    }
+  };
+
+  /**
+   * Get Camera in the scene
+   *
+   * @return {Camera} Returns the current camera
+   **/
+  getCamera() {
+    // TODO: must be improved if CameraGroup exists for stereo
+    return this.children['camera_0'];
+  };
+
+  /**
+   * Render this object and traverse its children
+   * Function called by the renderer
+   *
+   * @param{number} OpenGL context
+   **/
+  render(context) {
+    console.log('RENDER_Scene ' + this.ID );// HACK
+    // HACK console.log(this.parent);
+    // Update matrix
+    if (!(this.parent instanceof Renderer) ) {
+        mat4.multiply(this.getNodeGL().workmatrix,this.parent.getNodeGL().workmatrix,this.matrix);
     }
 
-    Scene.prototype = Object.create(mwSG.Composite.prototype);
+    // Sort children
+    this.children.sort( (a, b) => a.ID - b.ID);
 
-    /**
-     * Set default scene with a camera and a light
-     *
-     **/
-    Scene.prototype.setDefault = function() {
-        this.ID = 'scene_default';
-        // Add a camera
-        var cam = new mwSG.Camera();
-        this.add(cam);
-        // Add a light
-        this.add(new mwSG.Light()  );
-    };
+    // Render Scene...
+    this.getNodeGL().render(context);
 
-    Scene.prototype.add = function(an_object) {
-        mwSG.Composite.prototype.add.call(this,an_object);
-
-        // Special case of the camera
-        if (an_object.ID === 'camera') {
-            this.cameras.push(an_object);
-            // Observe the renderer for canvas resize
-            this.parent.subscribe(an_object);
+    // For each camera in scene...
+    for (var i = 0; i < this.cameras.length; i++) {
+      // Clear screen & buffers, update cam matrices, etc.
+      this.cameras[i].render(context);
+      // Propagate to children
+      for (var j in this.children) {
+        if (this.children[j].ID !== 'camera') {
+          this.children[j].render(context);
         }
-    };
+      }
+    }
 
-    /**
-     * Get Camera in the scene
-     *
-     * @return {Camera} Returns the current camera
-     **/
-    Scene.prototype.getCamera = function() {
-        // TODO: must be improved if CameraGroup exists for stereo
-        return this.children['camera_0'];
-    };
+  };
 
-    /**
-     * Render this object and traverse its children
-     * Function called by the renderer
-     *
-     * @param{number} OpenGL context
-     **/
-    Scene.prototype.render = function(context) {
-        console.log('RENDER_Scene ' + this.ID );// HACK
-        // HACK console.log(this.parent);
-        // Update matrix
-        if (!(this.parent instanceof Renderer) ) {
-            mat4.multiply(this.getNodeGL().workmatrix,this.parent.getNodeGL().workmatrix,this.matrix);
-        }
-
-        // Sort children
-        this.children.sort(
-            function (a, b) {
-                if (a.ID > b.ID) {
-                    return 1;
-                }
-                if (a.ID < b.ID) {
-                    return -1;
-                }
-                // a.ID === b.ID
-                return 0;
-            }
-        );
-
-        // Render Scene...
-        this.getNodeGL().render(context);
-
-        // For each camera in scene...
-        for (var i = 0; i < this.cameras.length; i++) {
-            // Clear screen & buffers, update cam matrices, etc.
-            this.cameras[i].render(context);
-            // Propagate to children
-            for (var j in this.children) {
-                if (this.children[j].ID !== 'camera') {
-                    this.children[j].render(context);
-                }
-            }
-        }
-
-    };
-
-    Scene.prototype.toString = function() {
+  toString() {
         var str = this.ID+'\n';
         for (var i in this.children) {
             str += '+-'+this.children[i]+'\n';
@@ -137,7 +125,8 @@
         return str;
     };
 
-    exports.Scene = Scene;
 
 
-})(this.mwSG = this.mwSG || {} );
+} // End of class Scene
+
+

@@ -25,99 +25,97 @@
 
 'use strict';
 
-(function(exports) {
-
+/**
+ * Geometry contains geometrical data like coordinates, normals, texCoords, colors,etc.
+ *
+ * @class Geometry
+ * @memberof module:mwSG
+ * 
+ **/
+export class Geometry { 
+  /**
+   * @constructor
+   */
+  constructor(options) {
 
     /**
-     * Geometry contains geometrical data like coordinates, normals, texCoords, colors,etc.
-     *
-     * @class Geometry
-     * @memberof module:mwSG
-     * @constructor
-     **/
-    function Geometry (options) {
+    * The type
+    *
+    * @type {string}
+    *
+    * @description
+    * - 'none'
+    * - 'POINTS'
+    * - 'LINES'
+    * - 'TRIANGLES'
+    **/
+    this.type    = options.type || 'none';
 
-        /**
-        * The type
-        *
-        * @type {string}
-        *
-        * @description
-        * - 'none'
-        * - 'POINTS'
-        * - 'LINES'
-        * - 'TRIANGLES'
-        **/
-        this.type    = options.type || 'none';
+    /**
+    * The content - A description of all the vertex data in this geometry. For example,
+    *
+    *```javascript
+    * "content" : Shape.XYZ | Shape.RGB | Shape.ST
+    *```
+    * The various available values are:
+    *
+    * - Shape.XYZ
+    * - Shape.XYZW
+    * - Shape.NXYZ
+    * - Shape.RGB
+    * - Shape.RGBA
+    * - Shape.ST
+    **/
+    this.content = options.content;
 
-        /**
-        * The content - A description of all the vertex data in this geometry. For example,
-        *
-        *```javascript
-        * "content" : Shape.XYZ | Shape.RGB | Shape.ST
-        *```
-        * The various available values are:
-        *
-        * - Shape.XYZ
-        * - Shape.XYZW
-        * - Shape.NXYZ
-        * - Shape.RGB
-        * - Shape.RGBA
-        * - Shape.ST
-        **/
-        this.content = options.content;
+    /**
+    * The data - A [Float32Array]{@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Float32Array} 
+    * array containing the vertex data
+    *
+    * @example
+    * If the content is Shape.XYZ | Shape.RGB, it means that in the same array, one vertex is defined by three X,Y, and Z-coordinates plus
+    * three Red, Green, and Blue color values like this...
+    * var data [X Y Z R G B X Y Z R G B ... Z R G B ]
+    **/
+    this.data    = options.data;
 
-        /**
-        * The data - A [Float32Array]{@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Float32Array} array containing the vertex data
-        *
-        * @example
-        * If the content is Shape.XYZ | Shape.RGB, it means that in the same array, one vertex is defined by three X,Y, and Z-coordinates plus
-        * three Red, Green, and Blue color values like this...
-        * var data [X Y Z R G B X Y Z R G B ... Z R G B ]
-        **/
-        this.data    = options.data;
+    /**
+    * The attributes - An array of {@link module:graphics.Attribute} used by the shader program
+    *
+    **/
+    this.attributes = options.attributes; // || [];
 
-        /**
-        * The attributes - An array of {@link module:graphics.Attribute} used by the shader program
-        *
-        **/
-        this.attributes = options.attributes; // || [];
+    /**
+    * The indices - A [UInt32Array]{@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint32Array} 
+    * array of indices pointing to the vertex array
+    *
+    **/
+    this.indices = options.indices;
 
-        /**
-        * The indices - A [UInt32Array]{@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint32Array} array of indices pointing to the vertex array
-        *
-        **/
-        this.indices = options.indices;
+    this._isIndexed (this.type === 'indexed') ? true : false;
+    
 
+    // HACK console.log(this.attributes);
+  }
 
-        if (this.type === 'indexed') {
-            this._isIndexed = true;
-        }
-        else {
-            this._isIndexed = false;
-        }
-
-        // HACK console.log(this.attributes);
+  getBuffer(name) {
+    var stop = false;
+    var i=0;
+    while (!stop && i < this.VBO.length) {
+      if (this.VBO[i].type === name) {
+        return this.VBO[i];
+      }
+      i++;
     }
+    return null;
+  };
 
-    Geometry.prototype.getBuffer = function(name) {
-        var stop = false;
-        var i=0;
-        while (!stop && i < this.VBO.length) {
-            if (this.VBO[i].type === name) {
-                return this.VBO[i];
-            }
-            i++;
-        }
-        return null;
-    };
-
-    Geometry.prototype.isIndexed = function() {
-        return this._isIndexed;
-    };
+  isIndexed() {
+    return this._isIndexed;
+  };
 
 
-    exports.Geometry = Geometry;
+
+} // End of class Geometry
 
 
-})(this.mwSG = this.mwSG || {} );

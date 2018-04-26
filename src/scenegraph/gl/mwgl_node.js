@@ -35,50 +35,42 @@
  * @memberof module:mwGL
  *
  **/
+export class Node {
+  /**
+   * @constructor
+   * @param {Node} node - Object belonging to the scene graph
+   * @extends module:mwGL.Node
+   * @author Jean-Christophe Taveau
+   */
+  constructor(node) {
+    this.sgnode = node;
+    this.glType = -1;
+    this._isDirty = true;
 
+    // Matrix for rotation(s) and translation(s)
+    this.workmatrix= mat4.create();
+    mat4.identity(this.workmatrix);
+  };
 
-/**
- * @constructor
- * @param {Node} node - Object belonging to the scene graph
- * @extends module:mwGL.Node
- * @author Jean-Christophe Taveau
- **/
+  isDirty() {
+    return this._isDirty;
+  };
 
-(function(exports) {
+  init(context) {
+    // Do nothing
+    this.isDirty = false;
+  };
 
-    function NodeGL(node) {
-        this.sgnode = node;
-        this.glType = -1;
-        this._isDirty = true;
+  pre_render(context) {
+    // Do nothing
+  };
 
-        // Matrix for rotation(s) and translation(s)
-        this.workmatrix= mat4.create();
-        mat4.identity(this.workmatrix);
-    };
+  render(context) {
+    // Do nothing
+  };
 
-    NodeGL.prototype.isDirty = function() {
-        return this._isDirty;
-    };
+  post_render(context) {
+    // Do nothing
+  };
 
-    NodeGL.prototype.init = function(context) {
-        // Do nothing
-        this.isDirty = false;
-    };
-
-    NodeGL.prototype.pre_render = function(context) {
-        // Do nothing
-    };
-
-    NodeGL.prototype.render = function(context) {
-        // Do nothing
-    };
-
-    NodeGL.prototype.post_render = function(context) {
-        // Do nothing
-    };
-
-
-    exports.Node = NodeGL;
-
-
-})(this.mwGL = this.mwGL || {} );
+};

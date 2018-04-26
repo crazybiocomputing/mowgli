@@ -28,110 +28,123 @@
 
 'use strict';
 
-(function(exports) {
+/**
+ * Node in the Scene Graph
+ *
+ * @class Node
+ * @memberof module:mwSG
+ * 
+ **/
+export class Node {
+  /**
+   * @constructor
+   */
+  constructor() {
 
     /**
-     * Node in the Scene Graph
-     *
-     * @class Node
-     * @memberof module:mwSG
-     * @constructor
-     **/
-    function Node() {
+     * Type of scenegraph node
+     */
+    this.ID = 'node';
 
-        /**
-         * Type of scenegraph node
-         */
-        this.ID = 'node';
+    /**
+     * Name of scenegraph node
+     */
+    this.name = 'none';
 
-        /**
-         * Name of scenegraph node
-         */
-        this.name = 'none';
+    /**
+     * Status of scenegraph node
+     * isDirty: Node.MATRIX | Node.GEOMETRY | Node.MATERIAL | Node.CLEAN;
+     */
+    this._isDirty = Node.MATRIX | Node.GEOMETRY | Node.MATERIAL;
 
-        /**
-         * Status of scenegraph node
-         * isDirty: Node.MATRIX | Node.GEOMETRY | Node.MATERIAL | Node.CLEAN;
-         */
-        this._isDirty = Node.MATRIX | Node.GEOMETRY | Node.MATERIAL;
+    /**
+     * Parent of this scenegraph node
+     */
+    this.parent = null;
 
-        /**
-         * Parent of this scenegraph node
-         */
-        this.parent = null;
+    /**
+     * Renderer of this scene that includes this node
+     */
+    this.renderer = null;
 
-        /**
-         * Renderer of this scene that includes this node
-         */
-        this.renderer = null;
+    /**
+     * OpenGL/WebGL object of this node
+     */
+    this.nodeGL = null;
 
-        /**
-         * OpenGL/WeGL object of this node
-         */
-        this.nodeGL = null;
+    /**
+     * Matrix for rotation(s) and translation(s): the Model Matrix
+     */
+    this.matrix = mat4.create();
+    mat4.identity(this.matrix);
+  }
 
-        /**
-         * Matrix for rotation(s) and translation(s): the Model Matrix
-         */
-        this.matrix=mat4.create();
-        mat4.identity(this.matrix);
+  static get CLEAN() {
+    return 0;
+  }
+  
+  
+  static get MATRIX() {
+    return 1;
+  }
+  
+  static get GEOMETRY() {
+    return 2;
+  }
+  
+  static get MATERIAL() {
+    return 4;
+  }
+
+  isDirty() {
+    return this._isDirty;
+  };
+
+  getNodeGL() {
+    return this.nodeGL;
+  };
+
+  getRenderer() {
+    if (this.renderer != null) {
+      return this.renderer;
     }
+    else if (this.parent instanceof Renderer) {
+      this.renderer = this.parent;
+      return this.renderer;
+    }
+    return this.parent.getRenderer();
+  };
 
-    Node.CLEAN = 0;
-    Node.MATRIX = 1;
-    Node.GEOMETRY = 2;
-    Node.MATERIAL = 4;
+  /**
+   * Init the OpenGL config of this object in the scene graph
+   * and traverse its children.
+   * Function called by the renderer
+   *
+   * @param{number} OpenGL context
+   **/
+  init(context) {
+  };
 
-    Node.prototype.isDirty = function() {
-        return this._isDirty;
-    };
+  /**
+   * Render this object
+   * Function called by the renderer
+   *
+   * @param{number} OpenGL context
+   **/
+  render(context) {
+    this.nodeGL.pre_render(context);
+    this.nodeGL.render(context);
+    this.nodeGL.post_render(context);
+  };
 
-    Node.prototype.getNodeGL = function() {
-        return this.nodeGL;
-    };
+  translate(tx, ty, tz) {
+    // HACK console.log(this.matrix);
+    mat4.translate(this.matrix,this.matrix,[tx, ty, tz]);
+    // HACK console.log(this.matrix);
+  };
 
-    Node.prototype.getRenderer = function() {
-        if (this.renderer != null) {
-            return this.renderer;
-        }
-        else if (this.parent instanceof Renderer) {
-            this.renderer = this.parent;
-            return this.renderer;
-        }
-        return this.parent.getRenderer();
-    };
+  graph(level) {
+  };
 
-    /**
-     * Init the OpenGL config of this object in the scene graph
-     * and traverse its children.
-     * Function called by the renderer
-     *
-     * @param{number} OpenGL context
-     **/
-    Node.prototype.init = function(context) {
-    };
 
-    /**
-     * Render this object
-     * Function called by the renderer
-     *
-     * @param{number} OpenGL context
-     **/
-    Node.prototype.render = function(context) {
-        this.nodeGL.pre_render(context);
-        this.nodeGL.render(context);
-        this.nodeGL.post_render(context);
-    };
-
-    Node.prototype.translate = function(tx, ty, tz) {
-        // HACK console.log(this.matrix);
-        mat4.translate(this.matrix,this.matrix,[tx, ty, tz]);
-        // HACK console.log(this.matrix);
-    };
-
-    Node.prototype.graph = function(level) {
-    };
-
-    exports.Node = Node;
-
-})(this.mwSG = this.mwSG || {} );
+} // End of class Node

@@ -21,30 +21,16 @@
  * Authors:
  * Jean-Christophe Taveau
  */
+ 
 
-'use strict';
+import {Camera} from './mwgl_camera.js';
+import {Node} from './mwgl_node.js';
+import {Scene} from './mwgl_scene.js';
+import {Shape} from './mwgl_shape.js';
 
-
-import {Composite} from './mwsg_composite.js';
-
-/**
- * ShapeGroup: A collection of shapes
- *
- * @class ShapeGroup
- * 
- * @memberof module:mwSG
- * @augments Composite
- **/
-export class ShapeGroup extends Composite {
-  /**
-   * @constructor
-   */
-  constructor() {
-    super();
-    this.ID = 'group[shape]';
-    this.nodeGL = new mwgl.Node(this);
-
-  }
+export {
+  Camera,Node,Scene,Shape
+};
 
 
-} // End of class ShapeGroup
+

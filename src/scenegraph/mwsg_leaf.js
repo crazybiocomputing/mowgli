@@ -25,83 +25,78 @@
 
 'use strict';
 
-(function(exports) {
+import {Node} from './mwsg_node.js';
 
-    /**
-     * Leaf node in the Scene Graph
-     *
-     * @class Leaf
-     * @memberof module:mwSG
-     * @constructor
-     * @augments Node
-     **/
-    function Leaf() {
-        mwSG.Node.call(this);
-        this.ID = 'leaf';
-    }
+/**
+ * Leaf node in the Scene Graph
+ *
+ * @class Leaf
+ * @memberof module:mwSG
+ * @constructor
+ * @augments Node
+ **/
+export class Leaf extends Node {
+  constructor() {
+    super();
+    this.ID = 'leaf';
+  }
 
-    Leaf.prototype = Object.create(mwSG.Node.prototype);
+  /**
+   * Init the OpenGL config of this object in the scene graph
+   * and traverse its children.
+   * Function called by the renderer
+   *
+   * @param{number} OpenGL context
+   **/
+  init(context) {
+    console.log('INIT leaf ' + this.ID);
+    this.getNodeGL().init(context);
+  };
 
-    Leaf.prototype.constructor = Leaf;
+  /**
+   * Render this object
+   * Function called by the renderer
+   *
+   * @param {number} context - OpenGL context
+   **/
+  render(context) {
+    // HACK console.log('RENDER_Leaf ' + this.ID);
+    // HACK console.log(this.parent.getNodeGL().workmatrix);
+    // Update matrix
+    mat4.multiply(this.getNodeGL().workmatrix,this.parent.getNodeGL().workmatrix,this.matrix);
 
+    console.log(this.getNodeGL());
+    
+    // OpenGL rendering
+    this.getNodeGL().pre_render(context);
+    this.getNodeGL().render(context);
+    this.getNodeGL().post_render(context);
+  };
 
-    /**
-     * Init the OpenGL config of this object in the scene graph
-     * and traverse its children.
-     * Function called by the renderer
-     *
-     * @param{number} OpenGL context
-     **/
-    Leaf.prototype.init = function(context) {
-        console.log('INIT leaf ' + this.ID);
-        this.getNodeGL().init(context);
-    };
-
-    /**
-     * Render this object
-     * Function called by the renderer
-     *
-     * @param {number} context - OpenGL context
-     **/
-    Leaf.prototype.render = function(context) {
-        // HACK console.log('RENDER_Leaf ' + this.ID);
-        // HACK console.log(this.parent.getNodeGL().workmatrix);
-        // Update matrix
+  /**
+   * Update this object
+   *
+   * @param {number} context - OpenGL context
+   **/
+  update(context) {
+    // HACK console.log('UPDATE_Leaf ' + this.ID);
+    // HACK console.log(this.parent);
+    // Update matrix
+    if (this._isDirty !== Node.CLEAN) {
         mat4.multiply(this.getNodeGL().workmatrix,this.parent.getNodeGL().workmatrix,this.matrix);
-
-        console.log(this.getNodeGL());
-        
         // OpenGL rendering
-        this.getNodeGL().pre_render(context);
-        this.getNodeGL().render(context);
-        this.getNodeGL().post_render(context);
-    };
-
-    /**
-     * Update this object
-     *
-     * @param {number} context - OpenGL context
-     **/
-    Leaf.prototype.update = function(context) {
-        // HACK console.log('UPDATE_Leaf ' + this.ID);
-        // HACK console.log(this.parent);
-        // Update matrix
-        if (this._isDirty !== Node.CLEAN) {
-            mat4.multiply(this.getNodeGL().workmatrix,this.parent.getNodeGL().workmatrix,this.matrix);
-            // OpenGL rendering
-            this.getNodeGL().update(context);
-            this._isDirty = Node.CLEAN;
-        }
-    };
+        this.getNodeGL().update(context);
+        this._isDirty = Node.CLEAN;
+    }
+  };
 
 
-    Leaf.prototype.graph = function(level) {
-        var str = (this.ID || 'unknown');
-        return str;
-    };
+  graph(level) {
+      var str = (this.ID || 'unknown');
+      return str;
+  };
 
 
-    exports.Leaf = Leaf;
 
 
-})(this.mwSG = this.mwSG || {} );
+} // End of class Leaf

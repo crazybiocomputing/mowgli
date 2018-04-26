@@ -25,6 +25,7 @@
 
 'use strict';
 
+import {Node} from './mwgl_node.js';
 
 /**
  * OpenGL part of Shape
@@ -32,26 +33,27 @@
  * @class ShapeGL
  * @memberof module:mwGL
  *
- * @constructor
  **/
-function ShapeGL(node) {
-    mwGL.Node.call(this,node);
+export class Shape extends Node {
+ /**
+  * @constructor
+  */
+  constructor(node) {
+    super(node);
 
     this.numIndices = 0;
     this.numItems = 0;
     this.VBOs = [];
     this.GLTextures = [];
     this.shaderProgram = null;
-}
+  }
 
-ShapeGL.prototype = Object.create(mwGL.Node.prototype);
-
-/**
- * Init of the OpenGL part: VBO creation
- *
- * @param {number} context - Graphics context
- **/
-ShapeGL.prototype.init = function(context) {
+  /**
+   * Init of the OpenGL part: VBO creation
+   *
+   * @param {number} context - Graphics context
+   **/
+  init(context) {
 
     // Get the corresponding node of the scene graph
     var shape = this.sgnode;
@@ -75,14 +77,14 @@ ShapeGL.prototype.init = function(context) {
 
     // All is fine (I hope ?)
     this.isDirty = false;
-};
+  };
 
-/**
- * Render this shape; Called by the renderer
- *
- **/
-ShapeGL.prototype.render = function(context) {
-    // HACK console.log('>>> ShapeGL.prototype.render');
+  /**
+   * Render this shape; Called by the renderer
+   *
+   **/
+  render(context) {
+    // HACK console.log('>>>   render');
     var gl = context;
     // Update matrix: multiply current matrix with parent matrix
     mat4.multiply(this.workmatrix,this.sgnode.parent.getNodeGL().workmatrix,this.sgnode.matrix);
@@ -148,9 +150,9 @@ ShapeGL.prototype.render = function(context) {
         // HACK console.log('drawArrays');
         gl.drawArrays(this.glType, 0, this.numItems);
     }
-};
+  };
 
-ShapeGL.prototype.removeVBO = function (geom_content) {
+  removeVBO (geom_content) {
     var gl = this.context;
 
     // Search VBO...
@@ -179,10 +181,10 @@ ShapeGL.prototype.removeVBO = function (geom_content) {
         }
         delete this.VBOs[i];
     }
-};
+  };
 
-// Private
-ShapeGL.prototype._createVBO = function(context,geom) {
+  // Private
+  _createVBO(context,geom) {
     var gl = context;
     // HACK console.log('SHAPE TYPE ' + this.sgnode.type);
     switch (this.sgnode.type) {
@@ -252,54 +254,54 @@ ShapeGL.prototype._createVBO = function(context,geom) {
     // HACK console.log('VBO ID: ' + JSON.stringify(vbo) );
     return vbo;
 
-};
+  };
 
-// Private
-ShapeGL.prototype._createTexture = function(context, img) {
-    var gl = context;
-    var glTex = gl.createTexture();
+  // Private
+  _createTexture(context, img) {
+  
+    function newTexture(img,glTex) {
+      const powerOfTwo = (n) => ( (n & (n - 1)) == 0);
+      
+      // Image now asynchronously loaded
+      // Check dimension
+      if (!powerOfTwo(img.width) || !powerOfTwo(img.height) ) {
+        // Alert
+        var msg = 'ERR: The texture '+img.src+' has non power-of-two dimension';
+        alert(msg);
+      }
+      else {
+        gl.bindTexture(gl.TEXTURE_2D, glTex);
+        // Set parameters
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); //_MIPMAP_NEAREST);
+
+        //gl.generateMipmap(gl.TEXTURE_2D);
+
+        // Fill texture with image data
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+
+        // Free texture binding
+        gl.bindTexture(gl.TEXTURE_2D, null);
+      }
+    }
+    
+    // Main
+    const gl = context;
+    let glTex = gl.createTexture();
     this.GLTextures.push(glTex);
 
     // TODO console.log('Create Texture from '+img.src + ' ' + img.complete);
-
-    img.onload = function() {
+/*
+TODO Fix Bug
+    img.onload() {
         newTexture(img,glTex);
     };
+*/
+  };
 
 
-    function newTexture(img,glTex) {
-        // Image now asynchronously loaded
-        // Check dimension
-        if (!powerOfTwo(img.width) || !powerOfTwo(img.height) ) {
-            // Alert
-            var msg = 'ERR: The texture '+img.src+' has non power-of-two dimension';
-            alert(msg);
-        }
-        else {
-            gl.bindTexture(gl.TEXTURE_2D, glTex);
-            // Set parameters
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); //_MIPMAP_NEAREST);
-
-            //gl.generateMipmap(gl.TEXTURE_2D);
-
-            // Fill texture with image data
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
-
-            // Free texture binding
-            gl.bindTexture(gl.TEXTURE_2D, null);
-        }
-
-        function powerOfTwo(n) {
-            return ( (n & (n - 1)) == 0);
-        }
-    }
-
-};
-
-
-ShapeGL.prototype._updateAttributes = function(context) {
-    var gl = context;
+  _updateAttributes(context) {
+    const gl = context;
 /***
   if (this.shaderProgram.attributes.length != this.geometry.attributes.length) {
     console.log(this.shaderProgram.attributes);
@@ -308,11 +310,15 @@ ShapeGL.prototype._updateAttributes = function(context) {
   }
 *****/
     for (var i=0; i < this.geometry.VBO.length;i++) {
-        var vbo = this.geometry.VBO[i];
-        for (var j=0; j < vbo.attributes.length; j++) {
-            vbo.attributes[j].location = this.shaderProgram.getAttribLocation(vbo.attributes[j].name);
-            vbo.attributes[j].size = this.shaderProgram.attributes[vbo.attributes[j].name].size;
-            // HACK console.log('location [' + vbo.attributes[j].name + ']= '+ vbo.attributes[j].location + ' '+vbo.attributes[j].size);
-        }
+      var vbo = this.geometry.VBO[i];
+      for (var j=0; j < vbo.attributes.length; j++) {
+          vbo.attributes[j].location = this.shaderProgram.getAttribLocation(vbo.attributes[j].name);
+          vbo.attributes[j].size = this.shaderProgram.attributes[vbo.attributes[j].name].size;
+          // HACK console.log('location [' + vbo.attributes[j].name + ']= '+ vbo.attributes[j].location + ' '+vbo.attributes[j].size);
+      }
     }
-};
+  };
+  
+} // End of class mwgl.Shape
+
+

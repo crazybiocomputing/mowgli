@@ -43,7 +43,7 @@
  * // Run infinite loop
  * renderer.drawScene();
  */
-class Renderer {
+export class Renderer {
 
   constructor(w,h,className = 'mowgli3D') {
 
@@ -54,9 +54,6 @@ class Renderer {
           context = canvas.getContext('webgl2', opt_attribs);
       } catch(e) {
           // TODO
-      }
-      if (context) {
-          break;
       }
       return context;
     }
@@ -192,6 +189,7 @@ class Renderer {
   };
 
   unsubscribe(obj) {
+    // TODO Fix
     this.handlers = this.handlers.filter(
       function(item) {
         if (item !== obj) {
@@ -215,7 +213,9 @@ class Renderer {
   /*
    * Private
    */
-  static FLOAT_IN_BYTES = 4;
+  static get FLOAT_IN_BYTES() {
+    return 4;
+  }
 
   _initGL() {
     // Init GL stuff

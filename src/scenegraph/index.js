@@ -22,22 +22,23 @@
  * Jean-Christophe Taveau
  */
  
-import *  from './mwsg_cameraGroup.js';
-import *  from './mwsg_camera.js';
-import *  from './mwsg_composite.js';
-import *  from './mwsg_geometry.js';
-import *  from './mwsg_leaf.js';
-import *  from './mwsg_light.js';
-import *  from './mwsg_node.js';
-import *  from './mwsg_scene.js';
-import *  from './mwsg_shapeGroup.js';
-import *  from './mwsg_shape.js';
-import *  from './shape/cube.js';
-import *  from './shape/mesh.js';
+// import *  from './mwsg_cameraGroup.js';
+import {Camera} from './mwsg_camera.js';
+import {Composite} from './mwsg_composite.js';
+import {Geometry}  from './mwsg_geometry.js';
+import {Leaf} from './mwsg_leaf.js';
+import {Light}  from './mwsg_light.js';
+import {Node} from './mwsg_node.js';
+import {Renderer} from './mwsg_renderer.js';
+import {Scene} from './mwsg_scene.js';
+import {ShapeGroup} from './mwsg_shapeGroup.js';
+import {Shape} from './mwsg_shape.js';
+import {Cube} from './shapes/cube.js';
+import {Mesh} from './shapes/mesh.js';
 
 
 export {
-  Camera,Composite,Geometry,Leaf,Light,Node,Scene,Shape,Cube,Mesh
+  Camera,Composite,Geometry,Leaf,Light,Node,Renderer,Scene,Shape,ShapeGroup,Cube,Mesh
 };
 
 
