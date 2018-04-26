@@ -54,7 +54,7 @@ export class Scene extends Composite {
    *
    **/
   setDefault() {
-    this.ID = 'scene_default';
+    this.name = 'scene_default';
     // Add a camera
     var cam = new mwsg.Camera();
     this.add(cam);
@@ -70,7 +70,7 @@ export class Scene extends Composite {
     super.add(an_object);
 
     // Special case of the camera
-    if (an_object.ID === 'camera') {
+    if (an_object instanceof mwsg.Camera) {
       this.cameras.push(an_object);
       // Observe the renderer for canvas resize
       this.parent.subscribe(an_object);
@@ -84,7 +84,7 @@ export class Scene extends Composite {
    **/
   getCamera() {
     // TODO: must be improved if CameraGroup exists for stereo
-    return this.children['camera_0'];
+    return this.children.filter( (child) => child.ID === 'camera');
   };
 
   /**
@@ -122,15 +122,7 @@ export class Scene extends Composite {
   };
 
   toString() {
-    let str = this.children.reduce( (accu,child,index) => `${accu}+-${index}: ${child.toString()}\n`, `${this.ID}\n`);
-    console.log('str: ',str);
-
-    str = this.ID+'\n';
-    for (var i in this.children) {
-      str += '+-'+this.children[i].toString()+'\n';
-    }
-    return str;
-
+    return this.children.reduce( (accu,child,index) => `${accu}+-${index}: ${child.ID}::${child.name}\n${child.toString()}\n`, `${this.ID}::${this.name}\n`);
   };
 
 

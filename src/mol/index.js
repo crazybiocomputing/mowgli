@@ -24,18 +24,26 @@
 
 'use strict';
 
-function ShaderCompilationException(value) {
-    this.value = value;
-    this.message = 'cannot compile the shader source';
-    this.toString = function() {
-        return this.value + this.message;
-    };
-}
 
-function ShaderLinkException(value) {
-    this.value = value;
-    this.message = 'cannot compile the shader source';
-    this.toString = function() {
-        return this.value + this.message;
-    };
-}
+./mowgliViewer.js
+./index.js
+./bondCalculator.js
+./io/rasterReader.js
+./io/parser/PDBParser.js
+./io/parser/XYZParser.js
+./io/parser/PDBMLParser.js
+./io/parser/EMDBInfoParser.js
+./io/parser/MMCIFParser.js
+./io/parser/ImgParser.js
+./io/structureReader.js
+./bond.js
+./atom.js
+./shapeFactory.js
+./colorers/chainColorer.js
+./colorers/CPKColorer.js
+./molecule.js
+./shaderFactory.js
+./geometers/wireGeometer.js
+./geometers/pointGeometer.js
+./colorFactory.js
+

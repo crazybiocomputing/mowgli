@@ -207,5 +207,8 @@ export class Camera extends Leaf {
     mat4.perspective(this.projMatrix, this.fovy * this.zoom, aspect_ratio, this.near, this.far);
   };
 
+  toString() {
+    return `view:[${this.viewMatrix.toString()}]\nproj: [${this.projMatrix.toString()}]`;
+  };
 } // End of class Camera
 

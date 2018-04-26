@@ -24,6 +24,8 @@
 
 'use strict';
 
+import {ShaderCompilationException,ShaderLinkException} from './exceptions.js';
+
 
 /**
  * OpenGL shader program class
@@ -59,10 +61,45 @@ export class Program {
     this.vertex_shader   = null;
     this.fragment_shader = null;
     this.shaderProgram = 0;
-    this.attributes =[];
-    this.uniforms = [];
+    this.attributes ={};
+    this.uniforms = {};
     this.attribLocation = {};
     this.uniformLocation = {};
+  }
+
+  attribute(a_name,a_num,a_type,a_stride,a_offset) {
+    this.attributes[a_name] = {
+      name: a_name,
+      num : a_num,
+      type: a_type, 
+      stride: a_stride,
+      offset: a_offset,
+      location: null
+    };
+  }
+  
+  /**
+   *
+   */
+  uniform(u_name,u_value) {
+    let gl = this.context;
+    
+    let u = this.uniforms[u_name];
+
+    switch (u.type) {
+      case 'float': gl.uniform1f(u.location, u_value);break;
+      case 'int': gl.uniform1i(u.location, u_value);break;
+      case 'uint': gl.uniform1ui(u.location, u_value);break;
+      case 'int[]': gl.uniform1iv(u.location, u_value);break;
+      case 'float[]': gl.uniform1fv(u.location, u_value);break;
+      case 'mat2': gl.uniformMatrix2fv(u.location, u_value);break;
+      case 'mat3': gl.uniformMatrix3fv(u.location, u_value);break;
+      case 'mat4': gl.uniformMatrix4fv(u.location, u_value);break;
+      case 'sampler2D': gl.uniform1i(u.location, u_value);break;
+      case 'vec2': gl.uniform2fv(u.location, u_value);break;
+      case 'vec3': gl.uniform3fv(u.location, u_value);break;
+      case 'vec4': gl.uniform4fv(u.location, u_value);break;
+    };
   }
 
   /**
@@ -83,13 +120,13 @@ export class Program {
     var gl = this.ctx;
 
     if (type === 'fragment') {
-        this.fragment_shader = this._compile(gl.FRAGMENT_SHADER,src);
+      this.fragment_shader = this._compile(gl.FRAGMENT_SHADER,src);
     }
     else if (type === 'vertex') {
-        this.vertex_shader = this._compile(gl.VERTEX_SHADER,src);
+      this.vertex_shader = this._compile(gl.VERTEX_SHADER,src);
     }
     else {
-        return null;
+      return null;
     }
 
     // Extract attribute(s) and uniform(s) from shader sources and create objects
@@ -114,9 +151,9 @@ export class Program {
     req.open('GET', url, true);
     req.responseType = 'text';
     req.onreadystatechange = function() {
-        if (req.readyState==4 && req.status==200) {
-            this.fragment_shader = this._compile(gl.FRAGMENT_SHADER,this.response);
-        }
+      if (req.readyState==4 && req.status==200) {
+        this.fragment_shader = this._compile(gl.FRAGMENT_SHADER,this.response);
+      }
     };
     req.send();
   };
@@ -133,27 +170,27 @@ export class Program {
 
     var shaderScript = document.getElementById(name);
     if (!shaderScript) {
-        return null;
+      return null;
     }
 
     var str = '';
     var k = shaderScript.firstChild;
     while (k) {
-        if (k.nodeType == 3) {
-            str += k.textContent;
-        }
-        k = k.nextSibling;
+      if (k.nodeType == 3) {
+        str += k.textContent;
+      }
+      k = k.nextSibling;
     }
 
 
     if (shaderScript.type == 'x-shader/x-fragment') {
-        this.fragment_shader = this._compile(gl.FRAGMENT_SHADER,str);
+      this.fragment_shader = this._compile(gl.FRAGMENT_SHADER,str);
     }
     else if (shaderScript.type == 'x-shader/x-vertex') {
-        this.vertex_shader = this._compile(gl.VERTEX_SHADER,str);
+      this.vertex_shader = this._compile(gl.VERTEX_SHADER,str);
     }
     else {
-        return null;
+      return null;
     }
 
     // Extract attribute from shader text and create objects
@@ -170,7 +207,7 @@ export class Program {
     gl.linkProgram(this.shaderProgram);
 
     if (!gl.getProgramParameter(this.shaderProgram, gl.LINK_STATUS)) {
-        throw new ShaderLinkException('Could not link shaders');
+      throw new ShaderLinkException('Could not link shaders');
     }
   };
 
@@ -215,22 +252,22 @@ export class Program {
   updateUniforms () {
     var gl = this.ctx;
     for (var i in this.uniforms) {
-        var uniform = this.uniforms[i];
-        console.log(uniform);
-        switch (uniform.type) {
-        case 'mat4' :
-            gl.uniformMatrix4fv(this.getUniformLocation(uniform.name), false, uniform.value);
-            break;
-        case 'sampler2D' :
-            gl.uniform1i(this.getUniformLocation(uniform.name), uniform.value);
-            break;
-        case 'vec3' :
-            gl.uniform3fv(this.getUniformLocation(uniform.name), false, uniform.value);
-            break;
-        case 'vec4' :
-            gl.uniform4fv(this.getUniformLocation(uniform.name), false, uniform.value);
-            break;
-        }
+      var uniform = this.uniforms[i];
+      console.log(uniform);
+      switch (uniform.type) {
+      case 'mat4' :
+        gl.uniformMatrix4fv(this.getUniformLocation(uniform.name), false, uniform.value);
+        break;
+      case 'sampler2D' :
+        gl.uniform1i(this.getUniformLocation(uniform.name), uniform.value);
+        break;
+      case 'vec3' :
+        gl.uniform3fv(this.getUniformLocation(uniform.name), false, uniform.value);
+        break;
+      case 'vec4' :
+        gl.uniform4fv(this.getUniformLocation(uniform.name), false, uniform.value);
+        break;
+      }
     }
   };
 
@@ -239,16 +276,16 @@ export class Program {
    *
    */
   _compile(type,text) {
-    var gl = this.ctx;
-    var shader = gl.createShader(type);
-    gl.shaderSource(shader, text);
-    gl.compileShader(shader);
+  var gl = this.ctx;
+  var shader = gl.createShader(type);
+  gl.shaderSource(shader, text);
+  gl.compileShader(shader);
 
-    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-        throw new ShaderCompilationException(gl.getShaderInfoLog(shader) );
-    }
+  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+    throw new ShaderCompilationException(gl.getShaderInfoLog(shader) );
+  }
 
-    return shader;
+  return shader;
   };
 
   /**
@@ -265,65 +302,65 @@ export class Program {
     var type;
     var qualifier = 'x';
 
-    for (var i in rows) {
-        var a_row = rows[i];
-        if (a_row.indexOf('attribute') != -1 || a_row.indexOf('uniform') != -1) {
-            var words = a_row.trim().split(re); //  match(/[\S,;]+/g);
-            var itemSize = 0;
-            // HACK console.log(words);
-            for (var j=0; j < words.length; j++) {
-                switch (words[j]) {
-                case 'attribute':
-                    qualifier = 'a';
-                    break;
-                case 'uniform':
-                    qualifier = 'u';
-                    break;
-                case 'bool':
-                    itemSize = 1;
-                    type = words[j];
-                    break;
-                case 'int' :
-                    itemSize = 1;
-                    type = words[j];
-                    break;
-                case 'float':
-                    itemSize = 1;
-                    type = words[j];
-                    break;
-                case 'sampler2D':
-                    itemSize = 1;
-                    type = words[j];
-                    break;
-                case 'vec2':
-                    itemSize = 2;
-                    type = words[j];
-                    break;
-                case 'vec3':
-                    itemSize = 3;
-                    type = words[j];
-                    break;
-                case 'vec4':
-                    itemSize = 4;
-                    type = words[j];
-                    break;
-                case 'mat4':
-                    itemSize = 16;
-                    type = words[j];
-                    break;
-                default:
-                    if (qualifier == 'a' && words[j] != '') {
-                        // HACK console.log('attribute '+ words[j] + ' type '+ type);
-                        this.attributes[words[j]] = {'name':words[j],'type':type,'size':itemSize};
-                    }
-                    else if (qualifier == 'u' && words[j] != '') {
-                        // HACK console.log('uniform '+ words[j] + ' type '+ type);
-                        this.uniforms[words[j]] = {'name':words[j],'type':type,'size':itemSize};
-                    }
-                    break;
-                }
+    for (let i in rows) {
+      var a_row = rows[i];
+      if (a_row.indexOf('in') != -1 || a_row.indexOf('uniform') != -1) {
+        var words = a_row.trim().split(re); //  match(/[\S,;]+/g);
+        var itemSize = 0;
+        // HACK console.log(words);
+        for (let j=0; j < words.length; j++) {
+          switch (words[j]) {
+          case 'in':
+            qualifier = 'a';
+            break;
+          case 'uniform':
+            qualifier = 'u';
+            break;
+          case 'bool':
+            itemSize = 1;
+            type = words[j];
+            break;
+          case 'int' :
+            itemSize = 1;
+            type = words[j];
+            break;
+          case 'float':
+            itemSize = 1;
+            type = words[j];
+            break;
+          case 'sampler2D':
+            itemSize = 1;
+            type = words[j];
+            break;
+          case 'vec2':
+            itemSize = 2;
+            type = words[j];
+            break;
+          case 'vec3':
+            itemSize = 3;
+            type = words[j];
+            break;
+          case 'vec4':
+            itemSize = 4;
+            type = words[j];
+            break;
+          case 'mat4':
+            itemSize = 16;
+            type = words[j];
+            break;
+          default:
+            if (qualifier == 'a' && words[j] != '') {
+              // HACK console.log('attribute '+ words[j] + ' type '+ type);
+              this.attributes[words[j]] = {'name':words[j],'type':type,'size':itemSize};
             }
+            else if (qualifier == 'u' && words[j] != '') {
+              // HACK console.log('uniform '+ words[j] + ' type '+ type);
+              this.uniforms[words[j]] = {'name':words[j],'type':type,'size':itemSize};
+            }
+            break;
+          }
         }
+      }
     }
   };
   

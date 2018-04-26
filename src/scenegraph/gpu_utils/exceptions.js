@@ -24,9 +24,18 @@
 
 'use strict';
 
-import {Attribute} from './attribute.js';
-import {Program} from './program.js';
-import {Uniform} from './uniform.js';
-import {ShaderCompilationException,ShaderLinkException} from './exceptions.js';
+export class ShaderCompilationException {
+  constructor(value) {
+    this.value = value;
+    this.message = 'cannot compile the shader source';
+    this.toString = () => `${this.value} cannot compile the shader source`;
+  }
+}
 
-export {Attribute, Program, Uniform, ShaderCompilationException,ShaderLinkException};
+export class ShaderLinkException {
+  constructor(value) {
+    this.value = value;
+    this.message = 'cannot compile the shader source';
+    this.toString = `${this.value} cannot compile the shader source`;
+  }
+};

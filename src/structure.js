@@ -33,11 +33,14 @@
  * Root class for 3D objects: atomic ({@link module:structure.Molecule}), map, or any 3D graphics vectorial object
  * @class Structure
  * @memberof module:structure
- * @constructor
  *
  * @author Jean-Christophe Taveau
  **/
-function Structure(other) {
+class Structure {
+  /**
+   * @constructor
+   */
+  constructor(other) {
 
     /**
     * Identifier
@@ -110,38 +113,40 @@ function Structure(other) {
         'center':  {'x': 0.0,'y': 0.0,'z': 0.0},
         'radius': 0.0
     };
+  }
+
+
+  /**
+   * Is this structure an atomic model? (instance of class Molecule)
+   *
+   * @return {boolean} - true if this structure is an atomic model.
+   *
+   **/
+  isMolecule() {
+    return (this instanceof Molecule);
+  };
+
+
+  /**
+   * Is this structure a 2D/3D-raster? (instance of class Raster)
+   *
+   * @return {boolean} - true if this structure is a 2D- or 3D-raster (image or volume/map).
+   *
+   **/
+  isRaster() {
+    return (this instanceof Map);
+  };
+
+
+  /**
+  * Set Title
+  *
+  * @param {string} str - Set a new title
+  *
+  **/
+  setTitle(str) {
+    this.information.title = str;
+  };
 
 }
 
-
-/**
- * Is this structure an atomic model? (instance of class Molecule)
- *
- * @return {boolean} - true if this structure is an atomic model.
- *
- **/
-Structure.prototype.isMolecule = function() {
-    return (this instanceof Molecule);
-};
-
-
-/**
- * Is this structure a 2D/3D-raster? (instance of class Raster)
- *
- * @return {boolean} - true if this structure is a 2D- or 3D-raster (image or volume/map).
- *
- **/
-Structure.prototype.isRaster = function() {
-    return (this instanceof Raster);
-};
-
-
- /**
- * Set Title
- *
- * @param {string} str - Set a new title
- *
- **/
-Structure.prototype.setTitle = function (str) {
-    this.information.title = str;
-};

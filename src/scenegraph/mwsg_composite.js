@@ -63,8 +63,8 @@ export class Composite extends Node {
     }
     
     // Modify ID if duplicates
-    an_object.name = an_object.ID + '_' + size(this.children);
-    this.children[an_object.name] = an_object;
+    an_object.name = an_object.ID + '_' + this.children.length;
+    this.children.push(an_object);
     an_object.parent = this;
   };
 
