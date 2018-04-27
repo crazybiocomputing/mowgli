@@ -37,6 +37,16 @@ export class Geometry {
    * @constructor
    */
   constructor(options) {
+    const numComponents = (content) => content.toString(2)
+        .padStart(8,'0')
+        .split('')
+        .reverse()
+        .reduce( (accu,bit,index) => {
+          let value = bit * 2**index;
+          accu += (value !== 0) ? mwsg.Shape.itemLength[value] : 0;
+          return accu;
+        },0);
+
 
     /**
     * The type
@@ -77,7 +87,7 @@ export class Geometry {
     * three Red, Green, and Blue color values like this...
     * var data [X Y Z R G B X Y Z R G B ... Z R G B ]
     **/
-    this.data    = options.data;
+    this.data = options.data;
 
     /**
     * The attributes - An array of {@link module:graphics.Attribute} used by the shader program
@@ -85,15 +95,15 @@ export class Geometry {
     **/
     this.attributes = options.attributes; // || [];
 
-    /**
-    * The indices - A [UInt32Array]{@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint32Array} 
-    * array of indices pointing to the vertex array
-    *
-    **/
-    this.indices = options.indices;
-
+    // TODO Obsolete
     this._isIndexed = (this.type === 'indexed') ? true : false;
     
+    if (this.type === 'indexed') {
+      this.numIndices = this.data.length;
+    }
+    else {
+      this.numVertices = this.data.length / numComponents(this.content);
+    }
 
     // HACK console.log(this.attributes);
   }

@@ -201,7 +201,7 @@ export class Camera extends Leaf {
 
   handle(rendr) {
     console.log('handle');
-    console.log(rendr.canvasWidth+' '+rendr.canvas.height);
+    console.log(rendr.canvas.width+' '+rendr.canvas.height);
     this.viewport = this.viewportFunc(rendr.canvas.width,rendr.canvas.height);
     var aspect_ratio = rendr.canvas.width / rendr.canvas.height;
     mat4.perspective(this.projMatrix, this.fovy * this.zoom, aspect_ratio, this.near, this.far);

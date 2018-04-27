@@ -52,8 +52,9 @@ export class Cube extends Shape {
             {
                 'content'   : Shape.XYZ,
                 'data'      : Cube.verticesWire,
+                'numItems'  : 8,
                 'indices'   :_indices,
-                'attributes': [new gpu.Attribute("aVertexPosition",0,0)]
+                'attributes': [new gpu.Attribute("aVertexPosition",3,'float',0,0)]
             }
         );
 /**

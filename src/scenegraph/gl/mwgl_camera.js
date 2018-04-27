@@ -82,6 +82,7 @@ export class Camera extends Node {
 
     // Update viewport...
     console.log('RENDER CAM++ ');
+    console.log(this.sgnode.viewport);
 
     // ... and update Projection matrix
     //this.sgnode.projectionFunc(this.viewport.width / viewport.height);

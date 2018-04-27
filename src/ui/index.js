@@ -21,58 +21,14 @@
  * Authors:
  * Jean-Christophe Taveau
  */
+ 
+
+import {MouseSensor} from './mwui_mouseSensor.js';
 
 
-'use strict';
+export {
+  MouseSensor
+};
 
-
-/**
- * Attribute class used by the shader program
- *
- * @class Attribute
- * @memberof module:graphics
- * 
- **/
-export class Attribute {
-  /**
-   * @constructor
-   */
-  constructor(name,size,type,offset,stride) {
-
-    /** 
-    * The name
-    * @type {string}
-    *
-    **/
-    this.name = name;
-
-    /**
-     * A GLint specifying the number of components per vertex attribute. 
-     * Must be 1, 2, 3, or 4.
-     */
-    this.size = size;
-    
-    /**
-     * 
-     */
-    this.type = type;
-    /**
-    * The offset
-    * @type {number}
-    *
-    **/
-    this.offset = offset;
-
-    /**
-    * The stride
-    * @type {number}
-    *
-    **/
-    this.stride = stride;
-
-
-    this.location = -1;
-  }
-} // End of class Attribute
 
 

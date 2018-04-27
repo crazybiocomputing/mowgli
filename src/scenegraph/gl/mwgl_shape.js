@@ -42,7 +42,7 @@ export class Shape extends Node {
     super(node);
 
     this.numIndices = 0;
-    this.numItems = 0;
+    this.numVertices = 0;
     this.VBOs = [];
     this.GLTextures = [];
     this.shaderProgram = null;
@@ -54,7 +54,7 @@ export class Shape extends Node {
    * @param {number} context - Graphics context
    **/
   init(context) {
-
+    console.log('>>> INIT GL ' + this.sgnode.ID);
     // Get the corresponding node of the scene graph
     var shape = this.sgnode;
 
@@ -85,10 +85,10 @@ export class Shape extends Node {
    **/
   render(context) {
     // HACK console.log('>>>   render');
-    var gl = context;
+    const gl = context;
     // Update matrix: multiply current matrix with parent matrix
     mat4.multiply(this.workmatrix,this.sgnode.parent.getNodeGL().workmatrix,this.sgnode.matrix);
-    console.log('matrix ' + this.workmatrix);
+    // HACK console.log('matrix ' + this.workmatrix);
     this.sgnode.getRenderer().setUniform('uMMatrix', this.workmatrix);
 
     // Choose shader
@@ -102,15 +102,16 @@ export class Shape extends Node {
     for (var j=0; j < this.VBOs.length; j++) {
         var vbo = this.VBOs[j];
         if (vbo.type === 'indexed') {
-            // HACK console.log('bind buffer '+ vbo.type + ' ' + vbo.ID+ ' ' + vbo.data);
+            //HACK console.log('bind indexed buffer '+ vbo.type + ' ' + vbo.ID+ ' ' + vbo.data);
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, vbo.ID);
         }
         else {
             // HACK console.log('bind buffer '+ vbo.type + ' ' + vbo.ID);
             gl.bindBuffer(gl.ARRAY_BUFFER, vbo.ID);
         }
-        for (var k in vbo.attributes) {
-            var attribute = vbo.attributes[k];
+        for (let k in vbo.attributes) {
+            let attribute = vbo.attributes[k];
+            console.log(attribute);
             // HACK console.log('enable ' + k + ':'+ attribute.name+' '+attribute.location+' '+attribute.size+' '+attribute.stride+' '+attribute.offset);
             gl.enableVertexAttribArray(attribute.location );
             gl.vertexAttribPointer(
@@ -143,17 +144,17 @@ export class Shape extends Node {
 
     // Draw ...
     // HACK console.log(this.sgnode.type + ' '+ this.glType +' '+ this.numIndices+' '+ this.numItems);
-    if (this.numIndices != 0 ) {
+    if (this.numIndices !== 0 ) {
         gl.drawElements(this.glType, this.numIndices, gl.UNSIGNED_SHORT, 0);
     }
     else {
         // HACK console.log('drawArrays');
-        gl.drawArrays(this.glType, 0, this.numItems);
+        gl.drawArrays(this.glType, 0, this.numVertices);
     }
   };
 
   removeVBO (geom_content) {
-    var gl = this.context;
+    const gl = this.context;
 
     // Search VBO...
     var i = 0;
@@ -185,7 +186,7 @@ export class Shape extends Node {
 
   // Private
   _createVBO(context,geom) {
-    var gl = context;
+    const gl = context;
     // HACK console.log('SHAPE TYPE ' + this.sgnode.type);
     switch (this.sgnode.type) {
     case 'POINTS':
@@ -209,21 +210,23 @@ export class Shape extends Node {
         break;
     }
     // Init VBO
-    var vbo = {};
-    vbo.attributes = [];
-    vbo.type = geom.type;
-    vbo.content = geom.content;
-
+    let vbo = {
+      attributes : [],
+      type : geom.type,
+      content : geom.content
+    };
+    
     // Create VBO
     vbo.ID = gl.createBuffer();
     if (vbo.type === 'indexed') {
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, vbo.ID);
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, geom.data, gl.STATIC_DRAW);
-        this.numIndices = geom.data.length;
+        this.numIndices = geom.numIndices;
     }
     else {
         gl.bindBuffer(gl.ARRAY_BUFFER, vbo.ID);
         gl.bufferData(gl.ARRAY_BUFFER, geom.data, gl.STATIC_DRAW);
+        this.numVertices = geom.numVertices;
     }
 
 
@@ -231,27 +234,12 @@ export class Shape extends Node {
     // HACK console.log('VBO attributes');
     // HACK console.log(geom.attributes);
     for (var j=0; j < geom.attributes.length; j++) {
-        if ( (geom.content & mwsg.Shape.XYZ) === mwsg.Shape.XYZ) {
-            var n = 32; // Highest value of Shape type(s) but Shape.INDICES
-            var nItems = 0;
-            while (n != 0) {
-                if ( (geom.content & n) === n) {
-                    nItems += mwsg.Shape.itemLength[n];
-                }
-                n/=2;
-            }
-            this.numItems = geom.data.length / nItems;
-        }
-        vbo.attributes[j] = {};
-        vbo.attributes[j].name     = geom.attributes[j].name;
-        vbo.attributes[j].location = this.shaderProgram.getAttribLocation(geom.attributes[j].name);
-        vbo.attributes[j].size     = this.shaderProgram.attributes[vbo.attributes[j].name].size;
-        vbo.attributes[j].stride   = geom.attributes[j].stride;
-        vbo.attributes[j].offset   = geom.attributes[j].offset;
+      vbo.attributes[j] = geom.attributes[j];
+      vbo.attributes[j].location = this.shaderProgram.getAttribLocation(geom.attributes[j].name);
         // TODO console.log('location [' + vbo.attributes[j].name + ']= '+ vbo.attributes[j].location + ' '+vbo.attributes[j].size);
     }
 
-    // HACK console.log('VBO ID: ' + JSON.stringify(vbo) );
+    //HACK console.log('VBO ID: ' + JSON.stringify(vbo) );
     return vbo;
 
   };

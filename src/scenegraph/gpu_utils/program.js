@@ -25,6 +25,7 @@
 'use strict';
 
 import {ShaderCompilationException,ShaderLinkException} from './exceptions.js';
+import {createProgram} from './utils.js';
 
 
 /**
@@ -60,7 +61,7 @@ export class Program {
     this.name = name;
     this.vertex_shader   = null;
     this.fragment_shader = null;
-    this.shaderProgram = 0;
+    this.shaderProgram;
     this.attributes ={};
     this.uniforms = {};
     this.attribLocation = {};
@@ -82,7 +83,7 @@ export class Program {
    *
    */
   uniform(u_name,u_value) {
-    let gl = this.context;
+    let gl = this.ctx;
     
     let u = this.uniforms[u_name];
 
@@ -117,7 +118,7 @@ export class Program {
    * @param {string} name: Source filename
    **/
   load(type,src) {
-    var gl = this.ctx;
+    const gl = this.ctx;
 
     if (type === 'fragment') {
       this.fragment_shader = this._compile(gl.FRAGMENT_SHADER,src);
@@ -142,7 +143,7 @@ export class Program {
    * @param {string} name: Source filename
    **/
   loadHTTP(type,name) {
-    var gl = this.ctx;
+    const gl = this.ctx;
     // From http://www.html5rocks.com/en/tutorials/file/xhr2/
     // XMLHttpRequest()
 
@@ -166,7 +167,7 @@ export class Program {
    * @param {string} name: ID of the html div
    **/
   loadDOM(type,name) {
-    var gl = this.ctx;
+    const gl = this.ctx;
 
     var shaderScript = document.getElementById(name);
     if (!shaderScript) {
@@ -176,31 +177,19 @@ export class Program {
     var str = '';
     var k = shaderScript.firstChild;
     while (k) {
-      if (k.nodeType == 3) {
+      if (k.nodeType === 3) {
         str += k.textContent;
       }
       k = k.nextSibling;
     }
 
-
-    if (shaderScript.type == 'x-shader/x-fragment') {
-      this.fragment_shader = this._compile(gl.FRAGMENT_SHADER,str);
-    }
-    else if (shaderScript.type == 'x-shader/x-vertex') {
-      this.vertex_shader = this._compile(gl.VERTEX_SHADER,str);
-    }
-    else {
-      return null;
-    }
-
-    // Extract attribute from shader text and create objects
-    this._createAttributesAndUniforms(str);
+    return str;
 
   };
 
 
   link() {
-    var gl = this.ctx;
+    const gl = this.ctx;
     this.shaderProgram = gl.createProgram();
     gl.attachShader(this.shaderProgram, this.vertex_shader);
     gl.attachShader(this.shaderProgram, this.fragment_shader);
@@ -216,13 +205,13 @@ export class Program {
    *
    **/
   use() {
-    var gl = this.ctx;
+    const gl = this.ctx;
     gl.useProgram(this.shaderProgram);
   };
 
 
   getAttribLocation(attrib_name) {
-    var gl = this.ctx;
+    const gl = this.ctx;
     gl.useProgram(this.getID());
     return gl.getAttribLocation(this.getID(),attrib_name);
   };
@@ -234,13 +223,13 @@ export class Program {
    *
    **/
   setUniformLocation(name) {
-    var gl = this.ctx;
+    const gl = this.ctx;
     gl.useProgram(this.getID());
     this.uniformLocation[name]=gl.getUniformLocation(this.getID(),name);
   };
 
   getUniformLocation(name) {
-    //var gl = this.ctx;
+    //const gl = this.ctx;
     return this.uniformLocation[name];
   };
 
@@ -250,7 +239,7 @@ export class Program {
    *
    **/
   updateUniforms () {
-    var gl = this.ctx;
+    const gl = this.ctx;
     for (var i in this.uniforms) {
       var uniform = this.uniforms[i];
       console.log(uniform);
@@ -276,7 +265,7 @@ export class Program {
    *
    */
   _compile(type,text) {
-  var gl = this.ctx;
+  const gl = this.ctx;
   var shader = gl.createShader(type);
   gl.shaderSource(shader, text);
   gl.compileShader(shader);
@@ -287,6 +276,20 @@ export class Program {
 
   return shader;
   };
+
+  /**
+   * Create Shader Program
+   * 
+   * @author Jean-Christophe Taveau
+   */
+  create(src_vs,src_fs) {
+
+    let shader = createProgram({context: this.ctx},src_vs,src_fs);
+    this.attributes = shader.attributes;
+    this.uniforms = shader.uniforms;
+    this.shaderProgram = shader.program;
+  }
+
 
   /**
    * Private method to automatically detect in the shader source files the attribute(s) and uniform(s).

@@ -25,96 +25,103 @@
 
 'use strict';
 
-(function(exports) {
+/**
+ * MouseSensor
+ * @class MouseSensor
+ * 
+ * @memberof module:mwUI
+ */
+export class MouseSensor {
+  /**
+   * @constructor
+   */
+  constructor(canvas) {
+  
+    this.shapes = [];
+    this.renderer;
+    
+    
+    let mousePosition=[0.0,0.0];
+    let currentAngle=[0.0,0.0];
 
-    /**
-     * MouseSensor
-     * @class MouseSensor
-     * @constructor
-     * @memberof module:mwUI
-     */
-    function MouseSensor(canvas_id) {
-        var mousePosition=[0.0,0.0];
-        var currentAngle=[0.0,0.0];
+    let lastX = -1;
+    let lastY = -1;
+    let dragging = false;
 
-        var lastX = -1;
-        var lastY = -1;
-        var dragging = false;
+    let zoom = 0;
+    let zoomDelta=0.01;
 
-        var zoom = 0;
-        var zoomDelta=0.01;
 
-        var canvas = document.getElementById(canvas_id);
+    
+    let that = this;
 
-        var shapes = [];
-        var renderer = null;
+    canvas.onmousedown = (ev) => {
+      //Mouse is pressed
+      let x = ev.clientX;
+      let y = ev.clientY;
 
-        canvas.onmousedown = function(ev) {
-            //Mouse is pressed
-            var x = ev.clientX;
-            var y = ev.clientY;
+      let rect = ev.target.getBoundingClientRect();
+      if(rect.left <= x && x <= rect.right && rect.top <= y && y <= rect.bottom) {
+        lastX = x;
+        lastY = y;
+        mousePosition[0] = x;
+        mousePosition[1] = canvas.height - y;
+        dragging = true;
+      }
+    };
 
-            var rect = ev.target.getBoundingClientRect();
-            if(rect.left <= x && x <= rect.right && rect.top <= y && y <= rect.bottom) {
-                lastX = x;
-                lastY = y;
-                mousePosition[0] = x;
-                mousePosition[1] = canvas.height - y;
-                dragging = true;
-            }
-        };
+    canvas.onmouseup = (ev) => {
+      //Mouse is released
+      dragging = false;
+    };
 
-        canvas.onmouseup = function(ev){
-            //Mouse is released
-            dragging = false;
-        };
+    canvas.onmousemove = (ev) => {
+      //Mouse is moved
+      var x = ev.clientX;
+      var y = ev.clientY;
+      if (dragging) {
+        //put some kind of dragging logic in here
+        //Here is a rotation example
+        var factor = 0.05;
+        var dx = factor * (x - lastX);
+        var dy = factor * (y - lastY);
+        //Limit x-axis rotation angle to -90 to 90 degrees
+        currentAngle[0] = Math.max(Math.min(currentAngle[0] + dy, 90), -90);
+        currentAngle[1] = currentAngle[1] + dx;
 
-        canvas.onmousemove = function(ev) {
-            //Mouse is moved
-            var x = ev.clientX;
-            var y = ev.clientY;
-            if (dragging) {
-                //put some kind of dragging logic in here
-                //Here is a rotation example
-                var factor = 0.05;
-                var dx = factor * (x - lastX);
-                var dy = factor * (y - lastY);
-                //Limit x-axis rotation angle to -90 to 90 degrees
-                currentAngle[0] = Math.max(Math.min(currentAngle[0] + dy, 90), -90);
-                currentAngle[1] = currentAngle[1] + dx;
+        mousePosition[0] = x;
+        mousePosition[1] = canvas.height - y;
 
-                mousePosition[0] = x;
-                mousePosition[1] = canvas.height - y;
+        // Update shape(s) matrix
+        // HACK console.log(currentAngle[0]+ ' '+ currentAngle[1])
+        var tmp = mat4.create();
+        mat4.identity(tmp);
+        mat4.rotate(tmp,tmp,dx,[0,1,0]);
+        mat4.rotate(tmp,tmp,dy,[1,0,0]);
 
-                // Update shape(s) matrix
-                // HACK console.log(currentAngle[0]+ ' '+ currentAngle[1])
-                var tmp = mat4.create();
-                mat4.identity(tmp);
-                mat4.rotate(tmp,tmp,dx,[0,1,0]);
-                mat4.rotate(tmp,tmp,dy,[1,0,0]);
+        // Apply rotation to each registered shape
+        for (var i in that.shapes) {
+          mat4.multiply(that.shapes[i].matrix,tmp,that.shapes[i].matrix);
+        }
+        // Update Display
+        that.renderer.drawScene();
+      }
+      lastX = x;
+      lastY = y;
+    };
+  }
+  
+  /**
+   * Attach shape
+   */
+  attach(a_shape) {
+    this.shapes.push(a_shape);
+  }
 
-                // Apply rotation to each registered shape
-                for (var i in shapes) {
-                    mat4.multiply(shapes[i].matrix,tmp,shapes[i].matrix);
-                }
-                // Update Display
-                renderer.drawScene();
-            }
-            lastX = x;
-            lastY = y;
-        };
+  setRenderer(r) {
+    this.renderer = r;
+  }
+  
+} // End of class MouseSensor
 
-        return {
-            attach : function (a_shape) {
-                shapes.push(a_shape);
-            },
 
-            setRenderer : function (a_renderer) {
-                renderer = a_renderer;
-            }
-        };
-    }
-
-    exports.MouseSensor = MouseSensor;
-
-})(this.mwUI = this.mwUI || {} );

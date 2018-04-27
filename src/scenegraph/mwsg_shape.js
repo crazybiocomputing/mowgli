@@ -160,31 +160,30 @@ export class Shape extends Leaf {
    *
    **/
   addVertexData(a_geom) {
-      if ( (a_geom.content & Shape.INDICES) === Shape.INDICES) {
-          this._isIndexed = true;
-          this.geometries.push(
-              new mwsg.Geometry({
-                  'type'       : 'indexed',
-                  'content'    : a_geom.content,
-                  'data'       : new Uint16Array(a_geom.data),
-                  'attributes' : []
-              })
-          );
-      }
-      else {
-          this.geometries.push(
-              new mwsg.Geometry( {
-                  'type'     : 'vertex',
-                  'content'    : a_geom.content,
-                  'data'     : new Float32Array(a_geom.data),
-                  'attributes' : a_geom.attributes
-              })
-          );
-      }
+    if ( a_geom.indices !== undefined) {
+      this._isIndexed = true;
+      this.geometries.push(
+        new mwsg.Geometry({
+          type       : 'indexed',
+          content    : a_geom.content,
+          data       : new Uint16Array(a_geom.indices),
+          attributes : []
+        })
+      );
+    }
 
-      // HACK console.log(this.geometries);
-      // Set the number of items in this shape
-      // this.numItems = a_geom.data.length / itemSize;
+    this.geometries.push(
+      new mwsg.Geometry( {
+        'type'     : 'vertex',
+        'content'    : a_geom.content,
+        'data'     : new Float32Array(a_geom.data),
+        'attributes' : a_geom.attributes
+      })
+    );
+
+    // HACK console.log(this.geometries);
+    // Set the number of items in this shape
+    // this.numItems = a_geom.data.length / itemSize;
   };
 
 

@@ -26,7 +26,7 @@
 
 
 // class Cube
-class IsoCube
+export class IsoCube {
   constructor(x,y,z,size) {
     this.x = x;
     this.y = y;
@@ -99,7 +99,7 @@ class IsoCube
   }
 
   setVoxels(stack) {
-    const getVoxel = (vol,x,y,z) => vol.pixelData[x + y * vol.width + z * vol.width * vol.height];
+    const getVoxel = (vol,x,y,z) => vol.data[x + y * vol.width + z * vol.width * vol.height];
     
     this.voxels[0] = getVoxel(stack,this.x          ,this.y          ,this.z          ); // v0
     this.voxels[1] = getVoxel(stack,this.x+this.size,this.y          ,this.z          ); // v1

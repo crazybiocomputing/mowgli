@@ -40,6 +40,9 @@ export class Mesh extends Shape {
   constructor() {
     super();
     this.ID = 'mesh';
+    this.vertices = [];
+    this.triangles = [];
+    this.normals = [];
   }
 
   /**
@@ -51,29 +54,24 @@ export class Mesh extends Shape {
     case 'wireframe' :
       this.ID = 'meshWire';
       // 1- Define geometry
-      var _indices = [0,1,2,3,0,4,5,6,7,4,5,1,2,6,7,3];
-      this.type = 'LINE_STRIP';
+      this.type = 'LINES';
+      let _indices = [];
+      for (let i = 0; i < this.triangles.length; i+=3) {
+        _indices.push(this.triangles[i]);
+        _indices.push(this.triangles[i+1]);
+        _indices.push(this.triangles[i+1]);
+        _indices.push(this.triangles[i+2]);
+        _indices.push(this.triangles[i+2]);
+        _indices.push(this.triangles[i]);
+      }
       this.addVertexData(
           {
               'content'   : Shape.XYZ,
-              'data'      : Cube.verticesWire,
-              'indices'   :_indices,
-              'attributes': [new Attribute("aVertexPosition",0,0)]
+              'data'      : this.vertices,
+              'indices'   : _indices,
+              'attributes': [new gpu.Attribute("aVertexPosition",3,'float',0,0)]
           }
       );
-/**
-      this.addUniformData(
-          {
-              'content': ['RGB'],
-              'data'   : [1.0,0.6,0.2],
-              'uniform': [new Uniform("uColor")]
-          }
-      )
-**/
-      this.numItems = Cube.verticesWire.length / 3;
-      // 2- Define graphics style
-      //this.setProgram(shaderProgram);
-
       break;
     case 'solid' :
       this.ID = 'meshSolid';
@@ -83,14 +81,14 @@ export class Mesh extends Shape {
               'content': Shape.XYZ,
               'data': this.vertices,
               'indices': this.indices,
-              'attributes': [new Attribute("aVertexPosition",0,0)]
+              'attributes': [new gpu.Attribute("aVertexPosition",3,'float',0,0)]
           }
       );
       this.addVertexData(
           {
               'content': Shape.RGB,
               'data': this.colors,
-              'attributes': [new Attribute("aVertexColor",0,0)]
+              'attributes': [new gpu.Attribute("aVertexColor",0,0)]
           }
       );
 
@@ -99,7 +97,7 @@ export class Mesh extends Shape {
               'content'   : Shape.XYZ | Shape.RGBA,
               'data'      : this.vertices,
               'indices'   : this.indices,
-              'attributes': [new Attribute("aVertexPosition",0,7), new Attribute("aVertexColor",3,7)]
+              'attributes': [new gpu.Attribute("aVertexPosition",0,7), new Attribute("aVertexColor",3,7)]
           }
       );
       this.numItems = Cube.vertices.length / 7;

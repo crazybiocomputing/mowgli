@@ -59,7 +59,8 @@ export class Renderer {
     }
 
     this.ID = 'renderer';
-    this.scene = null;
+
+
     this.handlers = [];
 
     this.canvas = document.createElement('canvas');
@@ -72,6 +73,10 @@ export class Renderer {
         MOWGLI.alert('ERR:context');
         return;
     }
+    
+    // Create a scene
+    this.scene = new mwsg.Scene();
+    this.scene.parent = this;
 
 /*
     // Properties
@@ -200,7 +205,7 @@ export class Renderer {
     // Properties
 
     console.log('*************** RENDER:'+ this.canvas.width +' '+ this.canvas.height +' ***************');
-
+    this.fire();
     this.scene.render(gl);
   };
 

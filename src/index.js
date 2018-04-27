@@ -22,57 +22,30 @@
  * Jean-Christophe Taveau
  */
 
-
 'use strict';
 
+/* scenegraph classes */
+import * as mwsg from './scenegraph/index.js';
 
-/**
- * Attribute class used by the shader program
- *
- * @class Attribute
- * @memberof module:graphics
- * 
- **/
-export class Attribute {
-  /**
-   * @constructor
-   */
-  constructor(name,size,type,offset,stride) {
+/* scenegraph/gl classes */
+import * as mwgl from './scenegraph/gl/index.js';
 
-    /** 
-    * The name
-    * @type {string}
-    *
-    **/
-    this.name = name;
+/* ui/ classes */
+import * as mwui from './ui/index.js';
 
-    /**
-     * A GLint specifying the number of components per vertex attribute. 
-     * Must be 1, 2, 3, or 4.
-     */
-    this.size = size;
-    
-    /**
-     * 
-     */
-    this.type = type;
-    /**
-    * The offset
-    * @type {number}
-    *
-    **/
-    this.offset = offset;
+/* scenegraph/gpu classes */
+import * as gpu from './scenegraph/gpu_utils/index.js';
 
-    /**
-    * The stride
-    * @type {number}
-    *
-    **/
-    this.stride = stride;
+/* map/ classes */
+import * as map from './map/index.js';
 
+import {Structure} from './structure.js';
 
-    this.location = -1;
-  }
-} // End of class Attribute
-
-
+export {
+  gpu,
+  mwsg,
+  mwgl,
+  mwui,
+  map,
+  Structure
+};

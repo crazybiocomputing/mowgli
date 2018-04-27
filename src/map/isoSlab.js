@@ -31,7 +31,7 @@
  *
  * @author Jean-Christophe Taveau
  */
-class IsoSlab {
+export class IsoSlab {
   /**
    * @constructor
    */
@@ -42,7 +42,7 @@ class IsoSlab {
     this.h = cubes_per_column;
   }
 
-  reset_count = function () {
+  reset_count() {
     this.count = 0;
   };
 

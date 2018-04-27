@@ -43,6 +43,47 @@ var structure;
 
 function main() {
 
+  // 00 - 
+  let voxels = [
+  0,0,0,0,0,
+  0,0,0,0,0,
+  0,0,0,0,0,
+  0,0,0,0,0,
+  0,0,0,0,0,
+  
+  0,0,0,0,0,
+  0,9,9,9,0,
+  0,9,9,9,0,
+  0,9,9,9,0,
+  0,0,0,0,0,
+  
+  0,0,0,0,0,
+  0,9,9,9,0,
+  0,9,9,9,0,
+  0,9,9,9,0,
+  0,0,0,0,0,
+
+  0,0,0,0,0,
+  0,9,9,9,0,
+  0,9,9,9,0,
+  0,9,9,9,0,
+  0,0,0,0,0,
+
+  0,0,0,0,0,
+  0,0,0,0,0,
+  0,0,0,0,0,
+  0,0,0,0,0,
+  0,0,0,0,0
+  ];
+  
+  // 00 - Compute the isosurface
+  let vol = new map.Map(voxels,5,5,5);
+  let isoSurf = new map.IsoSurfacer(vol,4,1,1);
+  isoSurf.compute(4);
+  let mesh = isoSurf.getMesh();
+  mesh.translate(-2.0,-2.0,-2.0);
+  console.log(mesh);
+  
   // 0- Create a renderer for this canvas
   var renderer = new mwsg.Renderer(512,300);
   document.querySelector('figure').appendChild(renderer.getCanvas());
@@ -52,18 +93,11 @@ function main() {
   scene.setDefault();
   scene.backgroundColor = { r:0.1, g:0.1, b:0.2, a:1.0};
 
-
   var group = new mwsg.ShapeGroup();
   scene.add(group);
 
   // 2- Create a shape with geometry and colors
-  let shape1 = new mwsg.Cube();
-  shape1.setStyle('wireframe');
-  shape1.translate(-1.25,0.0,0.0);
-  console.log(shape1);
-  let shape2 = new mwsg.Cube();
-  shape2.setStyle('wireframe');
-  shape2.translate(1.25,0.0,0.0);
+  mesh.setStyle('wireframe');
 
   // 2ter- Define shader program by hand 
   var shaderProgram = new gpu.Program(renderer.getContext(),'wireframe-cpk');
@@ -75,11 +109,10 @@ function main() {
   shaderProgram.setUniformLocation("uVMatrix");
   shaderProgram.setUniformLocation("uMMatrix");
 
-  shape1.setProgram(shaderProgram);
-  shape2.setProgram(shaderProgram);
-  
-  group.add(shape1);
-  group.add(shape2);
+  mesh.setProgram(shaderProgram);
+
+  group.add(mesh);
+
 
   // Center shape
   // mat4.translate(shape.matrix,shape.matrix,[-shape.cg.x,-shape.cg.y,-shape.cg.z]);
@@ -88,7 +121,7 @@ function main() {
   console.log(scene.toString());
   console.log(scene.getCamera());
   // First camera found
-  mat4.translate(scene.getCamera()[0].viewMatrix,scene.getCamera()[0].viewMatrix,[0.0,0.0,-5.0]);
+  mat4.translate(scene.getCamera()[0].viewMatrix,scene.getCamera()[0].viewMatrix,[0.0,0.0,-10.0]);
   
   console.log('SceneGraph');
   console.log(scene.toString());

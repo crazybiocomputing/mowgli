@@ -25,6 +25,7 @@
 
 'use strict';
 
+
 /**
  * Voxels maps
  * @class Map
@@ -33,27 +34,29 @@
  * @extends module:structure.Structure
  * @author Jean-Christophe Taveau
  **/
-class Map extends Structure {
+export class Map {
   /**
    * @constructor
    */
-  constructor(pixelData,nx,ny,nz=1,mode='8-bit') {
-    // Structure constructor
-    super(other);
+  constructor(pixelData,nx,ny,nz,mode='8-bit') {
 
+    this.ID = 'map';
+    this.name = 'map';
+    
    /**
     * Pixels/Voxels
     *
     * @type {Array(RGBColor)}
     *
     **/
-    this.data = other.data || new Uint8ClampedArray();
+    this.data = pixelData;
 
     // mode 8-bit, 16-bit, 32-bit, rgb, rgba
-    this.information.mode = other.mode || '8-bit';
-    this.information.width = other.width;
-    this.information.height = other.height;
-    this.information.depth = other.depth || 1;
+    this.information = {};
+    this.information.mode = mode;
+    this.information.width = nx;
+    this.information.height = ny;
+    this.information.depth = nz;
 
     this.width = this.information.width;
     this.height = this.information.height;
