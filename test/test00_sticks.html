@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Atom selection</title>
+
+<!-- ************** S H A D E R S ************** -->
+
+<script id="phong-impostor-vs" type="x-shader/x-vertex">
+  attribute vec3 aVertexPosition;
+  attribute vec3 aVertexColor;
+
+  uniform mat4 uMMatrix;
+  uniform mat4 uVMatrix;
+  uniform mat4 uPMatrix;
+
+  varying vec3 vColor;
+
+  void main(void) {
+    gl_Position = uPMatrix * uVMatrix * uMMatrix * vec4(aVertexPosition, 1.0);
+    vColor = aVertexColor;
+  }
+</script>
+
+<script id="phong-impostor-fs" type="x-shader/x-fragment">
+
+  precision highp float;
+
+  varying vec3 vColor;
+
+  void main(void) {
+    gl_FragColor = vec4(vColor, 1.0);
+  }
+
+</script>
+
+
+<!-- ************** M O W G L I ************** -->
+
+<script  type="text/javascript" src="../dist/gl-matrix-min.js"></script> 
+<script  type="text/javascript" src="../src/parser/PDBParser.js"></script> 
+<script  type="text/javascript" src="../src/PDBLoader.js"></script> 
+<script  type="text/javascript" src="../src/structure.js"></script> 
+<script  type="text/javascript" src="../src/graphics/renderer.js"></script> 
+<script  type="text/javascript" src="../src/graphics/scene.js"></script> 
+<script  type="text/javascript" src="../src/graphics/shape.js"></script> 
+<script  type="text/javascript" src="../src/graphics/shapeFactory.js"></script> 
+<script  type="text/javascript" src="../src/graphics/program.js"></script> 
+<script  type="text/javascript" src="../src/graphics/camera.js"></script> 
+<script  type="text/javascript" src="../src/graphics/light.js"></script> 
+<script  type="text/javascript" src="../src/styles/pointStyle.js"></script> 
+<script  type="text/javascript" src="../src/ui/mouseSensor.js"></script> 
+
+<script  type="text/javascript" src="../src/bond.js"></script> 
+<script  type="text/javascript" src="../src/bondCalculator.js"></script> 
+
+<script type="text/javascript">
+
+function loadFile(type,pdb_id) {
+  var mol = null;
+  var loader = new PDBLoader();
+  if (type === 'local') {
+    mol = loader.getFromDOM(pdb_id,'pdb');
+  }
+  else {
+    mol = loader.getFromID(pdb_id);
+  }
+
+  // Alpha Carbon of the group #10 in the chain 'B'
+  // var selected = mol.finder('ATOM', function (atom) { if (atom.name === "CA" && atom.chain === "B" && atom.groupID == 10) return true; });
+  
+  // all
+  var selected = mol.finder(
+    'BOND', 
+    function (bond) {
+      return true;
+    }
+  );
+  
+  console.log(selected.length + " bond(s) selected!");
+
+ // 0- Create a renderer for this canvas
+  var renderer = new Renderer('canvas');
+  console.log(renderer);
+
+  // 1- Create a scene with a default light and camera
+  var scene = new Scene();
+  renderer.addScene(scene);
+  
+  // Class CylinderGenerator
+  // n: number of faces for the cylinders
+  function CylinderGenerator(n) {
+    // angle of each step, in radius
+    var step = 2 * Math.PI / n;
+    var radius = 0.1;
+    this.nCoords = (n * 2 + 4) * 3;
+    // allocate memory for the cylinder
+    // each coordinate is a float32 (4 bytes)
+    var buffer = new ArrayBuffer(this.nCoords * 4);
+    var i = this.nCoords - (2 * 3);
+    // view on the buffer corresponding to the cylinder without the degenerate triangles
+    // new Float32Array(buffer, offset (in bytes), length (number of float32))
+    var view = new Float32Array(buffer, 3 * 4, i);
+    var x, z, angle = -step;
+    // loop, decrementing i
+    while(i) {
+      angle += step;
+      z = -radius * Math.cos(angle);
+      x = radius * Math.sin(angle);
+      
+      // top point
+      view[--i] = z;// z
+      view[--i] = 1;// y
+      view[--i] = x;// x
+      // bottom point
+      view[--i] = z;// z
+      view[--i] = 0;// y
+      view[--i] = x;// x
+    }
+    
+    // view on the whole buffer, includes the cylinder + the degenerate triangles
+    var template = new Float32Array(buffer);
+    // fills the coordinates for the degenerate triangles
+    template[0] = template[3];
+    template[1] = template[4];
+    template[2] = template[5];
+    template[this.nCoords - 1] = template[this.nCoords - 4];
+    template[this.nCoords - 2] = template[this.nCoords - 5];
+    template[this.nCoords - 3] = template[this.nCoords - 6];
+    
+    this.template = template;
+    // vector of the template cylinder
+    this.cylinderVector = new Float32Array([0, 1, 0]);
+  }
+
+  CylinderGenerator.prototype.fitBetween = function(p1, p2) {
+    var coords = [];
+    for (var p of [p1, p2]) {
+      if (p.length) {
+        coords.push(vec3.fromValues(p[0], p[1], p[2]));
+      } else {
+        coords.push(vec3.fromValues(p.x, p.y, p.z));
+      }
+    }
+    
+    
+    // construction of transform matrix
+    // scale
+    var scale = vec3.distance(coords[0], coords[1]);
+    // vector between p1 and p2
+    var pointsVect = vec3.subtract(vec3.create(), coords[1], coords[0]);
+    vec3.normalize(pointsVect, pointsVect);
+    // normal vector
+    var normal = vec3.cross(vec3.create(), this.cylinderVector, pointsVect);
+    vec3.normalize(normal, normal);
+    // computes the angle between the template cylinder vector and the destination vector
+    var angle = Math.acos(vec3.dot(this.cylinderVector, pointsVect));
+    
+    var matrix = mat4.create();
+    mat4.identity(matrix);
+    
+    mat4.translate(matrix, matrix, coords[0]);
+    mat4.rotate(matrix, matrix, angle, normal);
+    mat4.scale(matrix, matrix, [1, scale, 1]);
+    
+    // create a new typed array from a copy of the template's buffer
+    var outputBuffer = this.template.buffer.slice(0);
+    var i = this.template.length / 3;
+    var offset;
+    while (i) { // tant que je ne suis pas au 1er point (on boucle à l'envers a cause de --i)
+      offset = --i * 3 * 4; //offset = décalage dans la liste
+      vec3.transformMat4(
+        new Float32Array(outputBuffer, offset, 3),
+        new Float32Array(this.template.buffer, offset, 3),
+        matrix
+      );
+    }
+    return new Float32Array(outputBuffer);
+  };
+  
+  
+  CylinderGenerator.prototype.colorChoice = function(symbol) {
+    var outputArray = new Float32Array(this.nCoords);
+    var i = this.template.length;
+    var color = getCPKColor(symbol);
+    while (i) { 
+      outputArray[--i] = color[2];  
+      outputArray[--i] = color[1];
+      outputArray[--i] = color[0];
+    }
+    return outputArray;
+  };
+  
+  // 2- Create a shape with geometry and colors for bonds
+  var shape = new Shape();
+  var cylinder = new CylinderGenerator(16);
+  //selected = [selected[1]];
+  var vertices = new Float32Array(cylinder.nCoords * selected.length * 2);
+  var colors = new Float32Array(cylinder.nCoords * selected.length * 2);
+  for (var i = 0; i < selected.length; i++) {
+    vertices.set(
+      cylinder.fitBetween(selected[i].atom1, selected[i].middle),
+      i * 2 * cylinder.nCoords);
+    colors.set(
+      cylinder.colorChoice(selected[i].atom1.symbol),
+      i * 2 * cylinder.nCoords
+    );
+    vertices.set(
+      cylinder.fitBetween(selected[i].middle, selected[i].atom2),
+      (i * 2 + 1) * cylinder.nCoords);
+    colors.set(
+      cylinder.colorChoice(selected[i].atom2.symbol),
+      (i * 2 + 1) * cylinder.nCoords
+    );
+  }
+  
+
+  console.log(vertices);
+
+  shape.setGeometry({'type':'TRIANGLE_STRIP','attribute':'aVertexPosition','data':vertices});
+  shape.setColors({'type': 'RGB', 'attribute':'aVertexColor','data':colors});
+
+  // 2ter- Define shader program by hand 
+  var shaderProgram = new Program(renderer.getContext(),'monochrome');
+  shaderProgram.loadDOM("vertex"  ,"phong-impostor-vs");
+  shaderProgram.loadDOM("fragment","phong-impostor-fs");
+  shaderProgram.link();
+  // Get attribLocation
+  shaderProgram.setAttribute("aVertexPosition");
+  shaderProgram.setAttribute("aVertexColor");
+  // Get uniformLocation
+  shaderProgram.setUniformLocation("uPMatrix");
+  shaderProgram.setUniformLocation("uVMatrix");
+  shaderProgram.setUniformLocation("uMMatrix");
+
+  shape.setProgram(shaderProgram);
+  shape.updateGL(renderer.getContext() );
+
+  mat4.translate(shape.matrix,shape.matrix,[-mol.cg.x,-mol.cg.y,-mol.cg.z]);
+  console.log(shape.matrix );
+  scene.add(shape);
+  mat4.translate(scene.getCamera().viewMatrix,scene.getCamera().viewMatrix,[0.0,0.0,-60.0]);
+  
+  console.log(scene.toString());
+  // 3- Update renderer
+  renderer.update();
+
+  // 4- Add a sensor
+  var mouse = new MouseSensor('canvas');
+  mouse.attach(shape);
+
+  renderer.addSensor(mouse);
+
+  // 4- Draw Scene
+  renderer.drawScene();
+}
+
+function getCPKColor(symbol) {
+  // CPK
+  switch (symbol) {
+    case 'C':
+      return [0.78, 0.78, 0.78];
+      break;
+    case 'N': 
+      return [0.56, 0.56, 1.00];
+      break;
+    case 'O': 
+      return [0.94, 0.00, 0.00];
+      break;
+    case 'P': 
+      return [1.00, 0.65, 0.00];
+      break;
+    default: 
+      return [0.00, 0.65, 0.00];
+      break;
+  }
+}
+
+</script>
+
+</head>
+<body>
+<p>Load Local PDB File<input type="radio" id="local" name="local" value="y" onchange="loadFile('local','1LMB')">Yes<input type="radio" name="local" value="n" checked>No</p>
+<p>Load From RCSB PDB ID: <input type="text" id="distant"></input>&nbsp;<input type="submit" id="ok" onclick="loadFile('distant',document.getElementById('distant').value)"></input></p>
+<canvas id="canvas" width="640" height="480"> </canvas>
+<div id="1LMB" style="display:none">
+HEADER    OXIDOREDUCTASE                          17-DEC-01   1KMV              
+TITLE     HUMAN DIHYDROFOLATE REDUCTASE COMPLEXED WITH NADPH AND (Z)-           
+TITLE    2 6-(2-[2,5-DIMETHOXYPHENYL]ETHEN-1-YL)-2,4-DIAMINO-5-                 
+TITLE    3 METHYLPYRIDO[2,3-D]PYRIMIDINE (SRI-9662), A LIPOPHILIC               
+TITLE    4 ANTIFOLATE                                                                                                                 
+HET    NDP  A 202      48                                                                                                                                            
+HETNAM     NDP NADPH DIHYDRO-NICOTINAMIDE-ADENINE-DINUCLEOTIDE                  
+HETNAM   2 NDP  PHOSPHATE
+FORMUL   4  NDP    C21 H30 N7 O17 P3                                                                                    
+HETATM 1560  PA  NDP A 202      14.747  35.167  35.370  0.70 11.27           P  
+HETATM 1561  O1A NDP A 202      16.025  35.449  34.744  0.70 13.81           O  
+HETATM 1562  O2A NDP A 202      14.661  33.809  35.976  0.70 11.90           O  
+HETATM 1563  O5B NDP A 202      14.466  36.161  36.506  0.70 13.42           O  
+HETATM 1564  C5B NDP A 202      14.728  37.647  36.294  0.70 21.81           C  
+HETATM 1565  C4B NDP A 202      15.112  38.180  37.694  0.70 22.55           C  
+HETATM 1566  O4B NDP A 202      16.314  37.471  38.373  0.70 24.92           O  
+HETATM 1567  C3B NDP A 202      15.696  39.662  37.465  0.70 26.24           C  
+HETATM 1568  O3B NDP A 202      14.542  40.569  37.523  0.70 31.72           O  
+HETATM 1569  C2B NDP A 202      16.609  39.766  38.715  0.70 29.18           C  
+HETATM 1570  O2B NDP A 202      15.818  39.719  39.968  0.70 31.89           O  
+HETATM 1571  C1B NDP A 202      17.324  38.435  38.561  0.70 27.12           C  
+HETATM 1572  N9A NDP A 202      18.251  38.236  37.467  0.70 25.25           N  
+HETATM 1573  C8A NDP A 202      18.017  37.499  36.318  0.70 23.96           C  
+HETATM 1574  N7A NDP A 202      19.131  37.428  35.648  0.70 31.81           N  
+HETATM 1575  C5A NDP A 202      20.150  37.999  36.394  0.70 31.42           C  
+HETATM 1576  C6A NDP A 202      21.536  38.186  36.215  0.70 35.95           C  
+HETATM 1577  N6A NDP A 202      22.193  37.792  35.112  0.70 36.28           N  
+HETATM 1578  N1A NDP A 202      22.236  38.783  37.215  0.70 36.68           N  
+HETATM 1579  C2A NDP A 202      21.563  39.202  38.308  0.70 33.50           C  
+HETATM 1580  N3A NDP A 202      20.259  39.051  38.597  0.70 28.94           N  
+HETATM 1581  C4A NDP A 202      19.615  38.467  37.582  0.70 27.69           C  
+HETATM 1582  O3  NDP A 202      13.549  35.485  34.376  0.70 17.86           O  
+HETATM 1583  PN  NDP A 202      12.754  35.421  32.969  0.70 17.65           P  
+HETATM 1584  O1N NDP A 202      13.843  35.497  31.894  0.70 18.57           O  
+HETATM 1585  O2N NDP A 202      11.630  36.083  32.927  0.70 22.84           O  
+HETATM 1586  O5D NDP A 202      12.436  33.775  33.018  0.70 21.70           O  
+HETATM 1587  C5D NDP A 202      11.405  33.195  33.823  0.70 21.50           C  
+HETATM 1588  C4D NDP A 202      10.433  32.809  32.667  0.70 18.56           C  
+HETATM 1589  O4D NDP A 202      10.939  31.809  31.766  0.70 16.75           O  
+HETATM 1590  C3D NDP A 202       9.209  32.205  33.392  0.70 18.95           C  
+HETATM 1591  O3D NDP A 202       8.145  32.445  32.480  0.70 19.36           O  
+HETATM 1592  C2D NDP A 202       9.613  30.742  33.508  0.70 20.10           C  
+HETATM 1593  O2D NDP A 202       8.429  29.975  33.651  0.70 25.26           O  
+HETATM 1594  C1D NDP A 202      10.287  30.483  32.126  0.70 15.61           C  
+HETATM 1595  N1N NDP A 202      11.438  29.596  32.179  0.70 14.68           N  
+HETATM 1596  C2N NDP A 202      11.528  28.695  31.097  0.70 14.00           C  
+HETATM 1597  C3N NDP A 202      12.581  27.910  30.892  0.70 12.60           C  
+HETATM 1598  C7N NDP A 202      12.702  26.942  29.737  0.70 10.96           C  
+HETATM 1599  O7N NDP A 202      13.708  26.308  29.562  0.70 11.07           O  
+HETATM 1600  N7N NDP A 202      11.616  27.037  28.868  0.70 12.28           N  
+HETATM 1601  C4N NDP A 202      14.011  28.123  31.609  0.70 16.90           C  
+HETATM 1602  C5N NDP A 202      13.678  29.015  32.841  0.70 16.49           C  
+HETATM 1603  C6N NDP A 202      12.597  29.774  32.994  0.70 17.34           C  
+HETATM 1604  P2B NDP A 202      15.737  41.052  40.772  0.70 35.67           P  
+HETATM 1605  O1X NDP A 202      14.723  42.004  40.135  0.70 47.76           O  
+HETATM 1606  O2X NDP A 202      15.412  40.624  42.110  0.70 37.05           O  
+HETATM 1607  O3X NDP A 202      17.106  41.730  40.610  0.70 39.25           O  
+TER                                                          
+CONECT 1560 1561 1562 1563 1582                                                 
+CONECT 1561 1560                                                                
+CONECT 1562 1560                                                                
+CONECT 1563 1560 1564                                                           
+CONECT 1564 1563 1565                                                           
+CONECT 1565 1564 1566 1567                                                      
+CONECT 1566 1565 1571                                                           
+CONECT 1567 1565 1568 1569                                                      
+CONECT 1568 1567                                                                
+CONECT 1569 1567 1570 1571                                                      
+CONECT 1570 1569 1604                                                           
+CONECT 1571 1566 1569 1572                                                      
+CONECT 1572 1571 1573 1581                                                      
+CONECT 1573 1572 1574                                                           
+CONECT 1574 1573 1575                                                           
+CONECT 1575 1574 1576 1581                                                      
+CONECT 1576 1575 1577 1578                                                      
+CONECT 1577 1576                                                                
+CONECT 1578 1576 1579                                                           
+CONECT 1579 1578 1580                                                           
+CONECT 1580 1579 1581                                                           
+CONECT 1581 1572 1575 1580                                                      
+CONECT 1582 1560 1583                                                           
+CONECT 1583 1582 1584 1585 1586                                                 
+CONECT 1584 1583                                                                
+CONECT 1585 1583                                                                
+CONECT 1586 1583 1587                                                           
+CONECT 1587 1586 1588                                                           
+CONECT 1588 1587 1589 1590                                                      
+CONECT 1589 1588 1594                                                           
+CONECT 1590 1588 1591 1592                                                      
+CONECT 1591 1590                                                                
+CONECT 1592 1590 1593 1594                                                      
+CONECT 1593 1592                                                                
+CONECT 1594 1589 1592 1595                                                      
+CONECT 1595 1594 1596 1603                                                      
+CONECT 1596 1595 1597                                                           
+CONECT 1597 1596 1598 1601                                                      
+CONECT 1598 1597 1599 1600                                                      
+CONECT 1599 1598                                                                
+CONECT 1600 1598                                                                
+CONECT 1601 1597 1602                                                           
+CONECT 1602 1601 1603                                                           
+CONECT 1603 1595 1602                                                           
+CONECT 1604 1570 1605 1606 1607                                                 
+CONECT 1605 1604                                                                
+CONECT 1606 1604                                                                
+CONECT 1607 1604                                                                
+END
+                                                           
+</div>
+</body>
+</html>
